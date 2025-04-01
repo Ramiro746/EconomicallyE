@@ -32,7 +32,7 @@ public class FinanceController {
     @Autowired
     private OpenAiService openAiService;
 
-    @PostMapping("/{usuarioId}/analizar")//an
+    @PostMapping("/{usuarioId}/analizar")
     public ResponseEntity<?> analyzeFinances(@PathVariable Long userId) {
         User user = usuarioRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
