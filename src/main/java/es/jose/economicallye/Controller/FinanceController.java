@@ -17,7 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RestController
 @RequestMapping("/api/finanzas")
 public class FinanceController {
-/* Aun estamos viendo si implementar deepseek o openai
+/* Aun estamos viendo si implementar deepseek o openAI
 
     @Autowired
     private FinanceRepository finanzasRepository;
