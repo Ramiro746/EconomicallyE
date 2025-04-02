@@ -2,6 +2,8 @@ package es.jose.economicallye.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDate;
+import java.util.Set;
 
 @Builder
 @Getter
@@ -9,26 +11,28 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "finanzas")
-public class Finance {
+@Table(name = "goals")
+public class Goal {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "usuario_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Column(nullable = false)
-    private double ingresoMensual;
+    private String description;
 
     @Column(nullable = false)
-    private int aniosTrabajando;
+    private Double targetAmount;
 
     @Column(nullable = false)
-    private double ahorro;
+    private Double savedAmount;
 
     @Column(nullable = false)
-    private String tipoTrabajo;
+    private LocalDate deadline;
 
+    @ManyToMany(mappedBy = "affectedGoals")
+    private Set<VariableExpense> relatedExpenses;
 }

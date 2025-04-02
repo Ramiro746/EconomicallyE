@@ -2,7 +2,7 @@ package es.jose.economicallye.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Builder
@@ -11,9 +11,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "usuarios")
+@Table(name = "users")
 public class User {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,16 +26,24 @@ public class User {
     @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
+    private LocalDateTime registrationDate;
+
+    @Column(nullable = false)
+    private Double monthlyIncome;
+
+    private String profession;
+
+    // Relaciones
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<Finance> finances;
+    private List<FixedExpense> fixedExpenses;
 
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
-    private List<VariableExpense> expenses;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<VariableExpense> variableExpenses;
 
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
-    private List<GoalSave> metasAhorro;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Goal> goals;
 
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
-    private List<Advice> recomendations;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Advice> advices;
 }
-

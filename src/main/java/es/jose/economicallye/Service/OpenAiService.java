@@ -1,6 +1,5 @@
 package es.jose.economicallye.Service;
 
-import es.jose.economicallye.Entity.Finance;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -10,14 +9,15 @@ import org.springframework.web.client.RestTemplate;
 
 @Service
 public class OpenAiService {
+    /*
 
     private final String apiKey = "TU_API_KEY";
 
     public String generarRecomendacion(Finance finanzas) {
-        String prompt = "Un usuario gana " + finanzas.getIngresoMensual() +
-                " al mes, ha trabajado " + finanzas.getAniosTrabajando() +
-                " años, tiene " + finanzas.getAhorro() +
-                " ahorrado y trabaja como " + finanzas.getTipoTrabajo() +
+        String prompt = "Un usuario gana " + finanzas.getMonthlyIncome() +
+                " al mes, ha trabajado " + finanzas.getYearsWorking() +
+                " años, tiene " + finanzas.getSavings() +
+                " ahorrado y trabaja como " + finanzas.getJobType() +
                 ". Dame una recomendación financiera.";
 
         RestTemplate restTemplate = new RestTemplate();
@@ -35,5 +35,5 @@ public class OpenAiService {
         );
 
         return response.getBody();
-    }
+    }*/
 }

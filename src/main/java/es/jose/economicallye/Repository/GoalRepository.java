@@ -1,13 +1,12 @@
 package es.jose.economicallye.Repository;
 
-import es.jose.economicallye.Entity.Finance;
+import es.jose.economicallye.Entity.Goal;
 import es.jose.economicallye.Entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
+import java.util.List;
 
 @Repository
-public interface FinanceRepository extends JpaRepository<Finance, Long> {
-    Optional<Finance> findByUsuario(User user);
+public interface GoalRepository extends JpaRepository<Goal, Long> {
+    List<Goal> findByUser(User user);
 }

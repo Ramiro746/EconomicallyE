@@ -1,9 +1,7 @@
 package es.jose.economicallye.Controller;
 
-import es.jose.economicallye.Entity.Finance;
 import es.jose.economicallye.Entity.Advice;
 import es.jose.economicallye.Entity.User;
-import es.jose.economicallye.Repository.FinanceRepository;
 import es.jose.economicallye.Repository.RecomendationRepository;
 import es.jose.economicallye.Repository.UserRepository;
 import es.jose.economicallye.Service.OpenAiService;
@@ -19,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RestController
 @RequestMapping("/api/finanzas")
 public class FinanceController {
+/* Aun estamos viendo si implementar deepseek o openai
 
     @Autowired
     private FinanceRepository finanzasRepository;
@@ -37,16 +36,16 @@ public class FinanceController {
         User user = usuarioRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
 
-        Finance finance = finanzasRepository.findByUsuario(user)
+        Finance finance = finanzasRepository.findByUser(user)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Datos financieros no encontrados"));
 
         String result = openAiService.generarRecomendacion(finance);
 
         Advice recomendation = new Advice();
         recomendation.setUser(user);
-        recomendation.setIAresult(result);
+        recomendation.setIaResult(result);
         recomendacionRepository.save(recomendation);
 
         return ResponseEntity.ok(recomendation);
-    }
+    }*/
 }

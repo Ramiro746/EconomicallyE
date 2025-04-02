@@ -2,7 +2,6 @@ package es.jose.economicallye.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDateTime;
 
 @Builder
 @Getter
@@ -10,8 +9,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "advices")
-public class Advice {
+@Table(name = "fixed_expenses")
+public class FixedExpense {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,9 +19,14 @@ public class Advice {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String iaResult;
+    @Column(nullable = false)
+    private String name;
 
     @Column(nullable = false)
-    private LocalDateTime recommendationDate;
+    private Double amount;
+
+    @Column(nullable = false)
+    private String frequency; // "Mensual", "Anual", etc.
+
+    private String description;
 }
