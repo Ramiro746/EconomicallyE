@@ -1,0 +1,23 @@
+.container {
+    height: 100vh;
+    padding: 20px;
+    backgroundColor: #f4f4f4;
+    position: relative;
+}
+.header {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+.header button {
+    marginLeft: 10px;
+    padding: 10px 20px;
+    fontSize: 16px;
+    cursor: pointer;
+}
+
+.content {
+    text-align: center;
+    margin-top: 20%;
+}
