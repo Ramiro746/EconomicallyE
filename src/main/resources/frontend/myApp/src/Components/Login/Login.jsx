@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 
-import './form.css'
+import './formLogin.css'
 const  Login = () => {
 
     const [email, setEmail] = useState('');
@@ -40,18 +40,20 @@ const  Login = () => {
         <div className="login-form">
             <h2>Login</h2>
             <form onSubmit={handleLogin}>
-                <div>
+                <div className="email">
                     <label>Email o usuario</label>
                     <input
+                        placeholder="example@example.org"
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
                     />
                 </div>
-                <div>
+                <div className="password">
                     <label>Contraseña</label>
                     <input
+                        placeholder="Password"
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
