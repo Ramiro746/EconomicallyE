@@ -1,6 +1,7 @@
 package es.jose.economicallye.Entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,9 +33,7 @@ public class User {
     @Column(nullable = false)
     private Double monthlyIncome;
 
-    private String profession;
-
-    // Relaciones
+    // Relations with
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<FixedExpense> fixedExpenses;
 

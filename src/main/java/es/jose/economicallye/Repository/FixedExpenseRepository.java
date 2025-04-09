@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface FixedExpenseRepository extends JpaRepository<FixedExpense, Long> {
     List<FixedExpense> findByUser(User user);
+    List<FixedExpense> findByUserId(Long userId);
 }

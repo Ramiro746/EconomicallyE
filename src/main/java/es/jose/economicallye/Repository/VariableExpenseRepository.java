@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface VariableExpenseRepository extends JpaRepository<VariableExpense, Long> {
     List<VariableExpense> findByUser(User user);
+    List<VariableExpense> findByUserId(Long userId);
 }
