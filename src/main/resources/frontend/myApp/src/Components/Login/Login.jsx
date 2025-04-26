@@ -38,31 +38,39 @@ const  Login = () => {
 
     return (
         <div className="login-form">
-            <h2>Login</h2>
+            <h2>Inicio Sesión</h2>
             <form onSubmit={handleLogin}>
-                <div className="email">
-                    <label>Email o usuario</label>
-                    <input
-                        placeholder="example@example.org"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
+                <div className="form-group">
+                    <div className="email">
+                        <label>Email o usuario</label>
+                        <input
+                            placeholder="example@example.org"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                    </div>
                 </div>
-                <div className="password">
-                    <label>Contraseña</label>
-                    <input
-                        placeholder="Password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
+
+                <div className="form-group">
+                    <div className="password">
+                        <label>Contraseña</label>
+                        <input
+                            placeholder="Password"
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                    </div>
                 </div>
                 {error && <p className="error">{error}</p>}
                 <button type="submit">Iniciar sesión</button>
             </form>
+            <div className="register-link">
+                <p>No tienes cuenta? <a href="">Registrate</a></p>
+            </div>
         </div>
     );
 };
