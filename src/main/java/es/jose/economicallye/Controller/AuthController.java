@@ -1,4 +1,4 @@
-package es.jose.economicallye.Controllers;
+package es.jose.economicallye.Controller;
 /*
 import es.jose.economicallye.Dtos.AuthResponse;
 import es.jose.economicallye.Dtos.LoginRequest;

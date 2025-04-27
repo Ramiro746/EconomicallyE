@@ -5,18 +5,19 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
+import java.util.List;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDTO {
-    private Long id;
-    private String email;
-    private String password;
+public class UserOverviewDTO {
+    private Long userId;
     private String name;
-    private LocalDateTime registrationDate;
     private Double monthlyIncome;
+
+    private List<FixedExpenseDTO> fixedExpenses;
+    private List<VariableExpenseDTO> variableExpenses;
+    private List<GoalDTO> goals;
+    private List<AdviceDTO> advices;
 }
