@@ -1,26 +1,22 @@
 package es.jose.economicallye.Mapper;
 
 import es.jose.economicallye.Dto.VariableExpenseDTO;
-import es.jose.economicallye.Entity.Goal;
 import es.jose.economicallye.Entity.VariableExpense;
-import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring",
-        uses = {UserMapper.class, GoalMapper.class})
+import java.util.List;
 
+@Mapper(componentModel = "spring")
 public interface VariableExpenseMapper {
-    @Mapping(target = "affectedGoalIds", source = "affectedGoals")
-    VariableExpenseDTO toDto(VariableExpense variableExpense);
 
-    @Mapping(target = "affectedGoals", ignore = true)
-    VariableExpense toEntity(VariableExpenseDTO variableExpenseDTO);
+    @Mapping(source = "userId", target = "user.id") // Aseguramos que se mapea el userId
+    VariableExpense toEntity(VariableExpenseDTO dto);
 
-    default Set<Long> mapGoalsToIds(Set<Goal> goals) {
-        if (goals == null) return null;
-        return goals.stream().map(Goal::getId).collect(Collectors.toSet());
-    }
+    @Mapping(source = "user.id", target = "userId") // Para devolver el userId en el DTO
+    VariableExpenseDTO toDto(VariableExpense entity);
+
+    List<VariableExpenseDTO> toDtoList(List<VariableExpense> list);
+
+    List<VariableExpense> toEntityList(List<VariableExpenseDTO> list);
 }

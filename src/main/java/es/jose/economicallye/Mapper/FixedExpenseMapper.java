@@ -6,10 +6,19 @@ import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring",
-        uses = UserMapper.class)
+import java.util.List;
 
+@Mapper(
+        componentModel = "spring",
+        collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED
+)
 public interface FixedExpenseMapper {
-    FixedExpenseDTO toDto(FixedExpense fixedExpense);
-    FixedExpense toEntity(FixedExpenseDTO fixedExpenseDTO);
+
+    @Mapping(source = "user.id", target = "userId")
+    FixedExpenseDTO toDto(FixedExpense entity);
+
+    FixedExpense toEntity(FixedExpenseDTO dto);
+
+    List<FixedExpenseDTO> toDtoList(List<FixedExpense> list);
+    List<FixedExpense> toEntityList(List<FixedExpenseDTO> list);
 }

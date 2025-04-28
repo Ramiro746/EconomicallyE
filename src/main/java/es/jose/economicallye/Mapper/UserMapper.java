@@ -4,8 +4,8 @@ import es.jose.economicallye.Dto.UserDTO;
 import es.jose.economicallye.Entity.User;
 import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Named;
+
+import java.util.List;
 
 @Mapper(
         componentModel = "spring",
@@ -14,4 +14,8 @@ import org.mapstruct.Named;
 public interface UserMapper {
     UserDTO toDto(User entity);
     User toEntity(UserDTO dto);
+
+    List<UserDTO> toDtoList(List<User> list);
+    List<User> toEntityList(List<UserDTO> list);
+
 }

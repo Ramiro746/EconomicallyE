@@ -9,3 +9,4 @@ import java.util.List;
 public interface AdviceRepository extends JpaRepository<Advice, Long> {
     List<Advice> findByUserIdOrderByRecommendationDateDesc(Long userId);
 }
+
