@@ -1,10 +1,17 @@
 package es.jose.economicallye.Controller;
 
 import es.jose.economicallye.Dto.UserDTO;
+import es.jose.economicallye.Entity.User;
+import es.jose.economicallye.Repository.UserRepository;
+import es.jose.economicallye.Security.CustomUserDetails;
+import es.jose.economicallye.Security.CustomUserDetailsService;
 import es.jose.economicallye.Service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +22,8 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    @Autowired
+    private UserRepository userRepository;
 
     @PostMapping
     public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO) {
@@ -39,5 +48,11 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/me")
+    public UserDTO getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return new UserDTO(userDetails.getId(), userDetails.getUsername());
+
     }
 }
