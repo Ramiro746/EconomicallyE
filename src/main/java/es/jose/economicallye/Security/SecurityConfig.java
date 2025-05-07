@@ -68,7 +68,7 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
-                        .requestMatchers("/api/users/register").authenticated()  // Protege este endpoint
+                        .requestMatchers("/api/users/register", "/api/variable-expenses", "/api/goals").authenticated()  // Protege este endpoint
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->

@@ -33,6 +33,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
+            System.out.println("Token recibido: " + token);  // Log para ver el token
+
         }
 
         if (token != null && jwtTokenProvider.validateToken(token)) {
