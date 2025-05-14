@@ -9,4 +9,5 @@ public interface VariableExpenseService {
     List<VariableExpenseDTO> getVariableExpensesByUserId(Long userId);
     VariableExpenseDTO updateVariableExpense(Long id, VariableExpenseDTO variableExpenseDTO);
     void deleteVariableExpense(Long id);
+
 }
