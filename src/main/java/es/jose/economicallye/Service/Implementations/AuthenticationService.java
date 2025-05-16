@@ -44,11 +44,14 @@ public class AuthenticationService {
 
             // 3. Obtener el ID del usuario (asumiendo que User implementa UserDetails)
             Long userId = null;
+            String userName = null;
+
             if (userDetails instanceof User) {
                 userId = ((User) userDetails).getId();
+                userName =((User) userDetails).getName();
             }
 
-            return jwtTokenProvider.generateToken(userDetails, userId);
+            return jwtTokenProvider.generateToken(userDetails, userId, email, userName);
 
         } catch (UsernameNotFoundException e) {
             throw new RuntimeException("Usuario no encontrado", e);

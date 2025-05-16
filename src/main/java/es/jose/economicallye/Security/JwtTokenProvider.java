@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.io.StringReader;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,12 +46,14 @@ public class JwtTokenProvider {
     }
 
     // Versión que incluye el ID de usuario
-    public String generateToken(UserDetails userDetails, Long userId) {
+    public String generateToken(UserDetails userDetails, Long userId, String name, String Username) {
         System.out.println("Generando token para usuario con ID: " + userId);
 
         return Jwts.builder()
                 .subject(userDetails.getUsername())
                 .claim("id", userId) // Añade el ID como claim
+                .claim("name",name)
+                .claim("username",Username)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(getSigningKey(), Jwts.SIG.HS256)
@@ -59,9 +62,13 @@ public class JwtTokenProvider {
     }
 
     // Versión original (si la necesitas)
+
+    /*
     public String generateToken(UserDetails userDetails) {
         return generateToken(userDetails, null);
     }
+
+     */
 
     public Long extractUserId(String token) {
         try {
@@ -74,6 +81,23 @@ public class JwtTokenProvider {
             return claims.get("id", Long.class);
         } catch (Exception e) {
             throw new RuntimeException("Error al extraer el id del usuario del token", e);
+        }
+    }
+
+    public String extractUserName(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            return claims.get("username", String.class); // nombre real
+        } catch (Exception e) {
+            throw new RuntimeException("Error al extraer el nombre del usuario del token", e);
+        }
+    }
+
+    public String extractUserEmail(String token) {
+        try {
+            return extractAllClaims(token).getSubject();
+        }catch (Exception e){
+            throw new RuntimeException("Error al extraer el email del usuario del token", e);
         }
     }
 
@@ -97,5 +121,13 @@ public class JwtTokenProvider {
                 .parseSignedClaims(token)
                 .getPayload()
                 .getSubject();
+    }
+
+    private Claims extractAllClaims(String token) {
+        return Jwts.parser()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 }

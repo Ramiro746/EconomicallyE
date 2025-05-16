@@ -48,11 +48,11 @@ public class AuthController {
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
 
-            String token = tokenProvider.generateToken(userDetails, user.getId());
+            String token = tokenProvider.generateToken(userDetails, user.getId(), user.getEmail(), user.getName());
 
             logger.info("✅ Usuario autenticado: {} - Token generado: {}",  userDetails.getUsername(), token);
-
-            UserDTO userDTO = mapToUserDTO(userDetails);
+            logger.info("Nombre de usuario:"+(user.getName()));
+            UserDTO userDTO = mapToUserDTO(user);
             return ResponseEntity.ok(new AuthResponseDTO(token, userDTO));
 
         } catch (Exception ex) {
@@ -61,11 +61,11 @@ public class AuthController {
         }
     }
 
-    private UserDTO mapToUserDTO(UserDetails userDetails) {
+    private UserDTO mapToUserDTO(User user) {
         return UserDTO.builder()
                 //.id(user.getId())
-                .email(userDetails.getUsername())
-                .name(userDetails.getUsername())
+                .email(user.getEmail())
+                .name(user.getName())
                 // Agrega más campos si es necesario
                 .build();
     }

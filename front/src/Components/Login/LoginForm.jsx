@@ -1,10 +1,12 @@
-import { useContext, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from "react-router-dom";
+import "../estilos.css"
 
-export default function LoginForm() {
+export default function LoginForm({ closeModal }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
@@ -16,7 +18,7 @@ export default function LoginForm() {
                 headers: {
                     "Content-Type": "application/json"
                 },
-                credentials: "include", // solo si usas cookies (no es obligatorio para JWT en headers)
+                credentials: "include",
                 body: JSON.stringify({ email, password })
             });
 
@@ -24,15 +26,14 @@ export default function LoginForm() {
 
             const data = await res.json();
 
-            // ✅ Guardamos el token en localStorage
             localStorage.setItem("token", data.token);
-
-            // Opcional: también puedes guardar el usuario si lo necesitas
             localStorage.setItem("user", JSON.stringify(data.user));
 
-            navigate("/advice-form", {
-                state: { userId: data.user.id }
-            }); // redirige a la página del formulario
+            // Cerrar el modal después de login exitoso
+            if (closeModal) closeModal();
+
+            // Redirigir a la página principal o al formulario de consejos
+            navigate("/");
         } catch (err) {
             setError(err.message);
         }
@@ -41,22 +42,26 @@ export default function LoginForm() {
     return (
         <form onSubmit={handleLogin}>
             <h2>Iniciar sesión</h2>
-            <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-            />
-            <input
-                type="password"
-                placeholder="Contraseña"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-            />
-            <button type="submit">Entrar</button>
-            {error && <p style={{ color: "red" }}>{error}</p>}
+            <div className="form-group">
+                <input
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    required
+                />
+            </div>
+            <div className="form-group">
+                <input
+                    type="password"
+                    placeholder="Contraseña"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    required
+                />
+            </div>
+            <button type="submit" className="auth-button">Entrar</button>
+            {error && <p style={{color: "red"}}>{error}</p>}
         </form>
     );
 }

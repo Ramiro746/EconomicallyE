@@ -1,4 +1,6 @@
 import {useEffect, useState} from "react";
+import { useNavigate } from "react-router-dom";
+
 
 export default function AdviceForm() {
 
@@ -47,6 +49,8 @@ export default function AdviceForm() {
         });
     };
 
+    const navigate = useNavigate();
+
     const handleAdd = (setter, emptyItem) => {
         setter(prev => [...prev, emptyItem]);
     };
@@ -88,6 +92,7 @@ export default function AdviceForm() {
     };
 
     return (
+
         <div className="advice-form">
             <h2>Cuestionario Financiero</h2>
             <form onSubmit={handleSubmit}>
@@ -131,7 +136,7 @@ export default function AdviceForm() {
                         />
                     </div>
                 ))}
-                <button type="button" onClick={() => handleAdd(setFixedExpenses, { name: "", amount: "" })}>
+                <button type="button" onClick={() => handleAdd(setFixedExpenses, {name: "", amount: ""})}>
                     Añadir gasto fijo
                 </button>
 
@@ -153,7 +158,7 @@ export default function AdviceForm() {
                         />
                     </div>
                 ))}
-                <button type="button" onClick={() => handleAdd(setVariableExpenses, { name: "", amount: "" })}>
+                <button type="button" onClick={() => handleAdd(setVariableExpenses, {name: "", amount: ""})}>
                     Añadir gasto variable
                 </button>
 
@@ -175,15 +180,16 @@ export default function AdviceForm() {
                         />
                     </div>
                 ))}
-                <button type="button" onClick={() => handleAdd(setGoals, { description: "", targetAmount: "" })}>
+                <button type="button" onClick={() => handleAdd(setGoals, {description: "", targetAmount: ""})}>
                     Añadir objetivo
                 </button>
 
-                <br />
+                <br/>
                 <button type="submit">Generar consejo</button>
-            </form>
 
-            {error && <p style={{ color: "red" }}>{error}</p>}
+            </form>
+            <button onClick={() => navigate("/")}>Volver</button>
+            {error && <p style={{color: "red"}}>{error}</p>}
             {advice && (
                 <div className="advice-result">
                     <h3>Consejo generado:</h3>

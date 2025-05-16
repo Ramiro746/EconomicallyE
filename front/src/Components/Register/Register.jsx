@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
+import "./formRegister.css";
 
 const  Register = () => {
 
@@ -9,7 +10,7 @@ const  Register = () => {
     const [error, setError] = useState('');
 
 
-    const handleLogin = async (e) => {
+    const handleRegister = async (e) => {
 
         e.preventDefault();
 
@@ -47,9 +48,9 @@ const  Register = () => {
         }
     };
     return (
-        <div className="register-form">
+        <div >
             <h2>Registro</h2>
-            <form onSubmit={handleRegister}>
+            <form className="register-form" onSubmit={handleRegister}  style={{ backgroundColor: "green" }}>
                 <div>
                     <label>Email o usuario</label>
                     <input

@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { useNavigate } from "react-router-dom";
+import "../estilos.css"
 
-const FormUser = () => {
+const FormUser = ({ onRegisterSuccess, closeModal }) => {
     const [userData, setUserData] = useState({
         name: '',
         email: '',
         password: '',
-        registrationDate: new Date().toISOString().split('T')[0], // formato YYYY-MM-DD
+        registrationDate: new Date().toISOString().split('T')[0],
         monthlyIncome: 0
     });
 
@@ -19,8 +19,6 @@ const FormUser = () => {
             [name]: name === 'monthlyIncome' ? parseFloat(value) : value
         });
     };
-
-    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -40,69 +38,70 @@ const FormUser = () => {
                 setMessage(newUser
                     ? `Usuario registrado correctamente. ID: ${newUser.id}`
                     : 'Usuario registrado correctamente.');
+
+                // Llamamos a ambas funciones con un pequeño retraso para mejor UX
+                setTimeout(() => {
+                    if (closeModal) closeModal();
+                    if (onRegisterSuccess) onRegisterSuccess();
+                }, 1500); // 1.5 segundos para que el usuario vea el mensaje de éxito
             } else {
                 const errorText = await response.text();
                 console.error('Respuesta de error del backend:', errorText);
                 setMessage(`Error: ${errorText || 'Error desconocido'}`);
             }
-            navigate("/");
         } catch (error) {
             setMessage(`Error: ${error.message}`);
         }
     };
 
     return (
-        <div>
+        <form onSubmit={handleSubmit} className="form-user-container">
             <h2>Registro de Usuario</h2>
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label htmlFor="name">Nombre:</label>
-                    <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        value={userData.name}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div>
-                    <label htmlFor="email">Correo electrónico:</label>
-                    <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        value={userData.email}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div>
-                    <label htmlFor="password">Contraseña:</label>
-                    <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        value={userData.password}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div>
-                    <label htmlFor="monthlyIncome">Ingreso mensual:</label>
-                    <input
-                        type="number"
-                        id="monthlyIncome"
-                        name="monthlyIncome"
-                        value={userData.monthlyIncome}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <button type="submit">Registrar</button>
-            </form>
-            {message && <p>{message}</p>}
-        </div>
+            <div className="form-group">
+                <input
+                    type="text"
+                    placeholder="Nombre"
+                    id="name"
+                    name="name"
+                    value={userData.name}
+                    onChange={handleChange}
+                    required
+                />
+            </div>
+            <div className="form-group">
+                <input
+                    type="email"
+                    placeholder="Correo Electrónico"
+                    name="email"
+                    value={userData.email}
+                    onChange={handleChange}
+                    required
+                />
+            </div>
+            <div className="form-group">
+                <input
+                    type="password"
+                    placeholder="Contraseña"
+                    id="password"
+                    name="password"
+                    value={userData.password}
+                    onChange={handleChange}
+                    required
+                />
+            </div>
+            <div className="form-group">
+                <input
+                    type="number"
+                    id="monthlyIncome"
+                    name="monthlyIncome"
+                    value={userData.monthlyIncome}
+                    onChange={handleChange}
+                    required
+                />
+            </div>
+            <button type="submit" className="auth-button">Registrar</button>
+            {message && <p className="form-message">{message}</p>}
+        </form>
     );
 };
 

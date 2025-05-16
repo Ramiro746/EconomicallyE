@@ -11,10 +11,11 @@ function App() {
     return (
         <Router>
             <Routes>
+
                 <Route path="/" element={<Homepage />} />
-                <Route path="/login" element={<LoginForm />} />
+                {/*<Route path="/login" element={<LoginForm />} />
                 <Route path="/register" element={<Register />} />
-                <Route path="/formuser" element={<FormUser />} />
+                <Route path="/formuser" element={<FormUser />} />*/}
                 <Route path="/advice-form" element={<FinancialDashboard />} /> {/* Ruta para AdviceForm */}
 
                 {/* Agrega más rutas aquí si tienes más vistas */}
@@ -22,5 +23,7 @@ function App() {
         </Router>
     );
 }
+
+String.prototype.capitalize = function () {}
 
 export default App;

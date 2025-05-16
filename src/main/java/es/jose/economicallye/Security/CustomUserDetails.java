@@ -10,11 +10,13 @@ public class CustomUserDetails implements UserDetails {
     private final Long id;
     private final String email;
     private final String password;
+    private final String name;
 
-    public CustomUserDetails(Long id, String email, String password) {
+    public CustomUserDetails(Long id, String email, String password, String name) {
         this.id = id;
         this.email = email;
         this.password = password;
+        this.name = name;
     }
 
     public Long getId() {
@@ -24,6 +26,11 @@ public class CustomUserDetails implements UserDetails {
     @Override
     public String getUsername() {
         return email;
+    }
+
+
+    public String getName() {
+        return name;
     }
 
     @Override

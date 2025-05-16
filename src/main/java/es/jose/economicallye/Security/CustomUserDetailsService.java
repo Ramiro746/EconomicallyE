@@ -38,7 +38,8 @@ public class CustomUserDetailsService implements UserDetailsService {
         return new CustomUserDetails(
                 user.getId(),
                 user.getEmail(),
-                user.getPassword()
+                user.getPassword(),
+                user.getName()
         );
     }
 
@@ -51,7 +52,21 @@ public class CustomUserDetailsService implements UserDetailsService {
         return new CustomUserDetails(
                 user.getId(),
                 user.getEmail(),
-                user.getPassword()
+                user.getPassword(),
+                user.getName()
+        );
+    }
+
+    public UserDetails loadUserByName(String name) {
+        System.out.println("Buscando usuario con ID: " + name);
+        User user = userRepository.findByName(name)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con name: " + name));
+
+        return new CustomUserDetails(
+                user.getId(),
+                user.getEmail(),
+                user.getPassword(),
+                user.getName()
         );
     }
 }

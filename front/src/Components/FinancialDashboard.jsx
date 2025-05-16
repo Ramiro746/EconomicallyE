@@ -157,20 +157,32 @@ export default function FinancialDashboard() {
     };
 
     function parseAdvice(text) {
-        const parts = text.split(/(##.*?##)/); // Separa el texto por secciones que están entre ##
+        if (!text) return <span>No se recibió ningún consejo</span>;
 
-        return parts.map((part, index) => {
-            if (part.startsWith("##") && part.endsWith("##")) {
-                const h2Text = part.slice(2, -2); // Quita los ##
-                return <h2 key={index}>{h2Text}</h2>;
-            } else if (part.startsWith("###") && part.endsWith("###")) {
-                const h3text = part.slice(3,-3);
-                return <h3 key={index}>{h3text}</h3>;
-            }else {
-                return <span key={index}>{part}</span>;
+        try {
+            if (typeof text !== 'string') {
+                text = JSON.stringify(text);
             }
-        });
+
+            const parts = text.split(/(##.*?##)/);
+            return parts.map((part, index) => {
+                if (part.startsWith("##") && part.endsWith("##")) {
+                    const h2Text = part.slice(2, -2);
+                    return <h2 key={index}>{h2Text}</h2>;
+                } else if (part.startsWith("###") && part.endsWith("###")) {
+                    const h3text = part.slice(3, -3);
+                    return <h3 key={index}>{h3text}</h3>;
+                } else {
+                    return <span key={index}>{part}</span>;
+                }
+            });
+        } catch (err) {
+            console.error("Error al parsear el consejo:", err);
+            return <span>{text}</span>;
+        }
     }
+
+
 
 
 
@@ -418,7 +430,11 @@ export default function FinancialDashboard() {
                 <div className="advice-panel">
                     <h2 className="advice-title">Consejos:</h2>
                     <p className="advice-date">{new Date().toLocaleDateString()}</p>
-                    <p className="advice-content" id="consejo">{parseAdvice(advice)}</p>
+                    <div className="advice-content" id="consejo">
+                        {typeof advice === 'string' || typeof advice === 'object'
+                            ? parseAdvice(advice)
+                            : 'Formato de consejo no reconocido'}
+                    </div>
                 </div>
             )}
         </div>

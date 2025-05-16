@@ -1,14 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './styles.css'
-import {Link, useNavigate} from 'react-router-dom';
-import Login from "../Components/Login/LoginForm.jsx";
+import { useNavigate } from 'react-router-dom';
 import GastosChart from "../Components/GastosChart/GastosChart.jsx";
 import AhorroChart from "../Components/AhorroChart/AhorroChart.jsx";
 import InversionesChart from "../Components/InversionesChart/InversionesChart.jsx";
+import FormUser from "../Components/FormUser/FormUser.jsx";
+import LoginForm from "../Components/Login/LoginForm.jsx";
+import SpiralAnimation from "../Components/Logo/Logo";
 
 const Homepage = () => {
-    const navigate = useNavigate();
+    const [modalOpen, setModalOpen] = useState(null); // 'login' o 'register'
+    const [isClosing, setIsClosing] = useState(false);
+    const [user, setUser] = useState(null);
     const [graficoActivo, setGraficoActivo] = useState('gastos');
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const userData = localStorage.getItem('user');
+        if (userData) {
+            setUser(JSON.parse(userData));
+        }
+    }, []);
+
+    // Función para abrir específicamente el modal de login
+    const openLoginModal = () => {
+        setModalOpen('login');
+    };
+
+    // Función para abrir específicamente el modal de registro
+    const openRegisterModal = () => {
+        setModalOpen('register');
+    };
 
     const renderGrafico = () => {
         switch (graficoActivo) {
@@ -23,11 +45,34 @@ const Homepage = () => {
         }
     };
 
+    const signOut = () => {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        setUser(null);
+        navigate('/');
+    };
+
+    const closeModal = () => {
+        setIsClosing(true);
+        setTimeout(() => {
+            setModalOpen(null);
+            setIsClosing(false);
+        }, 500);
+    };
+
+    const handleStartNow = () => {
+        if (user) {
+            navigate('/advice-form');
+        } else {
+            openLoginModal(); // Usamos la función específica para login
+        }
+    };
+
     return (
         <div className="container">
-            <section className="header">
+            <header>
                 <div className="container-logo">
-                    <img src="/uzumaki.png" alt="EconomicallyE Logo" width={120} height={120}/>
+                    <SpiralAnimation />
                     <h3>EconomicallyE</h3>
                 </div>
                 <div className="items">
@@ -35,22 +80,32 @@ const Homepage = () => {
                     <h4>Ahorro</h4>
                     <h4>Resumen</h4>
                 </div>
-                <div className="header-buttons">
-                    <button onClick={() => navigate('/login')} className="login-btn">Login</button>
-                    <button onClick={() => navigate('/FormUser')} className="register-btn">Register</button>
-                </div>
-            </section>
+                {!user && (
+                    <div className="header-buttons">
+                        <button onClick={openLoginModal} className="login-btn">Login</button>
+                        <button onClick={openRegisterModal} className="register-btn">Register</button>
+                    </div>
+                )}
+                {user && (
+                    <div className="header-buttons">
+                        <button onClick={signOut}>Sign-Out</button>
+                    </div>
+                )}
+            </header>
 
             <section className="content">
                 <div>
-                    <h1>Bienvenido a EconomicallyE</h1>
+                    <h1>
+                        {user ? `¡Bienvenido de vuelta, ${user.name}` : 'Bienvenido a EconomicallyE'}
+                    </h1>
                     <h2>El impulso para tus sueños</h2>
-                    <p>Tu plataforma para mejorar tu salud financiera.</p>
+                    <p> {user ?
+                        'Continúa mejorando tu salud financiera con nosotros.' :
+                        'Tu plataforma para mejorar tu salud financiera.'
+                    }</p>
                 </div>
-
                 <div className="cta-section">
-
-                    <button onClick={() => navigate("/login")} className="cta-btn">
+                    <button onClick={handleStartNow} className="btn btn-primary">
                         Comienza Ahora
                     </button>
                 </div>
@@ -70,6 +125,25 @@ const Homepage = () => {
                 </div>
             </section>
 
+            {modalOpen && (
+                <div className="modal-overlay" onClick={closeModal}>
+                    <div className={`modal-content ${isClosing ? 'closing' : ''}`} onClick={e => e.stopPropagation()}>
+                        <button className="modal-close" onClick={closeModal} aria-label="Cerrar modal">
+                            &times;
+                        </button>
+                        {modalOpen === 'login' ?
+                            <LoginForm closeModal={closeModal} /> :
+                            <FormUser
+                                onRegisterSuccess={() => {
+                                    closeModal();
+                                    setTimeout(() => openLoginModal(), 100); // Pequeño delay para mejor UX
+                                }}
+                                closeModal={closeModal}
+                            />
+                        }
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
