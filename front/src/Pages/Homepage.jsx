@@ -7,6 +7,8 @@ import InversionesChart from "../Components/InversionesChart/InversionesChart.js
 import FormUser from "../Components/FormUser/FormUser.jsx";
 import LoginForm from "../Components/Login/LoginForm.jsx";
 import SpiralAnimation from "../Components/Logo/Logo";
+import CreditCardAnimation from "../Components/CreditCard/credit-card-animation.jsx";
+
 
 const Homepage = () => {
     const [modalOpen, setModalOpen] = useState(null); // 'login' o 'register'
@@ -72,11 +74,11 @@ const Homepage = () => {
         <div className="container">
             <header>
                 <div className="container-logo">
-                    <SpiralAnimation />
+                    <SpiralAnimation/>
                     <h3>EconomicallyE</h3>
                 </div>
                 <div className="items">
-                    <h4>Cuenta</h4>
+                    <button onClick={() => navigate(`/perfil/${user.id}`)}>Cuenta</button>
                     <h4>Ahorro</h4>
                     <h4>Resumen</h4>
                 </div>
@@ -108,8 +110,17 @@ const Homepage = () => {
                     <button onClick={handleStartNow} className="btn btn-primary">
                         Comienza Ahora
                     </button>
+
                 </div>
             </section>
+
+
+            <section className="cta-section">
+                <div className="w-full flex justify-center items-center mt-8">
+                    <CreditCardAnimation/>
+                </div>
+            </section>
+
 
             <section className="information">
                 <h1>Visualiza tu situacion financiera</h1>
@@ -117,7 +128,9 @@ const Homepage = () => {
                 <div className="buttons">
                     <button className="botones" onClick={() => setGraficoActivo('gastos')}>Analisis de gastos</button>
                     <button className="botones" onClick={() => setGraficoActivo('ahorro')}>Tendencias de ahorro</button>
-                    <button className="botones" onClick={() => setGraficoActivo('inversiones')}>Rendimiento de inversiones</button>
+                    <button className="botones" onClick={() => setGraficoActivo('inversiones')}>Rendimiento de
+                        inversiones
+                    </button>
                 </div>
 
                 <div className="grafico">
@@ -132,7 +145,7 @@ const Homepage = () => {
                             &times;
                         </button>
                         {modalOpen === 'login' ?
-                            <LoginForm closeModal={closeModal} /> :
+                            <LoginForm closeModal={closeModal}/> :
                             <FormUser
                                 onRegisterSuccess={() => {
                                     closeModal();

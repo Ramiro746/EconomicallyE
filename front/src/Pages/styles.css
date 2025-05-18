@@ -301,3 +301,10 @@ form {
     color: #0d85fd;
 }
 
+.perspective-container {
+    perspective: 1000px;
+}
+
+.card-3d {
+    transform-style: preserve-3d;
+}

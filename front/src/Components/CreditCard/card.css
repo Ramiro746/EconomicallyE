@@ -1,0 +1,132 @@
+.perspective-1000 {
+    perspective: 1000px;
+}
+
+.width-350px {
+    width: 350px;
+}
+
+.height-220px {
+    height: 220px;
+}
+
+.rounded-2xl {
+    border-radius: 1rem;
+}
+
+.bg-gradient-to-br {
+    background-image: linear-gradient(to bottom right, #1e293b, #475569);
+}
+
+.shadow-xl {
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+}
+
+.text-white {
+    color: white;
+}
+
+.pointer-events-auto {
+    pointer-events: auto;
+}
+
+.pointer-events-none {
+    pointer-events: none;
+}
+
+.padding-6 {
+    padding: 1.5rem;
+}
+
+.flex {
+    display: flex;
+    flex-direction: column;
+}
+
+.flex-column {
+    flex-direction: column;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.height-full {
+    height: 100%;
+}
+
+.text-sm {
+    font-size: 0.875rem;
+}
+
+.opacity-80 {
+    opacity: 0.8;
+}
+
+.text-xl {
+    font-size: 1.25rem;
+}
+
+.tracking-widest {
+    letter-spacing: 0.1em;
+}
+
+.font-mono {
+    font-family: monospace;
+}
+
+.text-xs {
+    font-size: 0.75rem;
+}
+
+.margin-top-2 {
+    margin-top: 0.5rem;
+}
+
+.flex-justify-between-items-center {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.drop-shadow-lg {
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
+}
+
+.relative {
+    position: relative;
+}
+
+.overflow-hidden {
+    overflow: hidden;
+}
+
+.height-300vh {
+    height: 300vh;
+}
+
+.sticky {
+    position: sticky;
+}
+
+.top-50 {
+    top: 50%;
+}
+
+.translate-y-minus-50 {
+    transform: translateY(-50%);
+}
+
+.flex-justify-center-items-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.width-full {
+    width: 100%;
+}
+
+.height-screen {
+    height: 100vh;
+}

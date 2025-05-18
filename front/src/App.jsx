@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Homepage from './Pages/Homepage.jsx';
+import Perfil from './Pages/UserProfile.jsx';
 import Login from './Components/Login/LoginForm';
 import Register from './Components/Register/Register';
 import FormUser from './Components/FormUser/FormUser';
@@ -13,6 +14,7 @@ function App() {
             <Routes>
 
                 <Route path="/" element={<Homepage />} />
+                <Route path="/perfil/:userId" element={<Perfil />} />
                 {/*<Route path="/login" element={<LoginForm />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/formuser" element={<FormUser />} />*/}

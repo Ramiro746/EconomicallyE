@@ -64,12 +64,12 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/api/users/**",
-                                "/api/overview/**",
+
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
-                        .requestMatchers("/api/users/register", "/api/variable-expenses", "/api/goals").authenticated()  // Protege este endpoint
+                        .requestMatchers("/api/users/register", "/api/variable-expenses", "/api/goals", "/api/overview/**").authenticated()  // Protege este endpoint
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
