@@ -173,8 +173,23 @@ form {
 }
 
 
+.items button{
+    margin-top: 0px;
+    background-color: white;
+    border: 1px solid #ccc;  /* Agregamos un borde para que se vean bien, si lo deseas */
+    color: black; /* Color de texto estándar */
+    padding: 10px 20px; /* Añadir algo de padding para darles tamaño */
+    border-radius: 4px; /* Bordes redondeados */
+    cursor: pointer; /* Indicamos que es un botón */
+    transition: none; /* Eliminamos cualquier transición o animación */
+}
 
-
+.header-buttons{
+    margin-top: 0px;
+    padding: 10px 20px; /* Añadir algo de padding para darles tamaño */
+    border-radius: 4px; /* Bordes redondeados */
+    cursor: pointer; /* Indicamos que es un botón */
+}
 .card {
     border: 1px solid #ddd;
     border-radius: 0.75rem;

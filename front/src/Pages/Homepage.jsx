@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import './styles.css'
 import { useNavigate } from 'react-router-dom';
 import GastosChart from "../Components/GastosChart/GastosChart.jsx";
-import AhorroChart from "../Components/AhorroChart/AhorroChart.jsx";
 import InversionesChart from "../Components/InversionesChart/InversionesChart.jsx";
 import FormUser from "../Components/FormUser/FormUser.jsx";
 import LoginForm from "../Components/Login/LoginForm.jsx";
 import SpiralAnimation from "../Components/Logo/Logo";
 import CreditCardAnimation from "../Components/CreditCard/credit-card-animation.jsx";
+import FinancialDashboard from "../Components/FinancialDashboard.jsx";
+
 
 
 const Homepage = () => {
@@ -34,19 +35,6 @@ const Homepage = () => {
         setModalOpen('register');
     };
 
-    const renderGrafico = () => {
-        switch (graficoActivo) {
-            case 'gastos':
-                return <GastosChart />;
-            case 'ahorro':
-                return <AhorroChart />;
-            case 'inversiones':
-                return <InversionesChart />;
-            default:
-                return null;
-        }
-    };
-
     const signOut = () => {
         localStorage.removeItem('user');
         localStorage.removeItem('token');
@@ -64,11 +52,15 @@ const Homepage = () => {
 
     const handleStartNow = () => {
         if (user) {
-            navigate('/advice-form');
+            const section = document.getElementById('form');
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth' }); // desplazamiento suave
+            }
         } else {
-            openLoginModal(); // Usamos la función específica para login
+            openLoginModal();
         }
     };
+
 
     return (
         <div className="container">
@@ -79,8 +71,8 @@ const Homepage = () => {
                 </div>
                 <div className="items">
                     <button onClick={() => navigate(`/perfil/${user.id}`)}>Cuenta</button>
-                    <h4>Ahorro</h4>
-                    <h4>Resumen</h4>
+                    <button>Ahorro</button>
+                    <button>Resumen</button>
                 </div>
                 {!user && (
                     <div className="header-buttons">
@@ -122,19 +114,10 @@ const Homepage = () => {
             </section>
 
 
-            <section className="information">
-                <h1>Visualiza tu situacion financiera</h1>
-                <h3>Nuestras herramientas te ayudan a tomar decisiones mejor informadas</h3>
-                <div className="buttons">
-                    <button className="botones" onClick={() => setGraficoActivo('gastos')}>Analisis de gastos</button>
-                    <button className="botones" onClick={() => setGraficoActivo('ahorro')}>Tendencias de ahorro</button>
-                    <button className="botones" onClick={() => setGraficoActivo('inversiones')}>Rendimiento de
-                        inversiones
-                    </button>
-                </div>
+            <section className="information" id="form">
 
-                <div className="grafico">
-                    {renderGrafico()}
+                <div>
+                    <FinancialDashboard/>
                 </div>
             </section>
 

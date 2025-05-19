@@ -16,6 +16,15 @@ export default function CreditCardAnimation() {
     const rotateYSpring = useSpring(0, { stiffness: 150, damping: 15 });
     const scaleSpring = useSpring(1, { stiffness: 150, damping: 15 });
     const translateXSpring = useSpring(0, { stiffness: 150, damping: 15 });
+    const translateYSpring = useSpring(0, { stiffness: 150, damping: 15 });
+
+
+    //const textTranslateYSpring = useSpring(0, { stiffness: 150, damping: 15 });
+
+    const textTranslateYSpring = useSpring(0, {
+        stiffness: 60,   // más bajo = más suave
+        damping: 20,
+    });
 
     useEffect(() => {
         const handleScroll = () => {
@@ -31,9 +40,19 @@ export default function CreditCardAnimation() {
             }
 
             const newScale = 1 - scrollPercent * 0.2;
-            const newTranslateX = scrollPercent * 300;
+            const newTranslateX = scrollPercent * 600;
             scaleSpring.set(newScale);
             translateXSpring.set(newTranslateX);
+
+            const newTranslateY = scrollPercent * 200;
+            translateYSpring.set(newTranslateY);
+
+
+
+            const newTextTranslateY = scrollPercent * 600; // ajusta el valor según el desplazamiento deseado
+            textTranslateYSpring.set(newTextTranslateY);
+
+
 
             const scrollBasedRotateX = scrollPercent * 5 - 2.5;
             const scrollBasedRotateY = scrollPercent * 20 - 10;
@@ -69,8 +88,8 @@ export default function CreditCardAnimation() {
 
     useEffect(() => {
         if (isHovering) {
-            rotateXSpring.set(-mouseY * 10);
-            rotateYSpring.set(mouseX * 15);
+            rotateXSpring.set(-mouseY * 9);
+            rotateYSpring.set(mouseX * 4);
         }
     }, [mouseX, mouseY, isHovering, rotateXSpring, rotateYSpring]);
 
@@ -109,13 +128,14 @@ export default function CreditCardAnimation() {
                         rotateY: rotateYSpring,
                         scale: scaleSpring,
                         x: translateXSpring,
+                        y: translateYSpring,
                         transformStyle: "preserve-3d",
                     }}
                     onMouseEnter={() => setIsHovering(true)}
                     onMouseLeave={() => setIsHovering(false)}
                 >
                     <div className="padding-6 flex flex-column justify-between height-full">
-                        <div className="text-sm opacity-80">ECONOMICAMENTE</div>
+                        <div className="text-sm opacity-80">ECONOMICALLY E</div>
                         <div className="text-xl tracking-widest font-mono">**** **** **** 1234</div>
                         <div className="flex-justify-between-items-center text-xs margin-top-2">
                             <span>TITULAR</span>
@@ -129,10 +149,11 @@ export default function CreditCardAnimation() {
                 className="absolute top-0 left-0 width-full height-full flex flex-column items-center justify-center text-center pointer-events-none">
                 <motion.div
                     key={activeTextIndex}
-                    initial={{opacity: 0, y: 50}}
-                    animate={{opacity: 1, y: 0}}
-                    transition={{duration: 0.5}}
+                    initial={{opacity: 0}}
+                    animate={{opacity: 1}}
+                    transition={{duration: 1.0}}
                     className="max-w-lg px-4 text-white drop-shadow-lg"
+                    style={{ y: textTranslateYSpring }} // controla la posición solo con spring
                 >
                     <h2 className="text-2xl font-bold mb-2">{texts[activeTextIndex].title}</h2>
                     <p className="text-md">{texts[activeTextIndex].text}</p>
