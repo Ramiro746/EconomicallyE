@@ -76,6 +76,14 @@ export default function AdviceForm() {
         };
 
         try {
+            await fetch(`http://localhost:8080/api/users/${userId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+                body: JSON.stringify({ monthlyIncome: parseFloat(monthlyIncome) })
+            });
             const res = await fetch("http://localhost:8080/api/advice", {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "Authorization": "Bearer " + localStorage.getItem("token") },

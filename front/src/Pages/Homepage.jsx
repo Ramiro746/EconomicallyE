@@ -71,7 +71,7 @@ const Homepage = () => {
                 </div>
                 <div className="items">
                     <button onClick={() => navigate(`/perfil/${user.id}`)}>Cuenta</button>
-                    <button>Ahorro</button>
+                    <button onClick={() => navigate(`/editarInfo/${user.id}`)}>Editar</button>
                     <button>Resumen</button>
                 </div>
                 {!user && (
@@ -86,6 +86,8 @@ const Homepage = () => {
                     </div>
                 )}
             </header>
+
+
 
             <section className="content">
                 <div>

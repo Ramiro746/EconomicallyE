@@ -190,6 +190,7 @@ export default function FinancialDashboard() {
     return (
         <div className="dashboard-container">
             <h1 className="dashboard-title">Panel Financiero</h1>
+            {!advice && (
             <form onSubmit={handleSubmitAdvice} className="dashboard-form space-y-6">
                 {/* Sección de información básica */}
                 <div className="input-grid">
@@ -416,6 +417,7 @@ export default function FinancialDashboard() {
                     Generar consejo financiero
                 </button>
             </form>
+            )}
 
             {error && <div className="error-message">{error}</div>}
 
@@ -433,7 +435,7 @@ export default function FinancialDashboard() {
                     <div className="advice-content" id="consejo">
                         {typeof advice === 'string' || typeof advice === 'object'
                             ? parseAdvice(advice)
-                            : 'Formato de consejo no reconocido'}
+                            : 'Formato de consejo no reconocido.'}
                     </div>
                 </div>
             )}
