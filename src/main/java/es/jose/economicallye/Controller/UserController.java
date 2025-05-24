@@ -50,6 +50,22 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
+/*
+    @PatchMapping("/{id}/income")
+    public ResponseEntity<UserDTO> updateUserIncome(
+            @PathVariable Long id,
+            @RequestBody Map<String, Double> update,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        if (!userDetails.getId().equals(id)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        Double newIncome = update.get("monthlyIncome");
+        return ResponseEntity.ok(userService.updateUserIncome(id, newIncome));
+    }
+
+ */
 
     @GetMapping("/me")
     public UserDTO getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {

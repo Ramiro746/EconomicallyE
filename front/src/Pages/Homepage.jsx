@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './styles.css'
 import { useNavigate } from 'react-router-dom';
+import FloatingShapes from "./Fondo/HeroGeometric.jsx"
 import GastosChart from "../Components/GastosChart/GastosChart.jsx";
 import InversionesChart from "../Components/InversionesChart/InversionesChart.jsx";
 import FormUser from "../Components/FormUser/FormUser.jsx";
@@ -8,8 +9,20 @@ import LoginForm from "../Components/Login/LoginForm.jsx";
 import SpiralAnimation from "../Components/Logo/Logo";
 import CreditCardAnimation from "../Components/CreditCard/credit-card-animation.jsx";
 import FinancialDashboard from "../Components/FinancialDashboard.jsx";
+import { motion } from "framer-motion"
 
-
+const fadeUpVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: (i) => ({
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 1,
+            delay: 0.3 + i * 0.2,
+            ease: [0.25, 0.4, 0.25, 1],
+        },
+    }),
+};
 
 const Homepage = () => {
     const [modalOpen, setModalOpen] = useState(null); // 'login' o 'register'
@@ -50,6 +63,9 @@ const Homepage = () => {
         }, 500);
     };
 
+
+
+
     const handleStartNow = () => {
         if (user) {
             const section = document.getElementById('form');
@@ -64,6 +80,7 @@ const Homepage = () => {
 
     return (
         <div className="container">
+            <FloatingShapes />
             <header>
                 <div className="container-logo">
                     <SpiralAnimation/>
@@ -72,7 +89,7 @@ const Homepage = () => {
                 <div className="items">
                     <button onClick={() => navigate(`/perfil/${user.id}`)}>Cuenta</button>
                     <button onClick={() => navigate(`/editarInfo/${user.id}`)}>Editar</button>
-                    <button>Resumen</button>
+                    <button>Progreso</button>
                 </div>
                 {!user && (
                     <div className="header-buttons">
@@ -88,22 +105,45 @@ const Homepage = () => {
             </header>
 
 
-
             <section className="content">
                 <div>
-                    <h1>
+                    <motion.h1
+                        custom={0}
+                        initial="hidden"
+                        animate="visible"
+                        variants={fadeUpVariants}
+                    >
                         {user ? `¡Bienvenido de vuelta, ${user.name}` : 'Bienvenido a EconomicallyE'}
-                    </h1>
-                    <h2>El impulso para tus sueños</h2>
-                    <p> {user ?
-                        'Continúa mejorando tu salud financiera con nosotros.' :
-                        'Tu plataforma para mejorar tu salud financiera.'
-                    }</p>
+                    </motion.h1>
+
+                    <motion.h2
+                        custom={1}
+                        initial="hidden"
+                        animate="visible"
+                        variants={fadeUpVariants}
+                    >
+                        El impulso para tus sueños
+                    </motion.h2>
+
+                    <motion.p
+                        custom={2}
+                        initial="hidden"
+                        animate="visible"
+                        variants={fadeUpVariants}
+                    >
+                        {user
+                            ? 'Continúa mejorando tu salud financiera con nosotros.'
+                            : 'Tu plataforma para mejorar tu salud financiera.'}
+                    </motion.p>
                 </div>
                 <div className="cta-section">
-                    <button onClick={handleStartNow} className="btn btn-primary">
+                    <motion.button onClick={handleStartNow} className="btn btn-primary"
+                                   custom={1}
+                                   initial="hidden"
+                                   animate="visible"
+                                   variants={fadeUpVariants}>
                         Comienza Ahora
-                    </button>
+                    </motion.button>
 
                 </div>
             </section>

@@ -34,6 +34,7 @@ export default function LoginForm({ closeModal }) {
 
             // Redirigir a la página principal o al formulario de consejos
             navigate("/");
+            window.location.reload();
         } catch (err) {
             setError(err.message);
         }
