@@ -89,7 +89,7 @@ const Homepage = () => {
                 <div className="items">
                     <button onClick={() => navigate(`/perfil/${user.id}`)}>Cuenta</button>
                     <button onClick={() => navigate(`/editarInfo/${user.id}`)}>Editar</button>
-                    <button>Progreso</button>
+                    <button onClick={() => navigate(`/dashboard/${user.id}`)}>Progreso</button>
                 </div>
                 {!user && (
                     <div className="header-buttons">

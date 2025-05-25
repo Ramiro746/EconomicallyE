@@ -113,6 +113,18 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
+    public UserDTO updateUserIncome(Long id, Double newIncome) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        user.setMonthlyIncome(newIncome);
+
+        User updatedUser = userRepository.save(user);
+
+        return userMapper.toDto(updatedUser);  // Usa tu mapper
+    }
+
+    @Override
     public UserDTO getCurrentUserId() {
         return null;
     }

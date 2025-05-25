@@ -172,8 +172,8 @@ function Edit() {
         }
 
         try {
-            const res = await fetch(`http://localhost:8080/api/users/${currentUserId}`, {
-                method: "PUT",
+            const res = await fetch(`http://localhost:8080/api/users/${currentUserId}/income`, {
+                method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
@@ -181,10 +181,15 @@ function Edit() {
                 body: JSON.stringify({
                     monthlyIncome: userData.monthlyIncome,
                 }),
+
+
+                //console.log(userData.monthlyIncome)
             })
 
             if (!res.ok) {
                 throw new Error("Error al actualizar los datos del usuario")
+            }else {
+                alert("Ingreso actualizado   correctamente")
             }
 
             const updatedUser = await res.json()

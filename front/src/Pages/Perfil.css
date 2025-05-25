@@ -178,6 +178,7 @@
 /* Resumen económico */
 .economic-summary {
     margin-bottom: var(--spacing-2xl);
+    margin-top: 7%;
 }
 
 .summary-grid {

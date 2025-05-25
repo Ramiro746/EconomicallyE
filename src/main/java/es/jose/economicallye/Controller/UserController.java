@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -50,7 +51,8 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
-/*
+
+    //Metodo pa cambiar solo la mnda del Salario
     @PatchMapping("/{id}/income")
     public ResponseEntity<UserDTO> updateUserIncome(
             @PathVariable Long id,
@@ -65,7 +67,7 @@ public class UserController {
         return ResponseEntity.ok(userService.updateUserIncome(id, newIncome));
     }
 
- */
+
 
     @GetMapping("/me")
     public UserDTO getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {

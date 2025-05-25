@@ -263,7 +263,7 @@ function Perfil() {
             <header className="profile-header">
                 <div className="header-content">
                     <h1 className="welcome-title">
-                        👋 Hola, {overview.name}
+                         Hola, {overview.name}
                     </h1>
                     <div className="header-actions">
                         <button
@@ -407,9 +407,11 @@ function Perfil() {
                     <div className="card-content">
                         {goals.length > 0 ? (
                             <div className="goals-content">
+                                {/*
                                 <div className="chart-container">
                                     <Bar data={metasChartData} options={chartOptions} />
                                 </div>
+                                */}
                                 <div className="goals-detail">
                                     <h4>Detalle de Metas</h4>
                                     <div className="goals-list">
@@ -475,13 +477,13 @@ function Perfil() {
                         </button>
                         <button
                             className="action-btn secondary"
-                            onClick={() => navigate('/metas')}
+                            onClick={() => navigate('/editarInfo/:userId')}
                         >
                             🎯 Gestionar Metas
                         </button>
                         <button
                             className="action-btn secondary"
-                            onClick={() => navigate('/gastos')}
+                            onClick={() => navigate('/editarInfo/:userId')}
                         >
                             💳 Gestionar Gastos
                         </button>

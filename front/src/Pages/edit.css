@@ -96,8 +96,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: var(--spacing-md);
+    width: 100%;
 }
 
 .page-title {
@@ -105,6 +106,8 @@
     font-weight: 700;
     color: var(--primary-color);
     margin: 0;
+    width: 50%;
+
 }
 
 /* Botones */
@@ -187,6 +190,7 @@
     box-shadow: var(--shadow);
     overflow: hidden;
     margin-bottom: var(--spacing-xl);
+    margin-top: 90px;
 }
 
 .card-header {
