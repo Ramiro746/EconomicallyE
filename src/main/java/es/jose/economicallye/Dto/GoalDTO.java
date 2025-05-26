@@ -15,6 +15,7 @@ import java.util.Set;
 public class GoalDTO {
     private Long id;
     private Long userId;
+    private String name;
     private String description;
     private Double targetAmount;
     private Double savedAmount;

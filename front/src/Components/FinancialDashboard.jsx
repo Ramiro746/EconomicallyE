@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./FinancialDashboard.css";
 
-export default function FinancialDashboard() {
+export default function FinancialDashboard({ onFormCompleted }) {
     const [monthlyIncome, setMonthlyIncome] = useState("");
     const [plannedSavings, setPlannedSavings] = useState("");
     const [additionalContext, setAdditionalContext] = useState("");
@@ -15,6 +15,8 @@ export default function FinancialDashboard() {
     const [userId, setUserId] = useState(null);
 
     const [loading, setLoading] = useState(false);
+
+
 
 
     useEffect(() => {
@@ -147,6 +149,12 @@ export default function FinancialDashboard() {
             setAdvice(data.iaResult || data.advice || data.message || data);
 
             setError(null); // Limpiar errores previos si todo sale bien
+
+            // Llamar la función callback para marcar que el formulario fue completado exitosamente
+            if (onFormCompleted && typeof onFormCompleted === 'function') {
+                onFormCompleted();
+            }
+
         } catch (err) {
             console.error(err);
             setError("Hubo un error al enviar los datos o generar el consejo.");
@@ -191,232 +199,232 @@ export default function FinancialDashboard() {
         <div className="dashboard-container">
             <h1 className="dashboard-title">Panel Financiero</h1>
             {!advice && (
-            <form onSubmit={handleSubmitAdvice} className="dashboard-form space-y-6">
-                {/* Sección de información básica */}
-                <div className="input-grid">
-                    <div className="input-group">
-                        <label className="input-label">Ingresos mensuales:</label>
-                        <input
-                            type="number"
-                            value={monthlyIncome}
-                            onChange={(e) => setMonthlyIncome(e.target.value)}
-                            required
-                            className="input-field"
-                            placeholder="Ej: 2500"
-                        />
+                <form onSubmit={handleSubmitAdvice} className="dashboard-form space-y-6">
+                    {/* Sección de información básica */}
+                    <div className="input-grid">
+                        <div className="input-group">
+                            <label className="input-label">Ingresos mensuales:</label>
+                            <input
+                                type="number"
+                                value={monthlyIncome}
+                                onChange={(e) => setMonthlyIncome(e.target.value)}
+                                required
+                                className="input-field"
+                                placeholder="Ej: 2500"
+                            />
+                        </div>
+
+                        <div className="input-group">
+                            <label className="input-label">Ahorro previsto:</label>
+                            <input
+                                type="number"
+                                value={plannedSavings}
+                                onChange={(e) => setPlannedSavings(e.target.value)}
+                                required
+                                className="input-field"
+                                placeholder="Ej: 500"
+                            />
+                        </div>
                     </div>
 
                     <div className="input-group">
-                        <label className="input-label">Ahorro previsto:</label>
-                        <input
-                            type="number"
-                            value={plannedSavings}
-                            onChange={(e) => setPlannedSavings(e.target.value)}
-                            required
-                            className="input-field"
-                            placeholder="Ej: 500"
+                        <label className="input-label">Contexto adicional:</label>
+                        <textarea
+                            value={additionalContext}
+                            onChange={(e) => setAdditionalContext(e.target.value)}
+                            className="input-field textarea-field"
+                            placeholder="Describe tus metas financieras..."
                         />
                     </div>
-                </div>
 
-                <div className="input-group">
-                    <label className="input-label">Contexto adicional:</label>
-                    <textarea
-                        value={additionalContext}
-                        onChange={(e) => setAdditionalContext(e.target.value)}
-                        className="input-field textarea-field"
-                        placeholder="Describe tus metas financieras..."
-                    />
-                </div>
+                    {/* Sección de gastos fijos */}
+                    <div className="form-section">
+                        <h2 className="section-title">Gastos Fijos</h2>
+                        {fixedExpenses.map((exp, i) => (
+                            <div key={i} className="expense-item">
+                                <div className="input-group">
+                                    <input
+                                        placeholder="Nombre"
+                                        value={exp.name}
+                                        onChange={(e) => handleChange(setFixedExpenses, i, "name", e.target.value)}
+                                        className="input-field"
+                                        required
+                                    />
+                                </div>
+                                <div className="input-group">
+                                    <input
+                                        type="number"
+                                        placeholder="Cantidad"
+                                        value={exp.amount}
+                                        onChange={(e) => handleChange(setFixedExpenses, i, "amount", e.target.value)}
+                                        className="input-field"
+                                        required
+                                    />
+                                </div>
+                                <div className="input-group">
+                                    <select
+                                        value={exp.frequency}
+                                        onChange={(e) => handleChange(setFixedExpenses, i, "frequency", e.target.value)}
+                                        className="input-field"
+                                        required
+                                    >
+                                        <option value="">Seleccione frecuencia</option>
+                                        <option value="Mensual">Mensual</option>
+                                        <option value="Trimestral">Trimestral</option>
+                                        <option value="Anual">Anual</option>
+                                    </select>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemove(setFixedExpenses, i)}
+                                    className="btn-add">
+                                    Eliminar gasto fijo
+                                </button>
+                            </div>
 
-                {/* Sección de gastos fijos */}
-                <div className="form-section">
-                    <h2 className="section-title">Gastos Fijos</h2>
-                    {fixedExpenses.map((exp, i) => (
-                        <div key={i} className="expense-item">
-                            <div className="input-group">
-                                <input
-                                    placeholder="Nombre"
-                                    value={exp.name}
-                                    onChange={(e) => handleChange(setFixedExpenses, i, "name", e.target.value)}
-                                    className="input-field"
-                                    required
-                                />
-                            </div>
-                            <div className="input-group">
-                                <input
-                                    type="number"
-                                    placeholder="Cantidad"
-                                    value={exp.amount}
-                                    onChange={(e) => handleChange(setFixedExpenses, i, "amount", e.target.value)}
-                                    className="input-field"
-                                    required
-                                />
-                            </div>
-                            <div className="input-group">
-                                <select
-                                    value={exp.frequency}
-                                    onChange={(e) => handleChange(setFixedExpenses, i, "frequency", e.target.value)}
-                                    className="input-field"
-                                    required
-                                >
-                                    <option value="">Seleccione frecuencia</option>
-                                    <option value="Mensual">Mensual</option>
-                                    <option value="Trimestral">Trimestral</option>
-                                    <option value="Anual">Anual</option>
-                                </select>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => handleRemove(setFixedExpenses, i)}
-                                className="btn-add">
-                                Eliminar gasto fijo
-                            </button>
-                        </div>
+                        ))}
+                        <button
+                            type="button"
+                            onClick={() => handleAdd(setFixedExpenses, {name: "", amount: "", frequency: ""})}
+                            className="btn-add"
+                        >
+                            <svg className="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                            Añadir gasto fijo
+                        </button>
 
-                    ))}
-                    <button
-                        type="button"
-                        onClick={() => handleAdd(setFixedExpenses, {name: "", amount: "", frequency: ""})}
-                        className="btn-add"
-                    >
-                        <svg className="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                        </svg>
-                        Añadir gasto fijo
+                    </div>
+
+                    {/* Sección de gastos variables */}
+                    <div className="form-section">
+                        <h2 className="section-title">Gastos Variables</h2>
+                        {variableExpenses.map((exp, i) => (
+                            <div key={i} className="expense-item">
+                                <div className="input-group">
+                                    <input
+                                        placeholder="Nombre"
+                                        value={exp.name}
+                                        onChange={(e) => handleChange(setVariableExpenses, i, "name", e.target.value)}
+                                        className="input-field"
+                                        required
+                                    />
+                                </div>
+                                <div className="input-group">
+                                    <input
+                                        type="number"
+                                        placeholder="Cantidad"
+                                        value={exp.amount}
+                                        onChange={(e) => handleChange(setVariableExpenses, i, "amount", e.target.value)}
+                                        className="input-field"
+                                        required
+                                    />
+                                </div>
+                                <div className="input-group">
+                                    <input
+                                        type="date"
+                                        value={exp.expenseDate}
+                                        onChange={(e) => handleChange(setVariableExpenses, i, "expenseDate", e.target.value)}
+                                        className="input-field"
+                                        required
+                                    />
+
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemove(setVariableExpenses, i)}
+                                    className="btn-add">
+                                    Eliminar gasto fijo
+                                </button>
+                            </div>
+
+                        ))}
+                        <button
+                            type="button"
+                            onClick={() => handleAdd(setVariableExpenses, {name: "", amount: "", expenseDate: ""})}
+                            className="btn-add"
+                        >
+                            <svg className="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            Añadir gasto variable
+                        </button>
+                    </div>
+
+                    {/* Sección de objetivos */}
+                    <div className="form-section">
+                        <h2 className="section-title">Objetivos</h2>
+                        {goals.map((goal, i) => (
+                            <div key={i} className="expense-item goal-item">
+                                <div className="input-group">
+                                    <input
+                                        placeholder="Descripción"
+                                        value={goal.description}
+                                        onChange={(e) => handleChange(setGoals, i, "description", e.target.value)}
+                                        className="input-field"
+                                        required
+                                    />
+                                </div>
+                                <div className="input-group">
+                                    <input
+                                        type="number"
+                                        placeholder="Cantidad objetivo"
+                                        value={goal.targetAmount}
+                                        onChange={(e) => handleChange(setGoals, i, "targetAmount", e.target.value)}
+                                        className="input-field"
+                                        required
+                                    />
+                                </div>
+                                <div className="input-group">
+                                    <input
+                                        type="date"
+                                        placeholder="Fecha límite"
+                                        value={goal.deadline}
+                                        onChange={(e) => handleChange(setGoals, i, "deadline", e.target.value)}
+                                        className="input-field"
+                                        required
+                                    />
+                                </div>
+                                <div className="input-group">
+                                    <input
+                                        type="number"
+                                        placeholder="Saldo"
+                                        value={goal.savedAmount}
+                                        onChange={(e) => handleChange(setGoals, i, "savedAmount", e.target.value)}
+                                        className="input-field"
+                                    />
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemove(setGoals, i)}
+                                    className="btn-add">
+                                    Eliminar gasto fijo
+                                </button>
+                            </div>
+                        ))}
+                        <button
+                            type="button"
+                            onClick={() => handleAdd(setGoals, {
+                                description: "",
+                                targetAmount: "",
+                                deadline: "",
+                                savedAmount: ""
+                            })}
+                            className="btn-add"
+                        >
+                            <svg className="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                            Añadir objetivo
+                        </button>
+                    </div>
+
+                    <button type="submit" className="btn btn-primary">
+                        Generar consejo financiero
                     </button>
-
-                </div>
-
-                {/* Sección de gastos variables */}
-                <div className="form-section">
-                    <h2 className="section-title">Gastos Variables</h2>
-                    {variableExpenses.map((exp, i) => (
-                        <div key={i} className="expense-item">
-                            <div className="input-group">
-                                <input
-                                    placeholder="Nombre"
-                                    value={exp.name}
-                                    onChange={(e) => handleChange(setVariableExpenses, i, "name", e.target.value)}
-                                    className="input-field"
-                                    required
-                                />
-                            </div>
-                            <div className="input-group">
-                                <input
-                                    type="number"
-                                    placeholder="Cantidad"
-                                    value={exp.amount}
-                                    onChange={(e) => handleChange(setVariableExpenses, i, "amount", e.target.value)}
-                                    className="input-field"
-                                    required
-                                />
-                            </div>
-                            <div className="input-group">
-                                <input
-                                    type="date"
-                                    value={exp.expenseDate}
-                                    onChange={(e) => handleChange(setVariableExpenses, i, "expenseDate", e.target.value)}
-                                    className="input-field"
-                                    required
-                                />
-
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => handleRemove(setVariableExpenses, i)}
-                                className="btn-add">
-                                Eliminar gasto fijo
-                            </button>
-                        </div>
-
-                    ))}
-                    <button
-                        type="button"
-                        onClick={() => handleAdd(setVariableExpenses, {name: "", amount: "", expenseDate: ""})}
-                        className="btn-add"
-                    >
-                        <svg className="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                        Añadir gasto variable
-                    </button>
-                </div>
-
-                {/* Sección de objetivos */}
-                <div className="form-section">
-                    <h2 className="section-title">Objetivos</h2>
-                    {goals.map((goal, i) => (
-                        <div key={i} className="expense-item goal-item">
-                            <div className="input-group">
-                                <input
-                                    placeholder="Descripción"
-                                    value={goal.description}
-                                    onChange={(e) => handleChange(setGoals, i, "description", e.target.value)}
-                                    className="input-field"
-                                    required
-                                />
-                            </div>
-                            <div className="input-group">
-                                <input
-                                    type="number"
-                                    placeholder="Cantidad objetivo"
-                                    value={goal.targetAmount}
-                                    onChange={(e) => handleChange(setGoals, i, "targetAmount", e.target.value)}
-                                    className="input-field"
-                                    required
-                                />
-                            </div>
-                            <div className="input-group">
-                                <input
-                                    type="date"
-                                    placeholder="Fecha límite"
-                                    value={goal.deadline}
-                                    onChange={(e) => handleChange(setGoals, i, "deadline", e.target.value)}
-                                    className="input-field"
-                                    required
-                                />
-                            </div>
-                            <div className="input-group">
-                                <input
-                                    type="number"
-                                    placeholder="Saldo"
-                                    value={goal.savedAmount}
-                                    onChange={(e) => handleChange(setGoals, i, "savedAmount", e.target.value)}
-                                    className="input-field"
-                                />
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => handleRemove(setGoals, i)}
-                                className="btn-add">
-                                Eliminar gasto fijo
-                            </button>
-                        </div>
-                    ))}
-                    <button
-                        type="button"
-                        onClick={() => handleAdd(setGoals, {
-                            description: "",
-                            targetAmount: "",
-                            deadline: "",
-                            savedAmount: ""
-                        })}
-                        className="btn-add"
-                    >
-                        <svg className="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                        </svg>
-                        Añadir objetivo
-                    </button>
-                </div>
-
-                <button type="submit" className="btn btn-primary">
-                    Generar consejo financiero
-                </button>
-            </form>
+                </form>
             )}
 
             {error && <div className="error-message">{error}</div>}

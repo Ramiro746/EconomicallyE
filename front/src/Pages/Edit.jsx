@@ -155,8 +155,9 @@ function Edit() {
                     id: tempId,
                     name: "",
                     targetAmount: 0,
-                    currentAmount: 0,
+                    savedAmount: 0,
                     description: "",
+                    deadline: "",
                     userId: currentUserId,
                 },
             ])
@@ -576,7 +577,18 @@ function Edit() {
                                         />
                                     </div>
                                     <div className="form-group">
-                                        <button className="btn btn-danger btn-small" onClick={() => handleDelete("goal", goal.id)}>
+                                        <label>Fecha límite *</label>
+                                        <input
+                                            type="date"
+                                            className="form-input"
+                                            value={goal.deadline || ""}
+                                            onChange={(e) => updateField("goal", goal.id, "deadline", e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <button className="btn btn-danger btn-small"
+                                                onClick={() => handleDelete("goal", goal.id)}>
                                             🗑️ Eliminar
                                         </button>
                                     </div>
