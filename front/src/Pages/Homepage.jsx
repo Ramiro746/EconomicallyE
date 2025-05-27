@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import './styles.css'
-import { useNavigate } from 'react-router-dom';
+"use client"
+
+import { useState, useEffect } from "react"
+import "./styles.css"
+import { useNavigate } from "react-router-dom"
 import FloatingShapes from "./Fondo/HeroGeometric.jsx"
-import GastosChart from "../Components/GastosChart/GastosChart.jsx";
-import InversionesChart from "../Components/InversionesChart/InversionesChart.jsx";
-import FormUser from "../Components/FormUser/FormUser.jsx";
-import LoginForm from "../Components/Login/LoginForm.jsx";
-import SpiralAnimation from "../Components/Logo/Logo";
-import CreditCardAnimation from "../Components/CreditCard/credit-card-animation.jsx";
-import FinancialDashboard from "../Components/FinancialDashboard.jsx";
+import FormUser from "../Components/FormUser/FormUser.jsx"
+import LoginForm from "../Components/Login/LoginForm.jsx"
+import SpiralAnimation from "../Components/Logo/Logo"
+import CreditCardAnimation from "../Components/CreditCard/credit-card-animation.jsx"
+import FinancialDashboard from "../Components/FinancialDashboard.jsx"
 import { motion } from "framer-motion"
 
 const fadeUpVariants = {
@@ -22,112 +22,152 @@ const fadeUpVariants = {
             ease: [0.25, 0.4, 0.25, 1],
         },
     }),
-};
+}
 
 const Homepage = () => {
-    const [modalOpen, setModalOpen] = useState(null); // 'login' o 'register'
-    const [isClosing, setIsClosing] = useState(false);
-    const [user, setUser] = useState(null);
-    const [graficoActivo, setGraficoActivo] = useState('gastos');
-    const [hasCompletedFirstForm, setHasCompletedFirstForm] = useState(false);
-    const [loadingAdviceHistory, setLoadingAdviceHistory] = useState(false);
-    const navigate = useNavigate();
+    const [modalOpen, setModalOpen] = useState(null) // 'login' o 'register'
+    const [isClosing, setIsClosing] = useState(false)
+    const [user, setUser] = useState(null)
+    const [graficoActivo, setGraficoActivo] = useState("gastos")
+    const [hasCompletedFirstForm, setHasCompletedFirstForm] = useState(false)
+    const [loadingAdviceHistory, setLoadingAdviceHistory] = useState(false)
+    const navigate = useNavigate()
 
     useEffect(() => {
-        const userData = localStorage.getItem('user');
-        if (userData) {
-            const userParsed = JSON.parse(userData);
-            setUser(userParsed);
-            // Verificar si el usuario tiene consejos en su historial
-            checkUserAdviceHistory(userParsed.id);
+        const token = localStorage.getItem("token")
+        if (token) {
+            fetchUserData(token)
         }
-    }, []);
+    }, [])
+
+    const fetchUserData = async (token) => {
+        try {
+            const res = await fetch("http://localhost:8080/api/users/me", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+            })
+
+            if (res.ok) {
+                const userData = await res.json()
+                console.log("Usuario recibido:", userData) // ← Mira qué campos trae
+
+                setUser(userData)
+                checkUserAdviceHistory(userData.id)
+            } else {
+                console.error("Token inválido o expirado")
+                signOut() // Limpia localStorage y redirige
+            }
+        } catch (error) {
+            console.error("Error al obtener datos del usuario:", error)
+            signOut()
+        }
+    }
 
     const checkUserAdviceHistory = async (userId) => {
-        setLoadingAdviceHistory(true);
+        setLoadingAdviceHistory(true)
         try {
-            const token = localStorage.getItem('token'); // ✅ Obtener token del localStorage
+            const token = localStorage.getItem("token")
 
             if (!token) {
-                console.error('No se encontró token de autenticación');
-                setHasCompletedFirstForm(false);
-                return;
+                console.error("No se encontró token de autenticación")
+                setHasCompletedFirstForm(false)
+                return
             }
 
-            // ✅ Verificar historial de consejos directamente
             const response = await fetch(`http://localhost:8080/api/advice/${userId}`, {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`,
+                    Authorization: `Bearer ${token}`,
                 },
-            });
+            })
 
             if (response.ok) {
-                const adviceHistory = await response.json();
-                console.log('Historial de consejos:', adviceHistory);
-                // Si tiene al menos un consejo, significa que ya completó el formulario inicial
-                setHasCompletedFirstForm(adviceHistory.length > 0);
+                const adviceHistory = await response.json()
+                console.log("Historial de consejos:", adviceHistory)
+                setHasCompletedFirstForm(adviceHistory.length > 0)
             } else {
-                console.error('Error al obtener historial de consejos:', response.status);
-                setHasCompletedFirstForm(false);
+                console.error("Error al obtener historial de consejos:", response.status)
+                setHasCompletedFirstForm(false)
             }
         } catch (error) {
-            console.error('Error al verificar historial de consejos:', error);
-            // En caso de error, asumimos que no ha completado el formulario
-            setHasCompletedFirstForm(false);
+            console.error("Error al verificar historial de consejos:", error)
+            setHasCompletedFirstForm(false)
         } finally {
-            setLoadingAdviceHistory(false);
+            setLoadingAdviceHistory(false)
         }
-    };
+    }
 
-    // Función para marcar que el formulario fue completado (ahora también actualiza el estado)
     const markFirstFormAsCompleted = () => {
-        setHasCompletedFirstForm(true);
-    };
+        setHasCompletedFirstForm(true)
+    }
 
-    // Función para abrir específicamente el modal de login
-    const openLoginModal = () => {
-        setModalOpen('login');
-    };
+    const openLoginModal = (e) => {
+        if (e) {
+            e.preventDefault()
+            e.stopPropagation()
+        }
+        setIsClosing(false)
+        setModalOpen("login")
+    }
 
-    // Función para abrir específicamente el modal de registro
-    const openRegisterModal = () => {
-        setModalOpen('register');
-    };
+    const openRegisterModal = (e) => {
+        if (e) {
+            e.preventDefault()
+            e.stopPropagation()
+        }
+        setIsClosing(false)
+        setModalOpen("register")
+    }
 
     const signOut = () => {
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
-        setUser(null);
-        setHasCompletedFirstForm(false);
-        navigate('/');
-    };
+        localStorage.removeItem("user")
+        localStorage.removeItem("token")
+        setUser(null)
+        setHasCompletedFirstForm(false)
+        navigate("/")
+    }
 
-    const closeModal = () => {
-        setIsClosing(true);
+    const closeModal = (e) => {
+        if (e) {
+            e.preventDefault()
+            e.stopPropagation()
+        }
+        setIsClosing(true)
         setTimeout(() => {
-            setModalOpen(null);
-            setIsClosing(false);
-        }, 500);
-    };
+            setModalOpen(null)
+            setIsClosing(false)
+        }, 300)
+    }
+
+    // Función para cambiar entre modales sin cerrar completamente
+    const switchModal = (modalType, e) => {
+        if (e) {
+            e.preventDefault()
+            e.stopPropagation()
+        }
+        setIsClosing(false)
+        setModalOpen(modalType)
+    }
 
     const handleStartNow = () => {
         if (user) {
-            const section = document.getElementById('form');
+            const section = document.getElementById("form")
             if (section) {
-                section.scrollIntoView({ behavior: 'smooth' }); // desplazamiento suave
+                section.scrollIntoView({ behavior: "smooth" })
             }
         } else {
-            openLoginModal();
+            openLoginModal()
         }
-    };
-
+    }
     return (
         <div className="container">
             <FloatingShapes />
             <header>
                 <div className="container-logo">
-                    <SpiralAnimation/>
+                    <SpiralAnimation />
                     <h3>EconomicallyE</h3>
                 </div>
                 {user && (
@@ -139,8 +179,12 @@ const Homepage = () => {
                 )}
                 {!user && (
                     <div className="header-buttons">
-                        <button onClick={openLoginModal} className="login-btn">Login</button>
-                        <button onClick={openRegisterModal} className="register-btn">Register</button>
+                        <button onClick={openLoginModal} className="login-btn">
+                            Login
+                        </button>
+                        <button onClick={openRegisterModal} className="register-btn">
+                            Register
+                        </button>
                     </div>
                 )}
                 {user && (
@@ -152,41 +196,29 @@ const Homepage = () => {
 
             <section className="content">
                 <div>
-                    <motion.h1
-                        custom={0}
-                        initial="hidden"
-                        animate="visible"
-                        variants={fadeUpVariants}
-                    >
-                        {user ? `¡Bienvenido de vuelta, ${user.name}!` : 'Bienvenido a EconomicallyE'}
+                    <motion.h1 custom={0} initial="hidden" animate="visible" variants={fadeUpVariants}>
+                        {user ? `¡Bienvenido de vuelta, ${user.name}!` : "Bienvenido a EconomicallyE"}
                     </motion.h1>
 
-                    <motion.h2
+                    <motion.h2 custom={1} initial="hidden" animate="visible" variants={fadeUpVariants}>
+                        El impulso para tus sueños
+                    </motion.h2>
+
+                    <motion.p custom={2} initial="hidden" animate="visible" variants={fadeUpVariants}>
+                        {user
+                            ? "Continúa mejorando tu salud financiera con nosotros."
+                            : "Tu plataforma para mejorar tu salud financiera."}
+                    </motion.p>
+                </div>
+                <div className="cta-section">
+                    <motion.button
+                        onClick={handleStartNow}
+                        className="btn btn-primary"
                         custom={1}
                         initial="hidden"
                         animate="visible"
                         variants={fadeUpVariants}
                     >
-                        El impulso para tus sueños
-                    </motion.h2>
-
-                    <motion.p
-                        custom={2}
-                        initial="hidden"
-                        animate="visible"
-                        variants={fadeUpVariants}
-                    >
-                        {user
-                            ? 'Continúa mejorando tu salud financiera con nosotros.'
-                            : 'Tu plataforma para mejorar tu salud financiera.'}
-                    </motion.p>
-                </div>
-                <div className="cta-section">
-                    <motion.button onClick={handleStartNow} className="btn btn-primary"
-                                   custom={1}
-                                   initial="hidden"
-                                   animate="visible"
-                                   variants={fadeUpVariants}>
                         Comienza Ahora
                     </motion.button>
                 </div>
@@ -194,7 +226,7 @@ const Homepage = () => {
 
             <section className="cta-section">
                 <div className="w-full flex justify-center items-center mt-8">
-                    <CreditCardAnimation/>
+                    <CreditCardAnimation />
                 </div>
             </section>
 
@@ -222,10 +254,7 @@ const Homepage = () => {
                     <div className="text-center p-4">
                         <h3>¡Ya tienes consejos generados! 🎉</h3>
                         <p>Puedes ver tu historial de consejos en tu perfil.</p>
-                        <button
-                            onClick={() => navigate(`/historial-consejos/${user.id}`)}
-                            className="btn btn-primary mt-3"
-                        >
+                        <button onClick={() => navigate(`/consejos/${user.id}`)} className="btn btn-primary mt-3">
                             Ver Historial de Consejos
                         </button>
                     </div>
@@ -234,25 +263,32 @@ const Homepage = () => {
 
             {modalOpen && (
                 <div className="modal-overlay" onClick={closeModal}>
-                    <div className={`modal-content ${isClosing ? 'closing' : ''}`} onClick={e => e.stopPropagation()}>
+                    <div
+                        className={`modal-content ${isClosing ? "closing" : ""}`}
+                        onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                        }}
+                    >
                         <button className="modal-close" onClick={closeModal} aria-label="Cerrar modal">
                             &times;
                         </button>
-                        {modalOpen === 'login' ?
-                            <LoginForm closeModal={closeModal}/> :
+                        {modalOpen === "login" ? (
+                            <LoginForm closeModal={closeModal} openRegisterModal={(e) => switchModal("register", e)} />
+                        ) : (
                             <FormUser
                                 onRegisterSuccess={() => {
-                                    closeModal();
-                                    setTimeout(() => openLoginModal(), 100); // Pequeño delay para mejor UX
+                                    setTimeout(() => switchModal("login"), 1500)
                                 }}
                                 closeModal={closeModal}
+                                openLoginModal={(e) => switchModal("login", e)}
                             />
-                        }
+                        )}
                     </div>
                 </div>
             )}
         </div>
-    );
-};
+    )
+}
 
-export default Homepage;
+export default Homepage

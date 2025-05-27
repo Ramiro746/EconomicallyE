@@ -122,28 +122,69 @@ function Perfil() {
     const handleGenerateAdvice = async () => {
         try {
             const token = localStorage.getItem('token');
-            const resUser = await fetch("http://localhost:8080/api/users/me", {
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                }
-            });
-            const userData = await resUser.json();
-            const userId = userData.id;
 
-            const response = await fetch(`http://localhost:8080/api/advices/generate/${userId}`, {
+            // Verificar que tenemos los datos necesarios
+            if (!overview || !userId) {
+                alert("No hay datos suficientes para generar el consejo. Por favor, recarga la página.");
+                return;
+            }
+
+            // Preparar los datos usando la información real del overview
+            const requestData = {
+                userId: userId, // Usar el userId real, no hardcodeado
+                income: overview.monthlyIncome || 0,
+                goals: (overview.goals || []).map(goal => ({
+                    id: goal.id,
+                    name: goal.name || '',
+                    description: goal.description || '',
+                    targetAmount: goal.targetAmount || 0,
+                    currentAmount: goal.currentAmount || 0,
+                    targetDate: goal.targetDate || null
+                })),
+                fixedExpenses: (overview.fixedExpenses || []).map(expense => ({
+                    id: expense.id,
+                    name: expense.name || expense.description || '',
+                    amount: expense.amount || 0,
+                    category: expense.category || ''
+                })),
+                variableExpenses: (overview.variableExpenses || []).map(expense => ({
+                    id: expense.id,
+                    name: expense.name || expense.description || '',
+                    amount: expense.amount || 0,
+                    category: expense.category || '',
+                    date: expense.date || null
+                }))
+            };
+
+            console.log("Datos enviados para generar consejo:", requestData);
+
+            const response = await fetch(`http://localhost:8080/api/advice`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                credentials: "include",
+                body: JSON.stringify(requestData)
             });
 
-            if (!response.ok) throw new Error("Error generando el consejo");
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error("Error del servidor:", errorText);
+                throw new Error(`Error generando el consejo: ${response.status} - ${errorText}`);
+            }
+
+            const result = await response.json();
+            console.log("Consejo generado exitosamente:", result);
 
             alert("Nuevo consejo generado correctamente.");
+
+            // Opcional: recargar solo los datos en lugar de toda la página
             window.location.reload();
+
         } catch (error) {
             console.error("Error al generar el consejo:", error);
-            alert("No se pudo generar el nuevo consejo.");
+            alert(`No se pudo generar el nuevo consejo: ${error.message}`);
         }
     };
 
@@ -274,7 +315,8 @@ function Perfil() {
                         </button>
                         <button
                             className="btn btn-outline"
-                            onClick={() => navigate('/editarInfo/:userId')}
+                            onClick={() => navigate(`/editarInfo/${userId}`)
+                            }
                         >
                             Editar Información
                         </button>
@@ -477,13 +519,15 @@ function Perfil() {
                         </button>
                         <button
                             className="action-btn secondary"
-                            onClick={() => navigate('/editarInfo/:userId')}
+                            onClick={() => navigate(`/editarInfo/${userId}`)
+                            }
                         >
                             🎯 Gestionar Metas
                         </button>
                         <button
                             className="action-btn secondary"
-                            onClick={() => navigate('/editarInfo/:userId')}
+                            onClick={() => navigate(`/editarInfo/${userId}`)
+                            }
                         >
                             💳 Gestionar Gastos
                         </button>

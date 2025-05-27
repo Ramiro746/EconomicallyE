@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import "../estilos.css"
 
-export default function LoginForm({ closeModal }) {
+export default function LoginForm({ closeModal, openRegisterModal }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
@@ -40,6 +40,13 @@ export default function LoginForm({ closeModal }) {
         }
     };
 
+    const handleSwitchToRegister = () => {
+        if (closeModal) closeModal();
+        setTimeout(() => {
+            if (openRegisterModal) openRegisterModal();
+        }, 100);
+    };
+
     return (
         <form onSubmit={handleLogin}>
             <h2>Iniciar sesión</h2>
@@ -63,6 +70,18 @@ export default function LoginForm({ closeModal }) {
             </div>
             <button type="submit" className="auth-button">Entrar</button>
             {error && <p style={{color: "red"}}>{error}</p>}
+
+            <div className="auth-switch">
+                <p>¿No tienes cuenta?
+                    <button
+                        type="button"
+                        className="switch-modal-btn"
+                        onClick={handleSwitchToRegister}
+                    >
+                        Regístrate
+                    </button>
+                </p>
+            </div>
         </form>
     );
 }

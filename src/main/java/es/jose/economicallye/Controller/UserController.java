@@ -71,7 +71,7 @@ public class UserController {
 
     @GetMapping("/me")
     public UserDTO getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        return new UserDTO(userDetails.getId(), userDetails.getUsername());
+        return new UserDTO(userDetails.getId(), userDetails.getUsername(), userDetails.getName());
 
     }
 }
