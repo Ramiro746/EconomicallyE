@@ -142,15 +142,16 @@ const Homepage = () => {
         }, 300)
     }
 
-    // Función para cambiar entre modales sin cerrar completamente
+    // Y asegúrate de que tu función switchModal esté así:
     const switchModal = (modalType, e) => {
         if (e) {
-            e.preventDefault()
-            e.stopPropagation()
+            e.preventDefault();
+            e.stopPropagation();
         }
-        setIsClosing(false)
-        setModalOpen(modalType)
-    }
+        console.log("Switching modal to:", modalType); // Debug log
+        setIsClosing(false);
+        setModalOpen(modalType);
+    };
 
     const handleStartNow = () => {
         if (user) {
@@ -266,22 +267,30 @@ const Homepage = () => {
                     <div
                         className={`modal-content ${isClosing ? "closing" : ""}`}
                         onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
+                            e.stopPropagation(); // Solo stopPropagation, NO preventDefault
                         }}
                     >
                         <button className="modal-close" onClick={closeModal} aria-label="Cerrar modal">
                             &times;
                         </button>
                         {modalOpen === "login" ? (
-                            <LoginForm closeModal={closeModal} openRegisterModal={(e) => switchModal("register", e)} />
+                            <LoginForm
+                                closeModal={closeModal}
+                                openRegisterModal={(e) => {
+                                    console.log("openRegisterModal called from LoginForm"); // Debug log
+                                    switchModal("register", e);
+                                }}
+                            />
                         ) : (
                             <FormUser
                                 onRegisterSuccess={() => {
-                                    setTimeout(() => switchModal("login"), 1500)
+                                    setTimeout(() => switchModal("login"), 1500);
                                 }}
                                 closeModal={closeModal}
-                                openLoginModal={(e) => switchModal("login", e)}
+                                openLoginModal={(e) => {
+                                    console.log("openLoginModal called from FormUser"); // Debug log
+                                    switchModal("login", e);
+                                }}
                             />
                         )}
                     </div>

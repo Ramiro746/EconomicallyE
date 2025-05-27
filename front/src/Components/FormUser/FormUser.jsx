@@ -24,8 +24,11 @@ const FormUser = ({ onRegisterSuccess, closeModal, openLoginModal }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
+        setMessage(''); // Clear previous messages
 
         try {
+            console.log("Registering user:", userData); // Debug log
+
             const response = await fetch("http://localhost:8080/api/users", {
                 method: 'POST',
                 headers: {
@@ -33,6 +36,8 @@ const FormUser = ({ onRegisterSuccess, closeModal, openLoginModal }) => {
                 },
                 body: JSON.stringify(userData),
             });
+
+            console.log("Registration response status:", response.status); // Debug log
 
             if (response.ok) {
                 const text = await response.text();
@@ -51,17 +56,21 @@ const FormUser = ({ onRegisterSuccess, closeModal, openLoginModal }) => {
                 setMessage(`Error: ${errorText || 'Error desconocido'}`);
             }
         } catch (error) {
+            console.error('Registration error:', error); // Debug log
             setMessage(`Error: ${error.message}`);
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleSwitchToLogin = () => {
-        if (closeModal) closeModal();
-        setTimeout(() => {
-            if (openLoginModal) openLoginModal();
-        }, 100);
+    const handleSwitchToLogin = (e) => {
+        e.preventDefault(); // Prevent form submission
+        e.stopPropagation(); // Stop event bubbling
+        console.log("Switching to login modal"); // Debug log
+
+        if (openLoginModal) {
+            openLoginModal(e);
+        }
     };
 
     return (
@@ -76,6 +85,7 @@ const FormUser = ({ onRegisterSuccess, closeModal, openLoginModal }) => {
                     value={userData.name}
                     onChange={handleChange}
                     required
+                    disabled={isLoading}
                 />
             </div>
             <div className="form-group">
@@ -86,6 +96,7 @@ const FormUser = ({ onRegisterSuccess, closeModal, openLoginModal }) => {
                     value={userData.email}
                     onChange={handleChange}
                     required
+                    disabled={isLoading}
                 />
             </div>
             <div className="form-group">
@@ -97,6 +108,7 @@ const FormUser = ({ onRegisterSuccess, closeModal, openLoginModal }) => {
                     value={userData.password}
                     onChange={handleChange}
                     required
+                    disabled={isLoading}
                 />
             </div>
             <div className="form-group">
@@ -108,6 +120,7 @@ const FormUser = ({ onRegisterSuccess, closeModal, openLoginModal }) => {
                     value={userData.monthlyIncome}
                     onChange={handleChange}
                     required
+                    disabled={isLoading}
                 />
             </div>
             <button type="submit" className="auth-button" disabled={isLoading}>
@@ -121,6 +134,7 @@ const FormUser = ({ onRegisterSuccess, closeModal, openLoginModal }) => {
                         type="button"
                         className="switch-modal-btn"
                         onClick={handleSwitchToLogin}
+                        disabled={isLoading}
                     >
                         Inicia Sesión
                     </button>
