@@ -10,6 +10,8 @@ import SpiralAnimation from "../Components/Logo/Logo"
 import CreditCardAnimation from "../Components/CreditCard/credit-card-animation.jsx"
 import FinancialDashboard from "../Components/FinancialDashboard.jsx"
 import { motion } from "framer-motion"
+import Inflation from "../Components/Inflation/Inflation.jsx"
+import { TrendingUp, DollarSign, PieChart } from "lucide-react"
 
 const fadeUpVariants = {
     hidden: { opacity: 0, y: 30 },
@@ -52,13 +54,12 @@ const Homepage = () => {
 
             if (res.ok) {
                 const userData = await res.json()
-                console.log("Usuario recibido:", userData) // ← Mira qué campos trae
-
+                console.log("Usuario recibido:", userData)
                 setUser(userData)
                 checkUserAdviceHistory(userData.id)
             } else {
                 console.error("Token inválido o expirado")
-                signOut() // Limpia localStorage y redirige
+                signOut()
             }
         } catch (error) {
             console.error("Error al obtener datos del usuario:", error)
@@ -142,16 +143,15 @@ const Homepage = () => {
         }, 300)
     }
 
-    // Y asegúrate de que tu función switchModal esté así:
     const switchModal = (modalType, e) => {
         if (e) {
-            e.preventDefault();
-            e.stopPropagation();
+            e.preventDefault()
+            e.stopPropagation()
         }
-        console.log("Switching modal to:", modalType); // Debug log
-        setIsClosing(false);
-        setModalOpen(modalType);
-    };
+        console.log("Switching modal to:", modalType)
+        setIsClosing(false)
+        setModalOpen(modalType)
+    }
 
     const handleStartNow = () => {
         if (user) {
@@ -163,12 +163,13 @@ const Homepage = () => {
             openLoginModal()
         }
     }
+
     return (
         <div className="container">
-            <FloatingShapes />
+            <FloatingShapes/>
             <header>
                 <div className="container-logo">
-                    <SpiralAnimation />
+                    <SpiralAnimation/>
                     <h3>EconomicallyE</h3>
                 </div>
                 {user && (
@@ -225,10 +226,80 @@ const Homepage = () => {
                 </div>
             </section>
 
-            <section className="cta-section">
-                <div className="w-full flex justify-center items-center mt-8">
-                    <CreditCardAnimation />
-                </div>
+            {/* Nueva sección de características financieras integrada */}
+            <section className="financial-features">
+                <motion.div
+                    className="features-container"
+                    custom={3}
+                    initial="hidden"
+                    animate="visible"
+                    variants={fadeUpVariants}
+                >
+                    <div className="feature-header">
+                        <h3>Herramientas que te ayudan a crecer</h3>
+                        <p>Mantente informado sobre el panorama financiero actual</p>
+                    </div>
+
+                    <div className="features-grid">
+                        {/* Tarjeta de crédito con contexto */}
+                        <motion.div
+                            className="feature-card"
+                            custom={4}
+                            initial="hidden"
+                            animate="visible"
+                            variants={fadeUpVariants}
+                        >
+                            <div className="feature-icon">
+                                <DollarSign className="w-8 h-8"/>
+                            </div>
+                            <h4>Gestión Inteligente</h4>
+                            <p>Optimiza tus gastos con nuestras herramientas avanzadas de análisis financiero</p>
+
+                        </motion.div>
+
+                        {/* Inflación integrada con contexto */}
+                        <motion.div
+                            className="feature-card"
+                            custom={5}
+                            initial="hidden"
+                            animate="visible"
+                            variants={fadeUpVariants}
+                        >
+                            <div className="feature-icon">
+                                <TrendingUp className="w-8 h-8"/>
+                            </div>
+                            <h4>Monitoreo de Inflación</h4>
+                            <p>Mantente al día con los indicadores económicos clave para proteger tu patrimonio</p>
+                            <div className="feature-demo">
+                                <Inflation/>
+                            </div>
+                        </motion.div>
+
+                        {/* Tercera característica para balance */}
+                        <motion.div
+                            className="feature-card"
+                            custom={6}
+                            initial="hidden"
+                            animate="visible"
+                            variants={fadeUpVariants}
+                        >
+                            <div className="feature-icon">
+                                <PieChart className="w-8 h-8"/>
+                            </div>
+                            <h4>Análisis Personalizado</h4>
+                            <p>Recibe consejos adaptados a tu situación financiera específica</p>
+                            <div className="feature-preview">
+                                <div className="chart-placeholder">
+                                    <div className="chart-bar" style={{height: "60%"}}></div>
+                                    <div className="chart-bar" style={{height: "80%"}}></div>
+                                    <div className="chart-bar" style={{height: "40%"}}></div>
+                                    <div className="chart-bar" style={{height: "90%"}}></div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+
+                </motion.div>
             </section>
 
             {/* Loading state */}
@@ -244,10 +315,14 @@ const Homepage = () => {
             {user && !hasCompletedFirstForm && !loadingAdviceHistory && (
                 <section className="information" id="form">
                     <div>
-                        <FinancialDashboard onFormCompleted={markFirstFormAsCompleted} />
+                        <FinancialDashboard onFormCompleted={markFirstFormAsCompleted}/>
                     </div>
                 </section>
             )}
+
+
+                <CreditCardAnimation/>
+
 
             {/* Mensaje cuando ya completó el formulario */}
             {user && hasCompletedFirstForm && !loadingAdviceHistory && (
@@ -267,7 +342,7 @@ const Homepage = () => {
                     <div
                         className={`modal-content ${isClosing ? "closing" : ""}`}
                         onClick={(e) => {
-                            e.stopPropagation(); // Solo stopPropagation, NO preventDefault
+                            e.stopPropagation()
                         }}
                     >
                         <button className="modal-close" onClick={closeModal} aria-label="Cerrar modal">
@@ -277,19 +352,19 @@ const Homepage = () => {
                             <LoginForm
                                 closeModal={closeModal}
                                 openRegisterModal={(e) => {
-                                    console.log("openRegisterModal called from LoginForm"); // Debug log
-                                    switchModal("register", e);
+                                    console.log("openRegisterModal called from LoginForm")
+                                    switchModal("register", e)
                                 }}
                             />
                         ) : (
                             <FormUser
                                 onRegisterSuccess={() => {
-                                    setTimeout(() => switchModal("login"), 1500);
+                                    setTimeout(() => switchModal("login"), 1500)
                                 }}
                                 closeModal={closeModal}
                                 openLoginModal={(e) => {
-                                    console.log("openLoginModal called from FormUser"); // Debug log
-                                    switchModal("login", e);
+                                    console.log("openLoginModal called from FormUser")
+                                    switchModal("login", e)
                                 }}
                             />
                         )}

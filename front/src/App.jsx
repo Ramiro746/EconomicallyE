@@ -10,6 +10,7 @@ import AdviceForm from "./Components/AdviceForm.jsx";
 import LoginForm from "./Components/Login/LoginForm";
 import FinancialDashboard from "./Components/FinancialDashboard.jsx";
 import HistorialConsejos from "./Pages/historyAdvices.jsx";
+import Inflation from "./Pages/inflationPage.jsx";
 
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
                 <Route path="/editarInfo/:userId" element={<Edit />} />
                 <Route path="/consejos/:userId" element={<HistorialConsejos />} />
                 <Route path="/dashboard/:userId" element={<Progreso />} />
+                <Route path="/inflacion" element={<Inflation />} />
                 {/*<Route path="/login" element={<LoginForm />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/formuser" element={<FormUser />} />*/}
