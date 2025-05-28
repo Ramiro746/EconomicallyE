@@ -405,7 +405,7 @@
             )
             console.log("💰 Ingreso mensual actualizado en localStorage:", newValue)
         }
-        
+
             if (loading) {
             return (
                 <div className="loading-container">

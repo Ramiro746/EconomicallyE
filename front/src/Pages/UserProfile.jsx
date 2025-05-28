@@ -1,26 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Doughnut, Bar } from 'react-chartjs-2';
-import './perfil.css';
-import {
-    Chart as ChartJS,
-    ArcElement,
-    Tooltip,
-    Legend,
-    CategoryScale,
-    LinearScale,
-    BarElement
-} from 'chart.js';
+"use client"
 
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
+import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
+import "./Perfil.css"
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from "chart.js"
+
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement)
 
 function Perfil() {
-    const [overview, setOverview] = useState(null);
-    const [userId, setUserId] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const navigate = useNavigate();
-
+    const [overview, setOverview] = useState(null)
+    const [userId, setUserId] = useState(null)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
+    const navigate = useNavigate()
 
     const updateUserDataInLocalStorage = (userData) => {
         try {
@@ -46,98 +38,98 @@ function Perfil() {
             console.error("❌ Error al actualizar localStorage:", error)
             return null
         }
-    };
-
+    }
 
     useEffect(() => {
         const fetchOverview = async () => {
             try {
-                const token = localStorage.getItem('token');
+                const token = localStorage.getItem("token")
 
                 // Obtener datos del usuario
                 const res = await fetch(`http://localhost:8080/api/users/me`, {
-                    method: 'GET',
+                    method: "GET",
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                if (!res.ok) throw new Error('No se pudo obtener el usuario');
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                })
+                if (!res.ok) throw new Error("No se pudo obtener el usuario")
 
-                const data = await res.json();
+                const data = await res.json()
 
-                const currentUserId = data.id;
-                setUserId(currentUserId);
+                const currentUserId = data.id
+                setUserId(currentUserId)
 
                 //console.log("Datos del local storage:", updateUserDataInLocalStorage());
-                console.log("Token que se enviará:", token);
+                console.log("Token que se enviará:", token)
 
                 // Obtener overview básico
                 const overviewRes = await fetch(`http://localhost:8080/api/overview/${currentUserId}`, {
                     headers: {
-                        "Authorization": "Bearer " + token
-                    }
-                });
-                if (!overviewRes.ok) throw new Error('No se pudo obtener el overview');
+                        Authorization: "Bearer " + token,
+                    },
+                })
+                if (!overviewRes.ok) throw new Error("No se pudo obtener el overview")
 
-                const overviewData = await overviewRes.json();
+                const overviewData = await overviewRes.json()
 
                 // Obtener gastos fijos detallados
-                let detailedFixedExpenses = [];
+                let detailedFixedExpenses = []
                 try {
                     const fixedExpensesRes = await fetch(`http://localhost:8080/api/fixed-expenses/${currentUserId}`, {
                         headers: {
-                            "Authorization": "Bearer " + token
-                        }
-                    });
+                            Authorization: "Bearer " + token,
+                        },
+                    })
                     if (fixedExpensesRes.ok) {
-                        detailedFixedExpenses = await fixedExpensesRes.json();
+                        detailedFixedExpenses = await fixedExpensesRes.json()
                     }
                 } catch (fixedError) {
-                    console.warn("No se pudieron cargar los gastos fijos detallados:", fixedError);
+                    console.warn("No se pudieron cargar los gastos fijos detallados:", fixedError)
                 }
 
                 // Obtener gastos variables detallados
-                let detailedVariableExpenses = [];
+                let detailedVariableExpenses = []
                 try {
                     const variableExpensesRes = await fetch(`http://localhost:8080/api/variable-expenses/${currentUserId}`, {
                         headers: {
-                            "Authorization": "Bearer " + token
-                        }
-                    });
+                            Authorization: "Bearer " + token,
+                        },
+                    })
                     if (variableExpensesRes.ok) {
-                        detailedVariableExpenses = await variableExpensesRes.json();
+                        detailedVariableExpenses = await variableExpensesRes.json()
                     }
                 } catch (variableError) {
-                    console.warn("No se pudieron cargar los gastos variables detallados:", variableError);
+                    console.warn("No se pudieron cargar los gastos variables detallados:", variableError)
                 }
 
                 // Obtener metas detalladas
-                let detailedGoals = [];
+                let detailedGoals = []
                 try {
                     const goalsRes = await fetch(`http://localhost:8080/api/goals/${currentUserId}`, {
                         headers: {
-                            "Authorization": "Bearer " + token
-                        }
-                    });
+                            Authorization: "Bearer " + token,
+                        },
+                    })
                     if (goalsRes.ok) {
-                        detailedGoals = await goalsRes.json();
+                        detailedGoals = await goalsRes.json()
                     }
                 } catch (goalsError) {
-                    console.warn("No se pudieron cargar las metas detalladas:", goalsError);
+                    console.warn("No se pudieron cargar las metas detalladas:", goalsError)
                 }
 
                 // Combinar datos del overview con los datos detallados
                 const enhancedOverview = {
                     ...overviewData,
                     fixedExpenses: detailedFixedExpenses.length > 0 ? detailedFixedExpenses : overviewData.fixedExpenses || [],
-                    variableExpenses: detailedVariableExpenses.length > 0 ? detailedVariableExpenses : overviewData.variableExpenses || [],
-                    goals: detailedGoals.length > 0 ? detailedGoals : overviewData.goals || []
-                };
+                    variableExpenses:
+                        detailedVariableExpenses.length > 0 ? detailedVariableExpenses : overviewData.variableExpenses || [],
+                    goals: detailedGoals.length > 0 ? detailedGoals : overviewData.goals || [],
+                }
 
-                console.log("Datos recibidos:", enhancedOverview);
+                console.log("Datos recibidos:", enhancedOverview)
 
-                setOverview(enhancedOverview);
+                setOverview(enhancedOverview)
 
                 // ✅ OPCIÓN SIMPLE: Guardar todo el enhancedOverview si tiene los datos del usuario
                 if (enhancedOverview.monthlyIncome !== undefined) {
@@ -145,89 +137,87 @@ function Perfil() {
                         id: currentUserId,
                         email: data.email,
                         name: data.name,
-                        monthlyIncome: enhancedOverview.monthlyIncome
-                    });
+                        monthlyIncome: enhancedOverview.monthlyIncome,
+                    })
                 }
-
             } catch (error) {
-                console.error("Error al cargar el perfil: ", error);
-                setError("No se pudo obtener el perfil");
+                console.error("Error al cargar el perfil: ", error)
+                setError("No se pudo obtener el perfil")
             } finally {
-                setLoading(false);
+                setLoading(false)
             }
-        };
+        }
 
-        fetchOverview();
-    }, []);
+        fetchOverview()
+    }, [])
 
     const handleGenerateAdvice = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem("token")
 
             // Verificar que tenemos los datos necesarios
             if (!overview || !userId) {
-                alert("No hay datos suficientes para generar el consejo. Por favor, recarga la página.");
-                return;
+                alert("No hay datos suficientes para generar el consejo. Por favor, recarga la página.")
+                return
             }
 
             // Preparar los datos usando la información real del overview
             const requestData = {
                 userId: userId, // Usar el userId real, no hardcodeado
                 income: overview.monthlyIncome || 0,
-                goals: (overview.goals || []).map(goal => ({
+                goals: (overview.goals || []).map((goal) => ({
                     id: goal.id,
-                    name: goal.name || '',
-                    description: goal.description || '',
+                    name: goal.name || "",
+                    description: goal.description || "",
                     targetAmount: goal.targetAmount || 0,
                     currentAmount: goal.currentAmount || 0,
-                    targetDate: goal.targetDate || null
+                    targetDate: goal.targetDate || null,
                 })),
-                fixedExpenses: (overview.fixedExpenses || []).map(expense => ({
+                fixedExpenses: (overview.fixedExpenses || []).map((expense) => ({
                     id: expense.id,
-                    name: expense.name || expense.description || '',
+                    name: expense.name || expense.description || "",
                     amount: expense.amount || 0,
-                    category: expense.category || ''
+                    category: expense.category || "",
                 })),
-                variableExpenses: (overview.variableExpenses || []).map(expense => ({
+                variableExpenses: (overview.variableExpenses || []).map((expense) => ({
                     id: expense.id,
-                    name: expense.name || expense.description || '',
+                    name: expense.name || expense.description || "",
                     amount: expense.amount || 0,
-                    category: expense.category || '',
-                    date: expense.date || null
-                }))
-            };
-
-            console.log("Datos enviados para generar consejo:", requestData);
-
-            const response = await fetch(`http://localhost:8080/api/advice`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                credentials: "include",
-                body: JSON.stringify(requestData)
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error("Error del servidor:", errorText);
-                throw new Error(`Error generando el consejo: ${response.status} - ${errorText}`);
+                    category: expense.category || "",
+                    date: expense.date || null,
+                })),
             }
 
-            const result = await response.json();
-            console.log("Consejo generado exitosamente:", result);
+            console.log("Datos enviados para generar consejo:", requestData)
 
-            alert("Nuevo consejo generado correctamente.");
+            const response = await fetch(`http://localhost:8080/api/advice`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+                credentials: "include",
+                body: JSON.stringify(requestData),
+            })
+
+            if (!response.ok) {
+                const errorText = await response.text()
+                console.error("Error del servidor:", errorText)
+                throw new Error(`Error generando el consejo: ${response.status} - ${errorText}`)
+            }
+
+            const result = await response.json()
+            console.log("Consejo generado exitosamente:", result)
+
+            alert("Nuevo consejo generado correctamente.")
 
             // Opcional: recargar solo los datos en lugar de toda la página
-            window.location.reload();
-
+            window.location.reload()
         } catch (error) {
-            console.error("Error al generar el consejo:", error);
-            alert(`No se pudo generar el nuevo consejo: ${error.message}`);
+            console.error("Error al generar el consejo:", error)
+            alert(`No se pudo generar el nuevo consejo: ${error.message}`)
         }
-    };
+    }
 
     if (loading) {
         return (
@@ -235,7 +225,7 @@ function Perfil() {
                 <div className="spinner"></div>
                 <p>Cargando perfil...</p>
             </div>
-        );
+        )
     }
 
     if (error) {
@@ -244,12 +234,12 @@ function Perfil() {
                 <div className="error-card">
                     <h2>❌ Error</h2>
                     <p>{error}</p>
-                    <button className="btn btn-primary" onClick={() => navigate('/')}>
+                    <button className="btn btn-primary" onClick={() => navigate("/")}>
                         Volver al Inicio
                     </button>
                 </div>
             </div>
-        );
+        )
     }
 
     if (!overview) {
@@ -258,72 +248,68 @@ function Perfil() {
                 <div className="error-card">
                     <h2>⚠️ Sin Datos</h2>
                     <p>No hay datos disponibles para mostrar.</p>
-                    <button className="btn btn-primary" onClick={() => navigate('/')}>
+                    <button className="btn btn-primary" onClick={() => navigate("/")}>
                         Volver al Inicio
                     </button>
                 </div>
             </div>
-        );
+        )
     }
 
     // Calcular totales con validaciones
-    const fixedExpenses = overview.fixedExpenses || [];
-    const variableExpenses = overview.variableExpenses || [];
-    const goals = overview.goals || [];
-    const monthlyIncome = overview.monthlyIncome || 0;
+    const fixedExpenses = overview.fixedExpenses || []
+    const variableExpenses = overview.variableExpenses || []
+    const goals = overview.goals || []
+    const monthlyIncome = overview.monthlyIncome || 0
 
-    const totalFixed = fixedExpenses.reduce((sum, e) => sum + (e?.amount || 0), 0);
-    const totalVariable = variableExpenses.reduce((sum, e) => sum + (e?.amount || 0), 0);
-    const totalExpenses = totalFixed + totalVariable;
-    const totalSavings = monthlyIncome - totalExpenses;
+    const totalFixed = fixedExpenses.reduce((sum, e) => sum + (e?.amount || 0), 0)
+    const totalVariable = variableExpenses.reduce((sum, e) => sum + (e?.amount || 0), 0)
+    const totalExpenses = totalFixed + totalVariable
+    const totalSavings = monthlyIncome - totalExpenses
 
     // Datos para Doughnut chart
     const gastosChartData = {
-        labels: ['Gastos Fijos', 'Gastos Variables', 'Ahorro Potencial'],
+        labels: ["Gastos Fijos", "Gastos Variables", "Ahorro Potencial"],
         datasets: [
             {
-                label: 'Distribución mensual (€)',
+                label: "Distribución mensual (€)",
                 data: [totalFixed, totalVariable, totalSavings > 0 ? totalSavings : 0],
-                backgroundColor: [
-                    '#FF6B6B',
-                    '#4ECDC4',
-                    '#45B7D1'
-                ],
+                backgroundColor: ["#FF6B6B", "#4ECDC4", "#45B7D1"],
                 borderWidth: 2,
-                borderColor: '#fff',
+                borderColor: "#fff",
             },
         ],
-    };
+    }
 
     // Datos para Bar chart de metas
     const metasChartData = {
-        labels: goals.map(goal => goal?.name || 'Sin nombre'),
+        labels: goals.map((goal) => goal?.name || "Sin nombre"),
         datasets: [
             {
-                label: 'Progreso (%)',
-                data: goals.map(goal => {
-                    const current = goal?.currentAmount || 0;
-                    const target = goal?.targetAmount || 1;
-                    return Math.min(((current / target) * 100), 100);
+                label: "Progreso (%)",
+                data: goals.map((goal) => {
+                    const current = goal?.currentAmount || 0
+                    const target = goal?.targetAmount || 1
+                    return Math.min((current / target) * 100, 100)
                 }),
-                backgroundColor: goals.map(goal => {
-                    const current = goal?.currentAmount || 0;
-                    const target = goal?.targetAmount || 1;
-                    const progress = (current / target) * 100;
-                    if (progress >= 80) return '#28a745';
-                    if (progress >= 50) return '#ffc107';
-                    return '#dc3545';
+                backgroundColor: goals.map((goal) => {
+                    const current = goal?.currentAmount || 0
+                    const target = goal?.targetAmount || 1
+                    const progress = (current / target) * 100
+                    if (progress >= 80) return "#28a745"
+                    if (progress >= 50) return "#ffc107"
+                    return "#dc3545"
                 }),
                 borderRadius: 5,
             },
         ],
-    };
+    }
 
     const chartOptions = {
         responsive: true,
         plugins: {
             legend: {
-                position: 'top',
+                position: "top",
             },
         },
         scales: {
@@ -331,40 +317,26 @@ function Perfil() {
                 beginAtZero: true,
                 max: 100,
                 ticks: {
-                    callback: function(value) {
-                        return value + '%';
-                    }
-                }
-            }
-        }
-    };
+                    callback: (value) => value + "%",
+                },
+            },
+        },
+    }
 
     return (
         <div className="profile-container">
             {/* Header */}
             <header className="profile-header">
                 <div className="header-content">
-                    <h1 className="welcome-title">
-                         Hola, {overview.name}
-                    </h1>
+                    <h1 className="welcome-title">Hola, {overview.name}</h1>
                     <div className="header-actions">
-                        <button
-                            className="btn btn-outline"
-                            onClick={() => navigate('/')}
-                        >
+                        <button className="btn btn-outline" onClick={() => navigate("/")}>
                             Volver al Inicio
                         </button>
-                        <button
-                            className="btn btn-outline"
-                            onClick={() => navigate(`/editarInfo/${userId}`)
-                            }
-                        >
+                        <button className="btn btn-outline" onClick={() => navigate(`/editarInfo/${userId}`)}>
                             Editar Información
                         </button>
-                        <button
-                            className="btn btn-success"
-                            onClick={handleGenerateAdvice}
-                        >
+                        <button className="btn btn-success" onClick={handleGenerateAdvice}>
                             Generar nuevo consejo
                         </button>
                     </div>
@@ -387,18 +359,16 @@ function Perfil() {
                         <p className="amount">{totalExpenses.toLocaleString()} €</p>
                     </div>
 
-                    <div className={`summary-card ${totalSavings >= 0 ? 'savings' : 'deficit'}`}>
-                        <div className="card-icon">{totalSavings >= 0 ? '🏦' : '⚠️'}</div>
-                        <h3>{totalSavings >= 0 ? 'Ahorro Estimado' : 'Déficit'}</h3>
+                    <div className={`summary-card ${totalSavings >= 0 ? "savings" : "deficit"}`}>
+                        <div className="card-icon">{totalSavings >= 0 ? "🏦" : "⚠️"}</div>
+                        <h3>{totalSavings >= 0 ? "Ahorro Estimado" : "Déficit"}</h3>
                         <p className="amount">{Math.abs(totalSavings).toLocaleString()} €</p>
                     </div>
 
                     <div className="summary-card percentage">
                         <div className="card-icon">📈</div>
                         <h3>% de Ahorro</h3>
-                        <p className="amount">
-                            {monthlyIncome > 0 ? ((totalSavings / monthlyIncome) * 100).toFixed(1) : '0.0'}%
-                        </p>
+                        <p className="amount">{monthlyIncome > 0 ? ((totalSavings / monthlyIncome) * 100).toFixed(1) : "0.0"}%</p>
                     </div>
                 </div>
             </section>
@@ -416,18 +386,14 @@ function Perfil() {
                                     <div className="total-amount">
                                         <strong>Total: {totalFixed.toLocaleString()} €</strong>
                                     </div>
-                                    <div className="expense-list">
+                                    <div className="expense-list scrollable-list">
                                         {fixedExpenses.map((expense, index) => (
                                             <div key={expense?.id || index} className="expense-item">
                                                 <div className="expense-info">
-                                                    <span className="expense-name">
-                                                        {expense?.name || expense?.description || `Gasto fijo #${index + 1}`}
-                                                    </span>
-                                                    {expense?.category && (
-                                                        <div className="expense-category">
-                                                            📁 {expense.category}
-                                                        </div>
-                                                    )}
+                          <span className="expense-name">
+                            {expense?.name || expense?.description || `Gasto fijo #${index + 1}`}
+                          </span>
+                                                    {expense?.category && <div className="expense-category">📁 {expense.category}</div>}
                                                 </div>
                                                 <span className="expense-amount">{expense?.amount || 0} €</span>
                                             </div>
@@ -450,22 +416,16 @@ function Perfil() {
                                     <div className="total-amount">
                                         <strong>Total: {totalVariable.toLocaleString()} €</strong>
                                     </div>
-                                    <div className="expense-list">
+                                    <div className="expense-list scrollable-list">
                                         {variableExpenses.map((expense, index) => (
                                             <div key={expense?.id || index} className="expense-item">
                                                 <div className="expense-info">
-                                                    <span className="expense-name">
-                                                        {expense?.name || expense?.description || `Gasto variable #${index + 1}`}
-                                                    </span>
-                                                    {expense?.category && (
-                                                        <div className="expense-category">
-                                                            📁 {expense.category}
-                                                        </div>
-                                                    )}
+                          <span className="expense-name">
+                            {expense?.name || expense?.description || `Gasto variable #${index + 1}`}
+                          </span>
+                                                    {expense?.category && <div className="expense-category">📁 {expense.category}</div>}
                                                     {expense?.date && (
-                                                        <div className="expense-date">
-                                                            📅 {new Date(expense.date).toLocaleDateString()}
-                                                        </div>
+                                                        <div className="expense-date">📅 {new Date(expense.date).toLocaleDateString()}</div>
                                                     )}
                                                 </div>
                                                 <span className="expense-amount">{expense?.amount || 0} €</span>
@@ -497,41 +457,39 @@ function Perfil() {
                                 */}
                                 <div className="goals-detail">
                                     <h4>Detalle de Metas</h4>
-                                    <div className="goals-list">
-                                        {goals.map(goal => {
-                                            const currentAmount = goal?.currentAmount || 0;
-                                            const targetAmount = goal?.targetAmount || 1;
-                                            const progress = ((currentAmount / targetAmount) * 100);
-                                            const progressCapped = Math.min(progress, 100);
+                                    <div className="goals-list scrollable-list">
+                                        {goals.map((goal) => {
+                                            const currentAmount = goal?.currentAmount || 0
+                                            const targetAmount = goal?.targetAmount || 1
+                                            const progress = (currentAmount / targetAmount) * 100
+                                            const progressCapped = Math.min(progress, 100)
                                             return (
                                                 <div key={goal?.id || Math.random()} className="goal-item">
                                                     <div className="goal-header">
-                                                        <h5>{goal?.name || 'Meta sin nombre'}</h5>
-                                                        <span className={`progress-badge ${progress >= 100 ? 'complete' : progress >= 50 ? 'medium' : 'low'}`}>
-                                                            {progressCapped.toFixed(1)}%
-                                                        </span>
+                                                        <h5>{goal?.name || "Meta sin nombre"}</h5>
+                                                        <span
+                                                            className={`progress-badge ${progress >= 100 ? "complete" : progress >= 50 ? "medium" : "low"}`}
+                                                        >
+                              {progressCapped.toFixed(1)}%
+                            </span>
                                                     </div>
-                                                    {goal?.description && (
-                                                        <p className="goal-description">{goal.description}</p>
-                                                    )}
+                                                    {goal?.description && <p className="goal-description">{goal.description}</p>}
                                                     <div className="progress-bar">
                                                         <div
-                                                            className={`progress-fill ${progress >= 100 ? 'complete' : progress >= 50 ? 'medium' : 'low'}`}
-                                                            style={{width: `${Math.min(progress, 100)}%`}}
+                                                            className={`progress-fill ${progress >= 100 ? "complete" : progress >= 50 ? "medium" : "low"}`}
+                                                            style={{ width: `${Math.min(progress, 100)}%` }}
                                                         ></div>
                                                     </div>
                                                     <div className="goal-footer">
-                                                        <span className="goal-amounts">
-                                                            {currentAmount.toLocaleString()}€ / {targetAmount.toLocaleString()}€
-                                                        </span>
+                            <span className="goal-amounts">
+                              {currentAmount.toLocaleString()}€ / {targetAmount.toLocaleString()}€
+                            </span>
                                                         {goal?.targetDate && (
-                                                            <span className="goal-date">
-                                                                📅 {new Date(goal.targetDate).toLocaleDateString()}
-                                                            </span>
+                                                            <span className="goal-date">📅 {new Date(goal.targetDate).toLocaleDateString()}</span>
                                                         )}
                                                     </div>
                                                 </div>
-                                            );
+                                            )
                                         })}
                                     </div>
                                 </div>
@@ -552,31 +510,20 @@ function Perfil() {
                 <div className="actions-card">
                     <h3>Acciones Rápidas</h3>
                     <div className="actions-grid">
-                        <button
-                            className="action-btn primary"
-                            onClick={() => navigate(`/consejos/${userId}`)}
-                        >
+                        <button className="action-btn primary" onClick={() => navigate(`/consejos/${userId}`)}>
                             💡 Ver Consejos Personalizados
                         </button>
-                        <button
-                            className="action-btn secondary"
-                            onClick={() => navigate(`/editarInfo/${userId}`)
-                            }
-                        >
+                        <button className="action-btn secondary" onClick={() => navigate(`/editarInfo/${userId}`)}>
                             🎯 Gestionar Metas
                         </button>
-                        <button
-                            className="action-btn secondary"
-                            onClick={() => navigate(`/editarInfo/${userId}`)
-                            }
-                        >
+                        <button className="action-btn secondary" onClick={() => navigate(`/editarInfo/${userId}`)}>
                             💳 Gestionar Gastos
                         </button>
                     </div>
                 </div>
             </section>
         </div>
-    );
+    )
 }
 
-export default Perfil;
+export default Perfil

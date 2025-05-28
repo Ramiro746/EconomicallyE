@@ -647,3 +647,67 @@
         gap: var(--spacing-xs);
     }
 }
+
+/* Añadir estas reglas CSS al final de tu archivo CSS existente */
+
+/* Solución para el problema de scroll en las listas */
+.scrollable-list {
+    max-height: 350px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Estilo para la barra de desplazamiento */
+.scrollable-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.scrollable-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.scrollable-list::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+.scrollable-list::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Ajustes adicionales para mejorar el layout */
+.expenses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.expense-card .card-content {
+    padding: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Asegurar que las tarjetas tengan una altura consistente */
+.expense-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.expense-card .card-content {
+    flex: 1;
+}
+
+/* Ajustes para pantallas pequeñas */
+@media (max-width: 768px) {
+    .scrollable-list {
+        max-height: 250px;
+    }
+
+    .expenses-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
