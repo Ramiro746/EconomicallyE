@@ -21,6 +21,34 @@ function Perfil() {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
+
+    const updateUserDataInLocalStorage = (userData) => {
+        try {
+            // Obtener los datos actuales o crear un objeto vacío si no existen
+            const currentData = JSON.parse(localStorage.getItem("user")) || {}
+
+            // Combinar con los nuevos datos
+            const updatedData = { ...currentData, ...userData }
+
+            // Guardar en localStorage
+            localStorage.setItem("user", JSON.stringify(updatedData))
+
+            // También guardar el ingreso mensual como una clave independiente para facilitar su acceso
+            if (userData.monthlyIncome !== undefined) {
+                localStorage.setItem("monthlyIncome", userData.monthlyIncome.toString())
+            }
+
+            console.log("✅ Datos actualizados en localStorage:", updatedData)
+            console.log("💰 Monthly Income guardado:", updatedData.monthlyIncome)
+
+            return updatedData
+        } catch (error) {
+            console.error("❌ Error al actualizar localStorage:", error)
+            return null
+        }
+    };
+
+
     useEffect(() => {
         const fetchOverview = async () => {
             try {
@@ -37,9 +65,11 @@ function Perfil() {
                 if (!res.ok) throw new Error('No se pudo obtener el usuario');
 
                 const data = await res.json();
+
                 const currentUserId = data.id;
                 setUserId(currentUserId);
 
+                //console.log("Datos del local storage:", updateUserDataInLocalStorage());
                 console.log("Token que se enviará:", token);
 
                 // Obtener overview básico
@@ -108,6 +138,17 @@ function Perfil() {
                 console.log("Datos recibidos:", enhancedOverview);
 
                 setOverview(enhancedOverview);
+
+                // ✅ OPCIÓN SIMPLE: Guardar todo el enhancedOverview si tiene los datos del usuario
+                if (enhancedOverview.monthlyIncome !== undefined) {
+                    updateUserDataInLocalStorage({
+                        id: currentUserId,
+                        email: data.email,
+                        name: data.name,
+                        monthlyIncome: enhancedOverview.monthlyIncome
+                    });
+                }
+
             } catch (error) {
                 console.error("Error al cargar el perfil: ", error);
                 setError("No se pudo obtener el perfil");

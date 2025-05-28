@@ -301,7 +301,8 @@
 }
 
 .total-amount {
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: 0.25rem; /* 4px */
+    padding-bottom: 0.5rem; /* 8px */
     font-size: 1.125rem;
 }
 
