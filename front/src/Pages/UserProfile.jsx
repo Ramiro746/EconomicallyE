@@ -16,16 +16,10 @@ function Perfil() {
 
     const updateUserDataInLocalStorage = (userData) => {
         try {
-            // Obtener los datos actuales o crear un objeto vacío si no existen
             const currentData = JSON.parse(localStorage.getItem("user")) || {}
-
-            // Combinar con los nuevos datos
             const updatedData = { ...currentData, ...userData }
-
-            // Guardar en localStorage
             localStorage.setItem("user", JSON.stringify(updatedData))
 
-            // También guardar el ingreso mensual como una clave independiente para facilitar su acceso
             if (userData.monthlyIncome !== undefined) {
                 localStorage.setItem("monthlyIncome", userData.monthlyIncome.toString())
             }
@@ -45,7 +39,6 @@ function Perfil() {
             try {
                 const token = localStorage.getItem("token")
 
-                // Obtener datos del usuario
                 const res = await fetch(`http://localhost:8080/api/users/me`, {
                     method: "GET",
                     headers: {
@@ -56,14 +49,9 @@ function Perfil() {
                 if (!res.ok) throw new Error("No se pudo obtener el usuario")
 
                 const data = await res.json()
-
                 const currentUserId = data.id
                 setUserId(currentUserId)
 
-                //console.log("Datos del local storage:", updateUserDataInLocalStorage());
-                console.log("Token que se enviará:", token)
-
-                // Obtener overview básico
                 const overviewRes = await fetch(`http://localhost:8080/api/overview/${currentUserId}`, {
                     headers: {
                         Authorization: "Bearer " + token,
@@ -73,7 +61,6 @@ function Perfil() {
 
                 const overviewData = await overviewRes.json()
 
-                // Obtener gastos fijos detallados
                 let detailedFixedExpenses = []
                 try {
                     const fixedExpensesRes = await fetch(`http://localhost:8080/api/fixed-expenses/${currentUserId}`, {
@@ -88,7 +75,6 @@ function Perfil() {
                     console.warn("No se pudieron cargar los gastos fijos detallados:", fixedError)
                 }
 
-                // Obtener gastos variables detallados
                 let detailedVariableExpenses = []
                 try {
                     const variableExpensesRes = await fetch(`http://localhost:8080/api/variable-expenses/${currentUserId}`, {
@@ -103,7 +89,6 @@ function Perfil() {
                     console.warn("No se pudieron cargar los gastos variables detallados:", variableError)
                 }
 
-                // Obtener metas detalladas
                 let detailedGoals = []
                 try {
                     const goalsRes = await fetch(`http://localhost:8080/api/goals/${currentUserId}`, {
@@ -118,7 +103,6 @@ function Perfil() {
                     console.warn("No se pudieron cargar las metas detalladas:", goalsError)
                 }
 
-                // Combinar datos del overview con los datos detallados
                 const enhancedOverview = {
                     ...overviewData,
                     fixedExpenses: detailedFixedExpenses.length > 0 ? detailedFixedExpenses : overviewData.fixedExpenses || [],
@@ -128,10 +112,8 @@ function Perfil() {
                 }
 
                 console.log("Datos recibidos:", enhancedOverview)
-
                 setOverview(enhancedOverview)
 
-                // ✅ OPCIÓN SIMPLE: Guardar todo el enhancedOverview si tiene los datos del usuario
                 if (enhancedOverview.monthlyIncome !== undefined) {
                     updateUserDataInLocalStorage({
                         id: currentUserId,
@@ -155,15 +137,13 @@ function Perfil() {
         try {
             const token = localStorage.getItem("token")
 
-            // Verificar que tenemos los datos necesarios
             if (!overview || !userId) {
                 alert("No hay datos suficientes para generar el consejo. Por favor, recarga la página.")
                 return
             }
 
-            // Preparar los datos usando la información real del overview
             const requestData = {
-                userId: userId, // Usar el userId real, no hardcodeado
+                userId: userId,
                 income: overview.monthlyIncome || 0,
                 goals: (overview.goals || []).map((goal) => ({
                     id: goal.id,
@@ -210,8 +190,6 @@ function Perfil() {
             console.log("Consejo generado exitosamente:", result)
 
             alert("Nuevo consejo generado correctamente.")
-
-            // Opcional: recargar solo los datos en lugar de toda la página
             window.location.reload()
         } catch (error) {
             console.error("Error al generar el consejo:", error)
@@ -221,9 +199,19 @@ function Perfil() {
 
     if (loading) {
         return (
-            <div className="loading-container">
-                <div className="spinner"></div>
-                <p>Cargando perfil...</p>
+            <div className="modern-loading-container">
+                <div className="spinner-container">
+                    <div className="loading-spinner-modern">
+                        <div className="spinner-ring"></div>
+                        <div className="spinner-ring"></div>
+                        <div className="spinner-ring"></div>
+                    </div>
+                </div>
+
+                <div className="loading-background">
+                    <div className="floating-shape shape-1"></div>
+                    <div className="floating-shape shape-2"></div>
+                </div>
             </div>
         )
     }
@@ -266,62 +254,6 @@ function Perfil() {
     const totalVariable = variableExpenses.reduce((sum, e) => sum + (e?.amount || 0), 0)
     const totalExpenses = totalFixed + totalVariable
     const totalSavings = monthlyIncome - totalExpenses
-
-    // Datos para Doughnut chart
-    const gastosChartData = {
-        labels: ["Gastos Fijos", "Gastos Variables", "Ahorro Potencial"],
-        datasets: [
-            {
-                label: "Distribución mensual (€)",
-                data: [totalFixed, totalVariable, totalSavings > 0 ? totalSavings : 0],
-                backgroundColor: ["#FF6B6B", "#4ECDC4", "#45B7D1"],
-                borderWidth: 2,
-                borderColor: "#fff",
-            },
-        ],
-    }
-
-    // Datos para Bar chart de metas
-    const metasChartData = {
-        labels: goals.map((goal) => goal?.name || "Sin nombre"),
-        datasets: [
-            {
-                label: "Progreso (%)",
-                data: goals.map((goal) => {
-                    const current = goal?.currentAmount || 0
-                    const target = goal?.targetAmount || 1
-                    return Math.min((current / target) * 100, 100)
-                }),
-                backgroundColor: goals.map((goal) => {
-                    const current = goal?.currentAmount || 0
-                    const target = goal?.targetAmount || 1
-                    const progress = (current / target) * 100
-                    if (progress >= 80) return "#28a745"
-                    if (progress >= 50) return "#ffc107"
-                    return "#dc3545"
-                }),
-                borderRadius: 5,
-            },
-        ],
-    }
-
-    const chartOptions = {
-        responsive: true,
-        plugins: {
-            legend: {
-                position: "top",
-            },
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                max: 100,
-                ticks: {
-                    callback: (value) => value + "%",
-                },
-            },
-        },
-    }
 
     return (
         <div className="profile-container">
@@ -450,11 +382,6 @@ function Perfil() {
                     <div className="card-content">
                         {goals.length > 0 ? (
                             <div className="goals-content">
-                                {/*
-                                <div className="chart-container">
-                                    <Bar data={metasChartData} options={chartOptions} />
-                                </div>
-                                */}
                                 <div className="goals-detail">
                                     <h4>Detalle de Metas</h4>
                                     <div className="goals-list scrollable-list">
