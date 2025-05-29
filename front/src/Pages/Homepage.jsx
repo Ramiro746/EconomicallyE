@@ -320,9 +320,7 @@ const Homepage = () => {
                 </section>
             )}
 
-
-                <CreditCardAnimation/>
-
+            <CreditCardAnimation/>
 
             {/* Mensaje cuando ya completó el formulario */}
             {user && hasCompletedFirstForm && !loadingAdviceHistory && (
