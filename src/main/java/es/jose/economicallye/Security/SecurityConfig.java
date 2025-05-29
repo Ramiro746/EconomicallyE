@@ -41,7 +41,8 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:5174",  // Tu frontend principal
-                "http://localhost:5173"   // Otro posible origen de desarrollo
+                "http://localhost:5173",
+                "https://economically-e.vercel.app"// Otro posible origen de desarrollo
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
