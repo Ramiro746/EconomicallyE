@@ -164,6 +164,51 @@ const Homepage = () => {
         }
     }
 
+<<<<<<< HEAD
+=======
+    // Configurar los enlaces para el ScrollNav
+    const scrollNavLinks = [
+        {
+            href: "#inicio",
+            label: "Inicio",
+            onClick: () => window.scrollTo({ top: 0, behavior: "smooth" }),
+        },
+        ...(user
+            ? [
+                {
+                    href: "#MiCuenta",
+                    label: "Mi Cuenta",
+                    onClick: () => navigate(`/perfil/${user.id}`),
+                },
+                {
+                    href: "#",
+                    label: "Dashboard",
+                    onClick: () => navigate(`/dashboard/${user.id}`),
+                },
+                ...(hasCompletedFirstForm
+                    ? [
+                        {
+                            href: "#Consejos",
+                            label: "Consejos",
+                            onClick: () => navigate(`/consejos/${user.id}`),
+                        },
+                    ]
+                    : []),
+            ]
+            : []),
+        {
+            href: "#herramientas",
+            label: "Herramientas",
+            onClick: () => {
+                const section = document.querySelector(".financial-features")
+                if (section) {
+                    section.scrollIntoView({ behavior: "smooth" })
+                }
+            },
+        },
+    ]
+
+>>>>>>> 8a7f4e6 (front listisimo sin el properties)
     return (
         <div className="container">
             <FloatingShapes/>

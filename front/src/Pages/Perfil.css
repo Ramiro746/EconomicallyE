@@ -306,6 +306,17 @@
     font-weight: 600;
     margin: 0 0 var(--spacing-lg) 0;
     color: var(--text-primary);
+<<<<<<< HEAD
+=======
+    display: flex;
+    align-items: center;
+    padding-top: 3rem;
+    gap: var(--spacing-md);
+}
+
+.title-icon {
+    font-size: 1.5em;
+>>>>>>> 8a7f4e6 (front listisimo sin el properties)
 }
 
 /* Resumen económico */
@@ -815,4 +826,440 @@
         align-items: flex-start;
         gap: var(--spacing-xs);
     }
+<<<<<<< HEAD
 }
+=======
+
+/* Estilos para el Modal de Carga */
+.loading-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+}
+
+.loading-modal-content {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 24px;
+    padding: 40px;
+    max-width: 480px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+            0 25px 50px -12px rgba(0, 0, 0, 0.5),
+            0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.loading-modal-header {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.loading-brain-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    font-size: 32px;
+}
+
+.loading-brain-icon::before {
+    content: "🧠";
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.brain-wave {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    top: 0;
+    left: 0;
+    animation: brainWave 2s ease-out infinite;
+}
+
+.brain-wave:nth-child(2) {
+    animation-delay: 0.5s;
+}
+
+.brain-wave:nth-child(3) {
+    animation-delay: 1s;
+}
+
+@keyframes brainWave {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.8);
+        opacity: 0;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+.loading-modal-body {
+    text-align: center;
+    color: white;
+}
+
+.loading-modal-body h3 {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+    background: linear-gradient(90deg, #fff, #e2e8f0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.loading-modal-body p {
+    font-size: 16px;
+    opacity: 0.9;
+    margin: 0 0 32px 0;
+    line-height: 1.5;
+}
+
+.loading-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 32px;
+    text-align: left;
+}
+
+.loading-step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    opacity: 0.5;
+}
+
+.loading-step.active {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateX(8px);
+}
+
+.step-icon {
+    font-size: 20px;
+    width: 24px;
+    text-align: center;
+}
+
+.loading-step span {
+    font-size: 14px;
+    font-weight: 500;
+    color: white;
+}
+
+.progress-bar-container {
+    margin-top: 24px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4ade80, #22d3ee, #a855f7);
+    background-size: 200% 100%;
+    border-radius: 4px;
+    animation: progressFlow 2s ease-in-out infinite;
+    width: 0;
+    animation: progressGrow 4s ease-out infinite;
+}
+
+@keyframes progressFlow {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+@keyframes progressGrow {
+    0% {
+        width: 0%;
+    }
+    25% {
+        width: 30%;
+    }
+    50% {
+        width: 60%;
+    }
+    75% {
+        width: 85%;
+    }
+    100% {
+        width: 95%;
+    }
+}
+
+.loading-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    animation: floatParticle 3s ease-in-out infinite;
+}
+
+.particle:nth-child(1) {
+    top: 20%;
+    left: 10%;
+    animation-delay: 0s;
+    animation-duration: 2.5s;
+}
+
+.particle:nth-child(2) {
+    top: 60%;
+    left: 80%;
+    animation-delay: 0.5s;
+    animation-duration: 3s;
+}
+
+.particle:nth-child(3) {
+    top: 30%;
+    left: 70%;
+    animation-delay: 1s;
+    animation-duration: 2.8s;
+}
+
+.particle:nth-child(4) {
+    top: 80%;
+    left: 20%;
+    animation-delay: 1.5s;
+    animation-duration: 3.2s;
+}
+
+.particle:nth-child(5) {
+    top: 40%;
+    left: 50%;
+    animation-delay: 2s;
+    animation-duration: 2.7s;
+}
+
+@keyframes floatParticle {
+    0%, 100% {
+        transform: translateY(0px) translateX(0px) scale(1);
+        opacity: 0.3;
+    }
+    25% {
+        transform: translateY(-20px) translateX(10px) scale(1.2);
+        opacity: 0.8;
+    }
+    50% {
+        transform: translateY(-10px) translateX(-15px) scale(0.8);
+        opacity: 1;
+    }
+    75% {
+        transform: translateY(-30px) translateX(5px) scale(1.1);
+        opacity: 0.6;
+    }
+}
+
+/* Efectos adicionales para el modal */
+.loading-modal-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+    animation: shimmer 3s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* Animación de los pasos de carga */
+.loading-step.active .step-icon {
+    animation: stepPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes stepPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+}
+
+/* Responsive para el modal */
+@media (max-width: 768px) {
+    .loading-modal-content {
+        padding: 32px 24px;
+        margin: 20px;
+        max-width: 90vw;
+    }
+
+    .loading-brain-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+    }
+
+    .loading-modal-body h3 {
+        font-size: 20px;
+    }
+
+    .loading-modal-body p {
+        font-size: 14px;
+    }
+
+    .loading-steps {
+        gap: 12px;
+    }
+
+    .loading-step {
+        padding: 10px 12px;
+    }
+
+    .loading-step span {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .loading-modal-overlay {
+        padding: 16px;
+    }
+
+    .loading-modal-content {
+        padding: 24px 20px;
+    }
+
+    .loading-brain-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+
+    .loading-modal-body h3 {
+        font-size: 18px;
+    }
+
+    .loading-steps {
+        gap: 10px;
+    }
+}
+
+/* Animación de entrada suave para los elementos del modal */
+.loading-modal-body > * {
+    animation: fadeInUp 0.6s ease-out forwards;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.loading-modal-body h3 {
+    animation-delay: 0.1s;
+}
+
+.loading-modal-body p {
+    animation-delay: 0.2s;
+}
+
+.loading-steps {
+    animation-delay: 0.3s;
+}
+
+.progress-bar-container {
+    animation-delay: 0.4s;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Efecto de glow para el progreso */
+.progress-fill {
+    box-shadow: 0 0 20px rgba(74, 222, 128, 0.5);
+}
+
+/* Animación secuencial de los pasos */
+.loading-step:nth-child(1).active {
+    animation: stepActivate 0.5s ease-out 0.5s forwards;
+}
+
+.loading-step:nth-child(2).active {
+    animation: stepActivate 0.5s ease-out 1.5s forwards;
+}
+
+.loading-step:nth-child(3).active {
+    animation: stepActivate 0.5s ease-out 2.5s forwards;
+}
+
+.loading-step:nth-child(4) {
+    animation: stepActivate 0.5s ease-out 3.5s forwards;
+}
+
+@keyframes stepActivate {
+    from {
+        opacity: 0.5;
+        transform: translateX(0);
+        background: rgba(255, 255, 255, 0.1);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(8px);
+        background: rgba(255, 255, 255, 0.2);
+    }
+}
+>>>>>>> 8a7f4e6 (front listisimo sin el properties)

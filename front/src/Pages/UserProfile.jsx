@@ -3,22 +3,116 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import "./Perfil.css"
+<<<<<<< HEAD
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from "chart.js"
+=======
+import ScrollNav from "../Components/Nav/ScrollNav.jsx"
+import Footer from "../Components/Footer/footer.jsx"
+import { motion, AnimatePresence } from "framer-motion"
+>>>>>>> 8a7f4e6 (front listisimo sin el properties)
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement)
 
+<<<<<<< HEAD
 function Perfil() {
+=======
+// Componente del Modal de Carga
+const LoadingModal = ({ isVisible, onClose }) => {
+    return (
+        <AnimatePresence>
+            {isVisible && (
+                <motion.div
+                    className="loading-modal-overlay"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    <motion.div
+                        className="loading-modal-content"
+                        initial={{ opacity: 0, scale: 0.8, y: 50 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.8, y: 50 }}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
+                    >
+                        <div className="loading-modal-header">
+                            <div className="loading-brain-icon">
+                                <div className="brain-wave"></div>
+                                <div className="brain-wave"></div>
+                                <div className="brain-wave"></div>
+                            </div>
+                        </div>
+
+                        <div className="loading-modal-body">
+                            <h3>Generando tu consejo personalizado</h3>
+                            <p>Nuestro asistente está analizando tu situación financiera...</p>
+
+                            <div className="loading-steps">
+                                <div className="loading-step active">
+                                    <div className="step-icon">📊</div>
+                                    <span>Analizando ingresos</span>
+                                </div>
+                                <div className="loading-step active">
+                                    <div className="step-icon">💰</div>
+                                    <span>Evaluando gastos</span>
+                                </div>
+                                <div className="loading-step active">
+                                    <div className="step-icon">🎯</div>
+                                    <span>Revisando metas</span>
+                                </div>
+                                <div className="loading-step">
+                                    <div className="step-icon">🤖</div>
+                                    <span>Generando recomendaciones</span>
+                                </div>
+                            </div>
+
+                            <div className="progress-bar-container">
+                                <div className="progress-bar">
+                                    <div className="progress-fill"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="loading-particles">
+                            <div className="particle"></div>
+                            <div className="particle"></div>
+                            <div className="particle"></div>
+                            <div className="particle"></div>
+                            <div className="particle"></div>
+                        </div>
+                    </motion.div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    )
+}
+
+
+export default function PerfilEditable() {
+    // Estados principales
+>>>>>>> 8a7f4e6 (front listisimo sin el properties)
     const [overview, setOverview] = useState(null)
     const [userId, setUserId] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const navigate = useNavigate()
 
+<<<<<<< HEAD
     const updateUserDataInLocalStorage = (userData) => {
         try {
             const currentData = JSON.parse(localStorage.getItem("user")) || {}
             const updatedData = { ...currentData, ...userData }
             localStorage.setItem("user", JSON.stringify(updatedData))
+=======
+    // Estado para el modal de carga del consejo
+    const [generatingAdvice, setGeneratingAdvice] = useState(false)
+
+    // Estados de edición
+    const [editingIncome, setEditingIncome] = useState(false)
+    const [editingFixed, setEditingFixed] = useState(false)
+    const [editingVariable, setEditingVariable] = useState(false)
+    const [editingGoals, setEditingGoals] = useState(false)
+>>>>>>> 8a7f4e6 (front listisimo sin el properties)
 
             if (userData.monthlyIncome !== undefined) {
                 localStorage.setItem("monthlyIncome", userData.monthlyIncome.toString())
@@ -134,6 +228,8 @@ function Perfil() {
     }, [])
 
     const handleGenerateAdvice = async () => {
+        setGeneratingAdvice(true) // Mostrar modal de carga
+
         try {
             const token = localStorage.getItem("token")
 
@@ -186,14 +282,22 @@ function Perfil() {
                 throw new Error(`Error generando el consejo: ${response.status} - ${errorText}`)
             }
 
+<<<<<<< HEAD
             const result = await response.json()
             console.log("Consejo generado exitosamente:", result)
+=======
+            // Simular un pequeño delay para mostrar el modal
+            await new Promise(resolve => setTimeout(resolve, 1000))
+>>>>>>> 8a7f4e6 (front listisimo sin el properties)
 
             alert("Nuevo consejo generado correctamente.")
-            window.location.reload()
+            navigate(`/consejos/${userId}`);
+
         } catch (error) {
             console.error("Error al generar el consejo:", error)
             alert(`No se pudo generar el nuevo consejo: ${error.message}`)
+        }finally {
+            setGeneratingAdvice(false) // Ocultar modal de carga
         }
     }
 
@@ -256,7 +360,24 @@ function Perfil() {
     const totalSavings = monthlyIncome - totalExpenses
 
     return (
+<<<<<<< HEAD
         <div className="profile-container">
+=======
+        <div className="elegant-profile-container">
+            {/* Modal de carga para generar consejo */}
+            <LoadingModal isVisible={generatingAdvice} />
+
+            {/* Formas de fondo */}
+            <div className="background-shapes">
+                <div className="shape shape-1"></div>
+                <div className="shape shape-2"></div>
+                <div className="shape shape-3"></div>
+            </div>
+
+            {/* ScrollNav */}
+            <ScrollNav links={scrollNavLinks} user={user} />
+
+>>>>>>> 8a7f4e6 (front listisimo sin el properties)
             {/* Header */}
             <header className="profile-header">
                 <div className="header-content">
