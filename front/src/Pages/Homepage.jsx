@@ -44,7 +44,7 @@ const Homepage = () => {
 
     const fetchUserData = async (token) => {
         try {
-            const res = await fetch("http://localhost:8080/api/users/me", {
+            const res = await fetch("https://economicallye-1.onrender.com/api/users/me", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -78,7 +78,7 @@ const Homepage = () => {
                 return
             }
 
-            const response = await fetch(`http://localhost:8080/api/advice/${userId}`, {
+            const response = await fetch(`https://economicallye-1.onrender.com/api/advice/${userId}`, {
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
