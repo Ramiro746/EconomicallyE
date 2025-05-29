@@ -17,4 +17,4 @@ RUN ./mvnw clean package -DskipTests
 EXPOSE 8080
 
 # Comando para ejecutar la app (ajusta el nombre del JAR si es necesario)
-CMD ["java", "-jar", "target/tu-app.jar"]
+CMD ["java", "-jar", "target/EconomicallyE-0.0.1-SNAPSHOT.jar"]
