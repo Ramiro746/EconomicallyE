@@ -26,4 +26,9 @@ public class AdviceController {
     public List<AdviceDTO> getAdviceHistory(@PathVariable Long userId) {
         return adviceService.getAdviceHistory(userId);
     }
+
+    @GetMapping("/progress/{userId}")
+    public AdviceDTO generateProgressReport(@PathVariable Long userId) {
+        return adviceService.generateProgressReport(userId);
+    }
 }
