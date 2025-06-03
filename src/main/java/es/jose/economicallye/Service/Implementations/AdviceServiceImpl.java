@@ -44,8 +44,12 @@ public class AdviceServiceImpl implements AdviceService {
         // Generar prompt para IA
         String prompt = buildPrompt(user, fixedExpenses, variableExpenses, goals, questionnaire.getPlannedSavings());
 
+        System.out.println("Prompt enviado"+ prompt);
         // Obtener recomendación de IA
         String iaResult = aiService.getAIRecommendation(prompt);
+
+        System.out.println("Resultado de la IA"+ iaResult);
+
 
         // Guardar el consejo
         Advice advice = new Advice();

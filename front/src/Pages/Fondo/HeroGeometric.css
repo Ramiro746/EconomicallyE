@@ -1,0 +1,172 @@
+@import url("https://fonts.googleapis.com/css2?family=Pacifico:wght@400&display=swap");
+
+.hero-container {
+    position: fixed; /* Cambiado a fixed para que se mantenga en el fondo */
+    top: 0;
+    left: 0;
+    min-height: 100vh;
+    width: 100vw; /* Ocupa todo el ancho del viewport */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background-color: #ffffff; /* Fondo blanco */
+    z-index: -1; /* Asegura que esté en el fondo */
+}
+
+.background-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, transparent 50%, rgba(30, 64, 175, 0.06) 100%);
+    filter: blur(48px);
+}
+
+.shapes-container {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+.elegant-shape {
+    position: absolute;
+}
+
+.shape-content {
+    position: relative;
+    /* overflow: hidden; /* Esto podría cortar partes de la forma si el width/height es pequeño */
+}
+
+.shape-element {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    backdrop-filter: blur(2px);
+    border: 2px solid rgba(59, 130, 246, 0.3);
+    box-shadow: 0 8px 32px 0 rgba(59, 130, 246, 0.15);
+}
+
+.shape-element::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.2), transparent 70%);
+}
+
+/* Clases específicas para los colores de las formas - ahora en tonos azules */
+.shape-indigo {
+    background: linear-gradient(to right, rgba(37, 99, 235, 0.12), transparent);
+}
+
+.shape-rose {
+    background: linear-gradient(to right, rgba(30, 64, 175, 0.15), transparent);
+}
+
+.shape-violet {
+    background: linear-gradient(to right, rgba(59, 130, 246, 0.13), transparent);
+}
+
+.shape-amber {
+    background: linear-gradient(to right, rgba(29, 78, 216, 0.14), transparent);
+}
+
+.shape-cyan {
+    background: linear-gradient(to right, rgba(30, 58, 138, 0.16), transparent);
+}
+
+/* Contenido del Hero (badge, títulos, descripción) - Estos estilos son relevantes si el contenido del HeroGeometric se muestra directamente,
+   pero en tu Homepage.jsx, el contenido principal se maneja fuera de FloatingShapes. */
+.content-container {
+    position: relative;
+    z-index: 10;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+.content-wrapper {
+    max-width: 768px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px;
+    border-radius: 50px;
+    background-color: rgba(59, 130, 246, 0.05);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    margin-bottom: 48px;
+}
+
+.badge-text {
+    font-size: 14px;
+    color: rgba(37, 99, 235, 0.8);
+    letter-spacing: 0.05em;
+}
+
+.title {
+    font-size: 4rem;
+    font-weight: bold;
+    margin-bottom: 32px;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+}
+
+.title-line1 {
+    background: linear-gradient(to bottom, #1f2937, #374151);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.title-line2 {
+    background: linear-gradient(to right, #2563eb, #1d4ed8, #1e3a8a);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family: "Pacifico", cursive;
+}
+
+.description {
+    font-size: 18px;
+    color: #6b7280;
+    margin-bottom: 32px;
+    line-height: 1.6;
+    font-weight: 300;
+    letter-spacing: 0.025em;
+    max-width: 576px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 16px;
+}
+
+.overlay-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, #ffffff, transparent, rgba(255, 255, 255, 0.9));
+    pointer-events: none;
+}
+
+/* Media Queries para responsividad del HeroGeometric */
+@media (min-width: 640px) {
+    .title {
+        font-size: 6rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .title {
+        font-size: 8rem;
+    }
+
+    .badge {
+        margin-bottom: 64px;
+    }
+
+    .content-container {
+        padding: 0 24px;
+    }
+}

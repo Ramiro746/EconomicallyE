@@ -1,0 +1,154 @@
+/* Estilos del formulario */
+.register-form {
+    max-height: 80%;
+    padding: 30px ;
+    border-radius: 10px ;
+    width: 50% ;
+    max-width: 450px ;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    animation: fadeIn 0.5s ease;
+    transition: all 0.3s ease;
+}
+
+
+
+h2 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 24px;
+    transition: color 0.3s ease;
+}
+
+
+/* Estilos de los inputs */
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-bottom: 3px solid #0d85fd;
+    border-top: 0px;
+    border-left: 0px;
+    border-right: 0px;
+    font-size: 16px;
+    transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+    background-color: transparent;
+}
+
+
+
+input:focus {
+    border-color: #0056b3;
+    outline: none;
+}
+
+
+/* Estilos de las etiquetas */
+label {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 8px;
+    font-weight: 500;
+    text-align: left;
+    display: block;
+    transition: color 0.3s ease;
+}
+
+/* Estilos del botón */
+button {
+    padding: 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    width: 100%;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 86, 179, 0.3);
+}
+
+button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Estilos del mensaje de error */
+.error {
+    color: #dc3545;
+    font-size: 14px;
+    margin-top: 10px;
+    text-align: center;
+    background-color: rgba(220, 53, 69, 0.1);
+    padding: 10px;
+    border-radius: 4px;
+}
+
+/* Estilos del mensaje de éxito */
+.success-message {
+    color: #28a745;
+    font-size: 16px;
+    margin: 20px 0;
+    text-align: center;
+    background-color: rgba(40, 167, 69, 0.1);
+    padding: 15px;
+    border-radius: 4px;
+    animation: fadeIn 0.5s ease;
+}
+
+
+
+/* Enlace para ir al login */
+.login-link {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #6c757d;
+}
+
+
+
+.login-link span {
+    color: #007bff;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.login-link span:hover {
+    text-decoration: underline;
+}
+
+/* Ajustes para mejorar la experiencia en móviles */
+@media (max-width: 480px) {
+    .register-form {
+        padding: 20px;
+        margin: 0 15px;
+    }
+
+    input,
+    button {
+        font-size: 14px;
+    }
+
+    h2 {
+        font-size: 20px;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

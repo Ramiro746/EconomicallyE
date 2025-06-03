@@ -33,6 +33,7 @@ public class GoalServiceImpl implements GoalService {
 
         Goal goal = goalMapper.toEntity(goalDTO);
         goal.setUser(user);
+        goal.setName(goalDTO.getName());
 
         if (goalDTO.getRelatedExpenseIds() != null && !goalDTO.getRelatedExpenseIds().isEmpty()) {
             Set<VariableExpense> expenses = new HashSet<>(variableExpenseRepository.findAllById(goalDTO.getRelatedExpenseIds()));
@@ -55,6 +56,7 @@ public class GoalServiceImpl implements GoalService {
         Goal goal = goalRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Goal not found"));
 
+        goal.setName(goalDTO.getName());
         goal.setDescription(goalDTO.getDescription());
         goal.setTargetAmount(goalDTO.getTargetAmount());
         goal.setSavedAmount(goalDTO.getSavedAmount());
