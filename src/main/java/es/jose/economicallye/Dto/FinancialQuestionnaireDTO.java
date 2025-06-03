@@ -1,5 +1,7 @@
 package es.jose.economicallye.Dto;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,6 +15,8 @@ import java.util.List;
 @AllArgsConstructor
 public class FinancialQuestionnaireDTO {
     private Long userId;
+    @NotNull(message = "{questionnaire.income.null}")
+    @PositiveOrZero(message = "{questionnaire.income.invalid}")
     private Double monthlyIncome;
     private List<FixedExpenseDTO> fixedExpenses;
     private List<VariableExpenseDTO> variableExpenses;

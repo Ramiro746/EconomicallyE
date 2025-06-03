@@ -110,15 +110,9 @@ public class AdviceServiceImpl implements AdviceService {
             prompt.append("\nAhorro mensual planificado: ").append(plannedSavings).append(" €\n");
         }
 
-        prompt.append("\n### TAREA PARA TI (IA) ###\n");
-        prompt.append("1. Calcula el total de gastos fijos y variables.\n");
-        prompt.append("2. Calcula cuánto le queda disponible al mes y si el ahorro planificado es viable.\n");
-        prompt.append("3. Propón ajustes específicos en los gastos, con cantidades claras y justificaciones.\n");
-        prompt.append("4. Estima cuánto tardará en cumplir cada meta si mantiene (o mejora) su ahorro actual.\n");
-        prompt.append("5. Presenta todo en un formato claro, estructurado, profesional y fácil de leer.\n");
-
         prompt.append("\n### RECOMENDACIONES CLAVE ###\n");
         prompt.append("- Usa un tono de coach financiero, motivador pero realista.\n");
+        prompt.append("- Si detectas que hay un gasto que ya esta optimizado, RECONÓCELO y NO sugieras cambios genéricos.\n");
         prompt.append("- Cada recomendación debe incluir:\n");
         prompt.append("  a) Cantidad exacta de ahorro potencial\n");
         prompt.append("  b) Estrategia específica para lograrlo\n");
