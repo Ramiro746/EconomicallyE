@@ -1,0 +1,220 @@
+
+
+/* Estilos base y contenedor principal */
+.dashboard-container {
+    max-width: 80%;
+    margin: 0 auto;
+    padding: 2rem;
+    min-height: 100vh;
+    background-color: #f9fafb;
+}
+
+.dashboard-title {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 1.5rem;
+}
+
+/* Formulario principal */
+.dashboard-form {
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+    max-width: 95%;
+}
+
+/* Secciones del formulario */
+.form-section {
+    margin-bottom: 2rem;
+}
+
+.form-section input{
+    max-width: 75%;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Grid para inputs */
+.input-grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1rem;
+}
+
+@media (min-width: 768px) {
+    .input-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Estilos para inputs */
+.input-group {
+    margin-bottom: 1rem;
+}
+
+.input-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.input-field {
+    width: 95%;
+    padding: 0.625rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.textarea-field {
+    min-height: 6rem;
+    resize: vertical;
+}
+
+/* Botones */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background-color: #2563eb;
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #1d4ed8;
+}
+
+.btn-add {
+    color: #2563eb;
+    background: none;
+    border: none;
+    font-weight: 500;
+}
+
+.btn-add:hover {
+    color: #1e40af;
+}
+
+/* Items de gastos y objetivos */
+.expense-item {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background-color: #f8fafc;
+    border-radius: 0.375rem;
+}
+
+@media (min-width: 768px) {
+    .expense-item {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .goal-item {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* Panel de consejos */
+.advice-panel {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background-color: #ecfdf5;
+    border-radius: 0.5rem;
+    border-left: 4px solid #10b981;
+}
+
+.advice-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #047857;
+    margin-bottom: 0.5rem;
+}
+
+.advice-date {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+}
+
+.advice-content {
+    color: #1f2937;
+    line-height: 1.6;
+}
+
+/* Mensajes de error */
+.error-message {
+    color: #dc2626;
+    background-color: #fee2e2;
+    padding: 1rem;
+    border-radius: 0.375rem;
+    margin-top: 1rem;
+    border-left: 4px solid #dc2626;
+}
+
+/* Iconos */
+.icon {
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.5rem;
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.spinner {
+    border: 6px solid #ccc;
+    border-top: 6px solid #007bff;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 10px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

@@ -12,10 +12,12 @@ import java.util.List;
 public interface GoalMapper {
 
     @Mapping(source = "user.id", target = "userId")
+    @Mapping(source = "name", target = "name")
     @Mapping(target = "relatedExpenseIds", expression = "java(goal.getRelatedExpenses() != null ? goal.getRelatedExpenses().stream().map(e -> e.getId()).collect(java.util.stream.Collectors.toSet()) : null)")
     GoalDTO toDto(Goal goal);
 
     @Mapping(source = "userId", target = "user.id")
+    @Mapping(source = "name", target = "name")
     @Mapping(target = "relatedExpenses", ignore = true) // opcional, puedes luego mapear esto si lo necesitas
     Goal toEntity(GoalDTO dto);
 

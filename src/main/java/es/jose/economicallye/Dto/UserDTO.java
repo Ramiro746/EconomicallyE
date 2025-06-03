@@ -1,6 +1,9 @@
 package es.jose.economicallye.Dto;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,18 +18,15 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class UserDTO {
     private Long id;
-    @Email(message = "{user.email.invalid}")
-    @NotBlank(message = "{user.email.blank}")
+    @Email
+    @NotBlank
     private String email;
-    @NotBlank(message = "{user.password.blank}")
-    @Size(min = 8, message = "{user.password.tooShort}")
+    @NotBlank
     private String password;
-    @NotBlank(message = "{user.name.blank}")
+    @NotBlank
     private String name;
     private LocalDateTime registrationDate;
-    @NotNull(message = "{user.income.null}")
-    @PositiveOrZero(message = "{user.income.negative}")
+    @NotNull
+    @PositiveOrZero
     private Double monthlyIncome;
-
-
 }

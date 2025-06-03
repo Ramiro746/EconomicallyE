@@ -1,0 +1,494 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap');
+h1, h2, h3 {
+    font-family: 'Montserrat', sans-serif;
+}
+
+header h3{
+    background: linear-gradient(
+            to right,
+            #ffffff,
+            #1a1eec,
+            #ffffff,
+            #1a1eec,
+            #ffffff
+    );
+    background-size: 200%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: animate-gradient 5.5s linear infinite;
+}
+@keyframes animate-gradient {
+    to {
+        background-position: 200%;
+    }
+}
+body{
+    font-family: 'Open Sans', sans-serif;
+
+}
+
+
+.container {
+    height: 100vh;
+    padding: 20px;
+}
+
+.container .items {
+    display: flex;
+    gap: 3rem;
+}
+.container .items h4 {
+    color: #1a1a1a;
+    font-weight: normal;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.container .items h4:hover {
+    color: #4e9ae6;
+}
+
+
+
+.container-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.header2 {
+    background: linear-gradient(60deg, #6d9ded, #053f78 50%);
+    position: absolute;
+    transform: translateY(-50%);
+    animation: slideInDown 0.5s ease-in-out ;
+
+}
+
+@keyframes slideInDown {
+    from{
+        transform: translate3d(0,-90%,0);
+    }
+    to{
+        transform: translate3d(0,-10%,0);
+    }
+}
+
+header {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    right: 2rem;
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: calc(100% - 4rem);
+}
+
+header .container-logo {
+    flex: 1;
+}
+header .items {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+}
+
+header .container-logo image {
+    max-width: 100%;
+    height: auto;
+}
+
+.header-buttons {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+}
+
+
+.login-btn {
+    background-color: transparent;
+    border: 1px solid #0d85fd;
+    color: black;
+    border-radius: 4px;
+}
+
+.login-btn:hover {
+    background-color: rgb(78, 154, 230);
+    border-color: #0d85fd;
+}
+
+.register-btn {
+    background-color: #0d85fd;
+    border: 1px solid #0d85fd;
+    border-radius: 4px;
+    color: black;
+}
+
+.register-btn:hover {
+    background-color: #4e9ae6;
+    border-color: #4e9ae6;
+}
+
+.content {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+    margin-top: 20%;
+    gap: 5rem;
+    padding-bottom: 6rem;
+}
+
+.cta-section button {
+    background-color: #0d85fd;
+    color: white;
+}
+
+.cta-btn {
+    padding: 1rem 2.5rem;
+    font-size: 1.1rem;
+    background-color: #0d6efd;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    box-shadow: 0 4px 6px rgba(13, 110, 253, 0.2);
+}
+
+.cta-section button:hover {
+    background-color: #053f78;
+    transform: translateY(2px);
+}
+
+.cta-btn:hover {
+    background-color: #0b5ed7;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(13, 110, 253, 0.25);
+}
+
+.information {
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.information h3 {
+    font-weight: normal;
+}
+
+.buttons {
+    display: flex;
+    background-color: #c6c2c2;
+    padding: 4px;
+}
+.buttons .botones {
+    margin-top: 0px;
+    background-color: white;
+    border: 1px solid #ccc;  /* Agregamos un borde para que se vean bien, si lo deseas */
+    color: black; /* Color de texto estándar */
+    padding: 10px 20px; /* Añadir algo de padding para darles tamaño */
+    border-radius: 4px; /* Bordes redondeados */
+    cursor: pointer; /* Indicamos que es un botón */
+    transition: none; /* Eliminamos cualquier transición o animación */
+}
+
+.buttons .botones:hover {
+    background-color: white; /* Sin cambio de color de fondo */
+    border: 1px solid #ccc;  /* Mantén el mismo borde */
+    color: black; /* Mantén el color del texto igual */
+}
+
+
+.items button{
+    margin-top: 0px;
+    background-color: white;
+    border: 1px solid #ccc;  /* Agregamos un borde para que se vean bien, si lo deseas */
+    color: black; /* Color de texto estándar */
+    padding: 10px 20px; /* Añadir algo de padding para darles tamaño */
+    border-radius: 4px; /* Bordes redondeados */
+    cursor: pointer; /* Indicamos que es un botón */
+    transition: none; /* Eliminamos cualquier transición o animación */
+}
+
+.header-buttons{
+    margin-top: 0px;
+    padding: 10px 20px; /* Añadir algo de padding para darles tamaño */
+    border-radius: 4px; /* Bordes redondeados */
+    cursor: pointer; /* Indicamos que es un botón */
+}
+.card {
+    border: 1px solid #ddd;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    padding: 1rem;
+    margin-top: 2rem;
+    width: 190%;
+}
+
+.card-header {
+    margin-bottom: 1rem;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.card-description {
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.card-content {
+    padding: 1rem 0;
+}
+
+
+.spiral-path {
+    animation: drawSpiral 6s linear forwards infinite;
+}
+
+@keyframes drawSpiral {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeInOverlay 0.3s ease-in-out;
+}
+
+.modal-content {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    animation: fadeInModal 0.3s ease-in-out;
+    transition: all 0.3s ease;
+}
+.modal-content.closing {
+    animation: fadeOutModal 0.3s ease-in-out forwards;
+}
+/* Animación de entrada del fondo (ya está en uso) */
+@keyframes fadeInOverlay {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Animación de entrada del modal (ya está en uso) */
+@keyframes fadeInModal {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Animación de salida del modal */
+@keyframes fadeOutModal {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+}
+
+
+.dark-theme .modal-content {
+    background-color: #1e1e1e;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.close-btn {
+    position: absolute;
+    top: 12px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: #333;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.close-btn:hover {
+    color: #0d85fd;
+}
+
+.dark-theme .close-btn {
+    color: #e0e0e0;
+}
+
+.dark-theme .close-btn:hover {
+    color: #0d85fd;
+}
+
+.perspective-container {
+    perspective: 1000px;
+}
+
+.card-3d {
+    transform-style: preserve-3d;
+}
+
+
+/* Estilos adicionales para la nueva sección */
+.financial-features {
+    padding: 4rem 2rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    margin: 2rem 0;
+}
+
+.features-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.feature-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.feature-header h3 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1rem;
+}
+
+.feature-header p {
+    font-size: 1.2rem;
+    color: #64748b;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.feature-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #e2e8f0;
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    color: white;
+}
+
+.feature-card h4 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.75rem;
+}
+
+.feature-card p {
+    color: #64748b;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.feature-demo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.feature-preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
+.chart-placeholder {
+    display: flex;
+    align-items: end;
+    gap: 8px;
+    height: 100px;
+}
+
+.chart-bar {
+    width: 20px;
+    background: linear-gradient(to top, #3b82f6, #60a5fa);
+    border-radius: 4px 4px 0 0;
+    transition: height 0.3s ease;
+}
+
+.chart-bar:hover {
+    background: linear-gradient(to top, #1d4ed8, #3b82f6);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .features-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .feature-header h3 {
+        font-size: 2rem;
+    }
+
+    .financial-features {
+        padding: 2rem 1rem;
+    }
+}
