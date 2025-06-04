@@ -50,13 +50,13 @@ public class AuthController {
 
             String token = tokenProvider.generateToken(userDetails, user.getId(), user.getEmail(), user.getName());
 
-            logger.info("✅ Usuario autenticado: {} - Token generado: {}",  userDetails.getUsername(), token);
+            logger.info("Usuario autenticado: {} - Token generado: {}",  userDetails.getUsername(), token);
             logger.info("Nombre de usuario:"+(user.getName()));
             UserDTO userDTO = mapToUserDTO(user);
             return ResponseEntity.ok(new AuthResponseDTO(token, userDTO));
 
         } catch (Exception ex) {
-            logger.error("❌ Error de autenticación: " + ex.getMessage(), ex);
+            logger.error("Error de autenticación: " + ex.getMessage(), ex);
             return ResponseEntity.status(403).body("Credenciales inválidas");
         }
     }
@@ -66,7 +66,6 @@ public class AuthController {
                 //.id(user.getId())
                 .email(user.getEmail())
                 .name(user.getName())
-                // Agrega más campos si es necesario
                 .build();
     }
 }

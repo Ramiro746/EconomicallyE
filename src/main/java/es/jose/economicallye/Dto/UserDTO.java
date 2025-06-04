@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 
@@ -23,8 +24,19 @@ public class UserDTO {
     private String password;
     @NotBlank(message = "{user.name.blank}")
     private String name;
-    private LocalDateTime registrationDate;
+    private LocalDate registrationDate;
     @NotNull(message = "{user.income.null}")
     @PositiveOrZero(message = "{user.income.negative}")
     private Double monthlyIncome;
+
+    public UserDTO(Long id, String email) {
+        this.id = id;
+        this.email = email;
+    }
+
+    public UserDTO(Long id, String email, String name) {
+        this.id = id;
+        this.email = email;
+        this.name = name;
+    }
 }

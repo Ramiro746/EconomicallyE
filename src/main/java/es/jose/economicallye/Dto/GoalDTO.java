@@ -16,6 +16,8 @@ import java.util.Set;
 public class GoalDTO {
     private Long id;
     private Long userId;
+    @NotBlank(message = "{goal.name.blank}")  // opcional, según necesidades
+    private String name;
     @NotBlank(message = "{goal.description.blank}")
     private String description;
     @NotNull(message = "{goal.targetAmount.null}")
