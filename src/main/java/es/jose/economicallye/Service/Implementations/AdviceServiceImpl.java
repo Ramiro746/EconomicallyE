@@ -51,67 +51,56 @@ public class AdviceServiceImpl implements AdviceService {
 
         // Validación: El usuario debe tener al menos una meta
         if (currentGoals.isEmpty()) {
-            return AdviceDTO.builder()
-                    .userId(user.getId())
-                    .iaResult(localeResolver.resolveLocale(request).getLanguage().equals("es")
+            return buildErrorAdvice(user.getId(),
+                    localeResolver.resolveLocale(request).getLanguage().equals("es")
                             ? "Debes tener al menos una meta de ahorro configurada para poder generar un consejo financiero."
-                            : "You must have at least one savings goal configured to generate financial advice.")
-                    .recommendationDate(LocalDateTime.now())
-                    .build();
+                            : "You must have at least one savings goal configured to generate financial advice.");
         }
 
         // Validación: El usuario debe tener ingresos mensuales
         if (user.getMonthlyIncome() == null || user.getMonthlyIncome() <= 0) {
-            return AdviceDTO.builder()
-                    .userId(user.getId())
-                    .iaResult(localeResolver.resolveLocale(request).getLanguage().equals("es")
+            return buildErrorAdvice(user.getId(),
+                    localeResolver.resolveLocale(request).getLanguage().equals("es")
                             ? "Debes configurar tus ingresos mensuales antes de generar un consejo financiero."
-                            : "You must configure your monthly income before generating financial advice.")
-                    .recommendationDate(LocalDateTime.now())
-                    .build();
+                            : "You must configure your monthly income before generating financial advice.");
         }
 
         Optional<Advice> lastAdvice = adviceRepository.findTopByUserIdOrderByRecommendationDateDesc(user.getId());
 
-        // Validación 1: Verificar si hay cambios en los datos
+        // Validación 1: Verificar si hay cambios en los datos del usuario
         boolean dataChanged = lastAdvice.isEmpty() ||
-                hasFinancialDataChanged(lastAdvice.get(),
-                        currentFixedExpenses,
-                        currentVariableExpenses,
-                        currentGoals,
-                        questionnaire.getPlannedSavings());
+                hasUserDataChanged(lastAdvice.get(), user, currentFixedExpenses,
+                        currentVariableExpenses, currentGoals);
 
         // Validación 2: Verificar si el último consejo fue hace menos de 1 semana
         boolean isTooRecent = lastAdvice.isPresent() &&
                 lastAdvice.get().getRecommendationDate()
-                        .isAfter(LocalDateTime.now().minusWeeks(1));
+                        .isAfter(LocalDateTime.now().minusSeconds(1));
 
-        // Nueva lógica de validación estricta
         if (lastAdvice.isPresent()) {
             if (!dataChanged) {
-                return AdviceDTO.builder()
-                        .userId(user.getId())
-                        .iaResult(localeResolver.resolveLocale(request).getLanguage().equals("es")
+                return buildErrorAdvice(user.getId(),
+                        localeResolver.resolveLocale(request).getLanguage().equals("es")
                                 ? "Debes actualizar tu información financiera antes de recibir un nuevo consejo."
-                                : "You must update your financial information before receiving new advice.")
-                        .recommendationDate(LocalDateTime.now())
-                        .build();
+                                : "You must update your financial information before receiving new advice.");
             }
 
             if (isTooRecent) {
-                return AdviceDTO.builder()
-                        .userId(user.getId())
-                        .iaResult(localeResolver.resolveLocale(request).getLanguage().equals("es")
+                return buildErrorAdvice(user.getId(),
+                        localeResolver.resolveLocale(request).getLanguage().equals("es")
                                 ? "Debes esperar al menos una semana desde tu último consejo para recibir uno nuevo."
-                                : "You must wait at least one week from your last advice to receive a new one.")
-                        .recommendationDate(LocalDateTime.now())
-                        .build();
+                                : "You must wait at least one week from your last advice to receive a new one.");
             }
         }
 
-        // Resto del metodo para generar el consejo
+        // Generar el consejo
         Locale locale = localeResolver.resolveLocale(request);
-        String prompt = buildPrompt(user, currentFixedExpenses, currentVariableExpenses, currentGoals, questionnaire.getPlannedSavings(), locale);
+        String prompt = buildPrompt(user, currentFixedExpenses, currentVariableExpenses,
+                currentGoals, questionnaire.getPlannedSavings(), locale);
+
+        // Log del prompt que se envía a la IA
+        logPromptDetails(prompt, locale);
+
         String iaResult;
         try {
             iaResult = aiService.getAIRecommendation(prompt);
@@ -121,48 +110,78 @@ public class AdviceServiceImpl implements AdviceService {
                     : "Could not generate advice at this time. Please try again later.";
         }
 
-        Advice advice = new Advice();
-        advice.setUser(user);
-        advice.setIaResult(iaResult);
-        advice.setRecommendationDate(LocalDateTime.now());
-        advice = adviceRepository.save(advice);
+        String dataHash = calculateUserDataHash(user, currentFixedExpenses, currentVariableExpenses, currentGoals);
+        String adviceWithHash = "[DATAHASH:" + dataHash + "]\n" + iaResult;
 
+        Advice advice = Advice.builder()
+                .user(user)
+                .iaResult(iaResult)
+                .recommendationDate(LocalDateTime.now())
+                .dataHash(dataHash)
+                .build();
+
+        advice = adviceRepository.save(advice);
         return adviceMapper.toDto(advice);
     }
 
+    private AdviceDTO buildErrorAdvice(Long userId, String message) {
+        return AdviceDTO.builder()
+                .userId(userId)  // Aseguramos que siempre tenga userId
+                .iaResult(message)
+                .recommendationDate(LocalDateTime.now())
+                .build();
+    }
 
-    private boolean hasFinancialDataChanged(Advice lastAdvice,
-                                            List<FixedExpense> currentFixed,
-                                            List<VariableExpense> currentVariable,
-                                            List<Goal> currentGoals,
-                                            Double plannedSavings) {
-        String currentHash = calculateDataHash(currentFixed, currentVariable, currentGoals, plannedSavings);
-        String lastHash = extractDataHashFromAdvice(lastAdvice);
+    private boolean hasUserDataChanged(Advice lastAdvice, User user,
+                                       List<FixedExpense> currentFixed,
+                                       List<VariableExpense> currentVariable,
+                                       List<Goal> currentGoals) {
+        String currentHash = calculateUserDataHash(user, currentFixed, currentVariable, currentGoals);
+        String lastHash = lastAdvice.getDataHash();
         return !currentHash.equals(lastHash);
     }
 
-    private String calculateDataHash(List<FixedExpense> fixedExpenses,
-                                     List<VariableExpense> variableExpenses,
-                                     List<Goal> goals,
-                                     Double plannedSavings) {
+    private String calculateUserDataHash(User user,
+                                         List<FixedExpense> fixedExpenses,
+                                         List<VariableExpense> variableExpenses,
+                                         List<Goal> goals) {
         StringBuilder dataSnapshot = new StringBuilder();
 
+        // Incluir datos del usuario
+        dataSnapshot.append(user.getId())
+                .append(user.getMonthlyIncome());
+
+        // Incluir gastos fijos
         fixedExpenses.stream()
                 .sorted(Comparator.comparing(FixedExpense::getId))
-                .forEach(fe -> dataSnapshot.append(fe.getId()).append(fe.getName()).append(fe.getAmount()).append(fe.getFrequency()));
+                .forEach(fe -> dataSnapshot.append(fe.getId()).append(fe.getName())
+                        .append(fe.getAmount()).append(fe.getFrequency()));
 
+        // Incluir gastos variables
         variableExpenses.stream()
                 .sorted(Comparator.comparing(VariableExpense::getId))
-                .forEach(ve -> dataSnapshot.append(ve.getId()).append(ve.getName()).append(ve.getAmount()).append(ve.getExpenseDate()));
+                .forEach(ve -> dataSnapshot.append(ve.getId()).append(ve.getName())
+                        .append(ve.getAmount()).append(ve.getExpenseDate()));
 
+        // Incluir metas
         goals.stream()
                 .sorted(Comparator.comparing(Goal::getId))
-                .forEach(g -> dataSnapshot.append(g.getId()).append(g.getDescription()).append(g.getTargetAmount()).append(g.getSavedAmount()).append(g.getDeadline()));
-
-        dataSnapshot.append(plannedSavings);
+                .forEach(g -> dataSnapshot.append(g.getId()).append(g.getDescription())
+                        .append(g.getTargetAmount()).append(g.getSavedAmount())
+                        .append(g.getDeadline()));
 
         return DigestUtils.md5DigestAsHex(dataSnapshot.toString().getBytes());
     }
+
+    private void logPromptDetails(String prompt, Locale locale) {
+        System.out.println("=== ENVIANDO A IA ===");
+        System.out.println("Idioma: " + (locale.getLanguage().equals("es") ? "Español" : "Inglés"));
+        System.out.println("Datos enviados:");
+        System.out.println(prompt);
+        System.out.println("=====================");
+    }
+
+
 
     private String extractDataHashFromAdvice(Advice advice) {
         String iaResult = advice.getIaResult();
@@ -197,13 +216,12 @@ public class AdviceServiceImpl implements AdviceService {
                                List<VariableExpense> variableExpenses,
                                List<Goal> goals, Double plannedSavings, Locale locale) {
         StringBuilder prompt = new StringBuilder();
-        String dataHash = calculateDataHash(fixedExpenses, variableExpenses, goals, plannedSavings);
-        prompt.append("[DATAHASH:").append(dataHash).append("]\n");
+        String dataHash = calculateUserDataHash(user, fixedExpenses, variableExpenses, goals);
 
         if (locale.getLanguage().equals(new Locale("es").getLanguage())) {
             prompt.append("Por favor, responde completamente en español.\n\n");
         } else {
-            prompt.append("Please respond entirely in English.\n\n");
+            prompt.append(" (IMPORTANT) Please respond entirely in English.\n\n");
         }
 
         prompt.append("Eres un asesor financiero experto con un enfoque en coaching financiero. Tu objetivo es proporcionar recomendaciones extremadamente prácticas y personalizadas que ayuden al usuario a optimizar sus finanzas sin caer en recortes innecesarios.\n\n");

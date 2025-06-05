@@ -15,8 +15,8 @@ import java.util.List;
 @AllArgsConstructor
 public class FinancialQuestionnaireDTO {
     private Long userId;
-    @NotNull(message = "{questionnaire.income.null}")
-    @PositiveOrZero(message = "{questionnaire.income.invalid}")
+//    @NotNull(message = "{questionnaire.income.null}")
+//    @PositiveOrZero(message = "{questionnaire.income.invalid}")
     private Double monthlyIncome;
     private List<FixedExpenseDTO> fixedExpenses;
     private List<VariableExpenseDTO> variableExpenses;

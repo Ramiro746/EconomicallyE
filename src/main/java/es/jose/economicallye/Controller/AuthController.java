@@ -6,6 +6,7 @@ import es.jose.economicallye.Dto.UserDTO;
 import es.jose.economicallye.Entity.User;
 import es.jose.economicallye.Repository.UserRepository;
 import es.jose.economicallye.Security.JwtTokenProvider;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +34,7 @@ public class AuthController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthRequestDTO request) {
+    public ResponseEntity<?> login(@Valid @RequestBody AuthRequestDTO request) {
         try {
             Authentication authentication = authManager.authenticate(
                     new UsernamePasswordAuthenticationToken(

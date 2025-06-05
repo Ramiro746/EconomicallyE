@@ -15,13 +15,13 @@ import java.util.List;
 )
 public interface AdviceMapper {
 
+    @Mapping(target = "userId", source = "user.id")  // Mapeo explícito de user.id a userId
     AdviceDTO toDto(Advice entity);
+
+    @Mapping(target = "user", ignore = true)  // Ignoramos el user ya que se manejará aparte
     Advice toEntity(AdviceDTO dto);
 
-    // Actualiza el @Mapping para usar 'userId' en lugar de 'user.id'
-    @Mapping(target = "userId", source = "userId")  // Aquí estamos mapeando correctamente userId
-    @Mapping(target = "iaResult", ignore = true) // Este campo se genera después con la IA
-    @Mapping(target = "recommendationDate", ignore = true) // Este campo se genera en el servicio
+    // Simplificación del mapeo desde Questionnaire
     AdviceDTO toDtoFromQuestionnaire(FinancialQuestionnaireDTO dto);
 
     List<AdviceDTO> toDtoList(List<Advice> list);

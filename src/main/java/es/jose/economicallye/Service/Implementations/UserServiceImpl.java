@@ -48,7 +48,6 @@ public class UserServiceImpl implements UserService {
         return userMapper.toDto(user);
     }
 
-
     @Override
     public UserDTO getUserById(Long id) {
         if (id == null) {
@@ -59,7 +58,6 @@ public class UserServiceImpl implements UserService {
                 .map(userMapper::toDto)
                 .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado con ID: " + id));
     }
-
 
     @Override
     public List<UserDTO> getAllUsers() {
@@ -87,10 +85,6 @@ public class UserServiceImpl implements UserService {
             String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
             user.setPassword(encodedPassword);
         }
-
-
-        // No actualizamos la contraseña aquí - esto debería hacerse en un servicio específico
-        // con la validación y encriptación adecuadas
 
         user = userRepository.save(user);
         return userMapper.toDto(user);
