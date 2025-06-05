@@ -2,6 +2,7 @@
 
     import es.jose.economicallye.Dto.FixedExpenseDTO;
     import es.jose.economicallye.Service.FixedExpenseService;
+    import jakarta.validation.Valid;
     import lombok.RequiredArgsConstructor;
     import org.springframework.http.HttpStatus;
     import org.springframework.web.bind.annotation.*;
@@ -17,7 +18,7 @@
 
         @PostMapping
         @ResponseStatus(HttpStatus.CREATED)
-        public FixedExpenseDTO createFixedExpense(@RequestBody FixedExpenseDTO fixedExpenseDTO) {
+        public FixedExpenseDTO createFixedExpense(@Valid @RequestBody FixedExpenseDTO fixedExpenseDTO) {
             return fixedExpenseService.createFixedExpense(fixedExpenseDTO);
         }
 
@@ -27,7 +28,7 @@
         }
 
         @PutMapping("/{id}")
-        public FixedExpenseDTO updateFixedExpense(@PathVariable Long id, @RequestBody FixedExpenseDTO fixedExpenseDTO) {
+        public FixedExpenseDTO updateFixedExpense(@Valid @PathVariable Long id, @RequestBody FixedExpenseDTO fixedExpenseDTO) {
             return fixedExpenseService.updateFixedExpense(id, fixedExpenseDTO);
         }
 

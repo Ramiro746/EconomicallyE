@@ -43,7 +43,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody UserDTO userDTO) {
+    public ResponseEntity<UserDTO> updateUser(@Valid @PathVariable Long id, @RequestBody UserDTO userDTO) {
         return ResponseEntity.ok(userService.updateUser(id, userDTO));
     }
 
@@ -67,9 +67,6 @@ public class UserController {
         Double newIncome = update.get("monthlyIncome");
         return ResponseEntity.ok(userService.updateUserIncome(id, newIncome));
     }
-
-
-
     @GetMapping("/me")
     public UserDTO getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
         return new UserDTO(userDetails.getId(), userDetails.getUsername(), userDetails.getName());
