@@ -75,7 +75,7 @@ public class AdviceServiceImpl implements AdviceService {
         // Validación 2: Verificar si el último consejo fue hace menos de 1 semana
         boolean isTooRecent = lastAdvice.isPresent() &&
                 lastAdvice.get().getRecommendationDate()
-                        .isAfter(LocalDateTime.now().minusSeconds(1));
+                        .isAfter(LocalDateTime.now().minusWeeks(1));
 
         if (lastAdvice.isPresent()) {
             if (!dataChanged) {
