@@ -1,0 +1,245 @@
+.historial-container {
+    margin-top: 1rem;
+    padding: 1rem;
+
+}
+
+
+
+.back-button-container {
+    display: flex;
+    margin-bottom: 1rem;
+}
+
+.back-button {
+    padding: 0.5rem 1rem;
+        border: none;
+    border-radius: 4px;
+    cursor: pointer;
+
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    box-shadow: var(--shadow-glow);
+}
+
+.historial-title {
+    width: 100%;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+    /* Establece el mismo gradiente que usaste para el background */
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+
+    /* Recorta el fondo para que solo se aplique al área del texto */
+    -webkit-background-clip: text; /* Prefijo para compatibilidad con navegadores basados en WebKit */
+    background-clip: text;
+
+    /* Hace que el color del texto sea transparente para que el gradiente de fondo sea visible */
+    -webkit-text-fill-color: transparent; /* Prefijo para compatibilidad con navegadores basados en WebKit */
+    color: transparent; /* Fallback para navegadores que no soportan -webkit-text-fill-color */
+}
+
+/*
+.historial-title h1{
+
+    color: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+
+}
+
+ */
+
+.no-consejos-message {
+    background-color: #e0f0ff;
+    padding: 1rem;
+    border-radius: 6px;
+}
+
+.consejos-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.consejo-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.consejo-card-header {
+    background-color: #f9f9f9;
+    padding: 1rem;
+    border-bottom: 1px solid #ddd;
+}
+
+.consejo-card-title {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #000;
+}
+
+.consejo-date {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.consejo-card-body {
+    padding: 1rem;
+}
+
+.consejo-content h2.consejo-header2 {
+    color: #1e40af;
+    font-size: 1.25rem;
+    margin-top: 1rem;
+    margin-bottom: 0.75rem;
+    font-weight: bold;
+}
+
+.consejo-content h3.consejo-header3 {
+    color: #2563eb;
+    font-size: 1.1rem;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.consejo-content h4.consejo-header4 {
+    color: #3b82f6;
+    font-size: 1rem;
+    margin-top: 0.75rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.consejo-item {
+    margin-left: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.consejo-text {
+    margin-bottom: 0.5rem;
+}
+
+.error-message {
+    padding: 1rem;
+    color: red;
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    position: relative;
+}
+
+.spinner-container {
+    z-index: 2;
+}
+
+.loading-spinner {
+    display: flex;
+    gap: 8px;
+}
+
+.spinner-ring {
+    width: 16px;
+    height: 16px;
+    border: 3px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1.2s linear infinite;
+}
+
+.loading-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+}
+
+.floating-shape {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background-color: #dbeafe;
+    border-radius: 50%;
+    animation: float 6s ease-in-out infinite;
+}
+
+.shape-1 {
+    top: 10%;
+    left: 20%;
+}
+
+.shape-2 {
+    bottom: 15%;
+    right: 25%;
+}
+
+@keyframes float {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0); }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Formas de fondo */
+.background-shapes {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.background-shapes .shape {
+    position: absolute;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(67, 97, 238, 0.1), rgba(76, 201, 240, 0.1));
+    animation: float 20s ease-in-out infinite;
+}
+
+.background-shapes .shape-1 {
+    width: 300px;
+    height: 300px;
+    top: 10%;
+    left: -5%;
+    animation-delay: 0s;
+}
+
+.background-shapes .shape-2 {
+    width: 200px;
+    height: 200px;
+    top: 60%;
+    right: -5%;
+    animation-delay: -7s;
+}
+
+.background-shapes .shape-3 {
+    width: 150px;
+    height: 150px;
+    bottom: 20%;
+    left: 20%;
+    animation-delay: -14s;
+}
+
+@keyframes float {
+    0%,
+    100% {
+        transform: translateY(0px) rotate(0deg);
+        opacity: 0.5;
+    }
+    50% {
+        transform: translateY(-30px) rotate(180deg);
+        opacity: 0.8;
+    }
+}

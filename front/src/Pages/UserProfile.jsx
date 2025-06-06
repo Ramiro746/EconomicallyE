@@ -3,37 +3,55 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import "./Perfil.css"
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from "chart.js"
+import ScrollNav from "../Components/Nav/ScrollNav.jsx"
+import Footer from "../Components/Footer/footer.jsx"
+import { motion } from "framer-motion"
 
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement)
+const fadeUpVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: (i) => ({
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.8,
+            delay: 0.1 + i * 0.1,
+            ease: [0.25, 0.4, 0.25, 1],
+        },
+    }),
+}
 
-function Perfil() {
+export default function PerfilEditable() {
+    // Estados principales
     const [overview, setOverview] = useState(null)
+    const [hasCompletedFirstForm, setHasCompletedFirstForm] = useState(false)
+    const [user, setUser] = useState(null)
     const [userId, setUserId] = useState(null)
     const [loading, setLoading] = useState(true)
+    const [saving, setSaving] = useState(false)
     const [error, setError] = useState(null)
     const navigate = useNavigate()
 
-    const updateUserDataInLocalStorage = (userData) => {
-        try {
-            const currentData = JSON.parse(localStorage.getItem("user")) || {}
-            const updatedData = { ...currentData, ...userData }
-            localStorage.setItem("user", JSON.stringify(updatedData))
+    // Estados de edición
+    const [editingIncome, setEditingIncome] = useState(false)
+    const [editingFixed, setEditingFixed] = useState(false)
+    const [editingVariable, setEditingVariable] = useState(false)
+    const [editingGoals, setEditingGoals] = useState(false)
 
-            if (userData.monthlyIncome !== undefined) {
-                localStorage.setItem("monthlyIncome", userData.monthlyIncome.toString())
-            }
+    // Estados de datos editables
+    const [monthlyIncome, setMonthlyIncome] = useState(0)
+    const [fixedExpenses, setFixedExpenses] = useState([])
+    const [variableExpenses, setVariableExpenses] = useState([])
+    const [goals, setGoals] = useState([])
 
-            console.log("✅ Datos actualizados en localStorage:", updatedData)
-            console.log("💰 Monthly Income guardado:", updatedData.monthlyIncome)
+    // Opciones de frecuencia
+    const frequencyOptions = [
+        { value: "MONTHLY", label: "Mensual" },
+        { value: "WEEKLY", label: "Semanal" },
+        { value: "YEARLY", label: "Anual" },
+        { value: "DAILY", label: "Diario" },
+    ]
 
-            return updatedData
-        } catch (error) {
-            console.error("❌ Error al actualizar localStorage:", error)
-            return null
-        }
-    }
-
+    // Cargar datos iniciales
     useEffect(() => {
         const fetchOverview = async () => {
             try {
@@ -61,12 +79,11 @@ function Perfil() {
 
                 const overviewData = await overviewRes.json()
 
+                // Cargar datos detallados
                 let detailedFixedExpenses = []
                 try {
                     const fixedExpensesRes = await fetch(`http://localhost:8080/api/fixed-expenses/${currentUserId}`, {
-                        headers: {
-                            Authorization: "Bearer " + token,
-                        },
+                        headers: { Authorization: "Bearer " + token },
                     })
                     if (fixedExpensesRes.ok) {
                         detailedFixedExpenses = await fixedExpensesRes.json()
@@ -78,9 +95,7 @@ function Perfil() {
                 let detailedVariableExpenses = []
                 try {
                     const variableExpensesRes = await fetch(`http://localhost:8080/api/variable-expenses/${currentUserId}`, {
-                        headers: {
-                            Authorization: "Bearer " + token,
-                        },
+                        headers: { Authorization: "Bearer " + token },
                     })
                     if (variableExpensesRes.ok) {
                         detailedVariableExpenses = await variableExpensesRes.json()
@@ -92,9 +107,7 @@ function Perfil() {
                 let detailedGoals = []
                 try {
                     const goalsRes = await fetch(`http://localhost:8080/api/goals/${currentUserId}`, {
-                        headers: {
-                            Authorization: "Bearer " + token,
-                        },
+                        headers: { Authorization: "Bearer " + token },
                     })
                     if (goalsRes.ok) {
                         detailedGoals = await goalsRes.json()
@@ -111,17 +124,11 @@ function Perfil() {
                     goals: detailedGoals.length > 0 ? detailedGoals : overviewData.goals || [],
                 }
 
-                console.log("Datos recibidos:", enhancedOverview)
                 setOverview(enhancedOverview)
-
-                if (enhancedOverview.monthlyIncome !== undefined) {
-                    updateUserDataInLocalStorage({
-                        id: currentUserId,
-                        email: data.email,
-                        name: data.name,
-                        monthlyIncome: enhancedOverview.monthlyIncome,
-                    })
-                }
+                setMonthlyIncome(enhancedOverview.monthlyIncome || 0)
+                setFixedExpenses(enhancedOverview.fixedExpenses || [])
+                setVariableExpenses(enhancedOverview.variableExpenses || [])
+                setGoals(enhancedOverview.goals || [])
             } catch (error) {
                 console.error("Error al cargar el perfil: ", error)
                 setError("No se pudo obtener el perfil")
@@ -132,6 +139,191 @@ function Perfil() {
 
         fetchOverview()
     }, [])
+
+    // Funciones de guardado
+    const saveIncome = async () => {
+        setSaving(true)
+        try {
+            const token = localStorage.getItem("token")
+            const res = await fetch(`http://localhost:8080/api/users/${userId}/income`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ monthlyIncome }),
+            })
+
+            if (!res.ok) throw new Error("Error al actualizar el ingreso")
+
+            setOverview((prev) => ({ ...prev, monthlyIncome }))
+            setEditingIncome(false)
+            localStorage.setItem("monthlyIncome", monthlyIncome.toString())
+            alert("Ingreso actualizado correctamente")
+        } catch (error) {
+            console.error("Error saving income:", error)
+            alert("Error al guardar el ingreso")
+        } finally {
+            setSaving(false)
+        }
+    }
+
+    const saveItem = async (type, item) => {
+        const token = localStorage.getItem("token")
+        let endpoint = ""
+        if (type === "fixed") endpoint = "fixed-expenses"
+        else if (type === "variable") endpoint = "variable-expenses"
+        else if (type === "goal") endpoint = "goals"
+
+        let method = "PUT"
+        let url = `http://localhost:8080/api/${endpoint}/${item.id}`
+
+        if (item.id >= 1000000000000) {
+            method = "POST"
+            url = `http://localhost:8080/api/${endpoint}`
+            const { id, ...itemWithoutId } = item
+            item = { ...itemWithoutId, userId }
+        }
+
+        const res = await fetch(url, {
+            method: method,
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(item),
+        })
+
+        if (!res.ok) throw new Error(`Error al guardar ${endpoint}`)
+        return await res.json()
+    }
+
+    const saveAllItems = async (type) => {
+        setSaving(true)
+        try {
+            let items = []
+            if (type === "fixed") items = fixedExpenses
+            else if (type === "variable") items = variableExpenses
+            else if (type === "goal") items = goals
+
+            const savePromises = items
+                .filter((item) => item.name && (type === "goal" ? item.targetAmount : item.amount))
+                .map((item) => saveItem(type, item))
+
+            const savedItems = await Promise.all(savePromises)
+
+            if (type === "fixed") {
+                setFixedExpenses(savedItems)
+                setEditingFixed(false)
+            } else if (type === "variable") {
+                setVariableExpenses(savedItems)
+                setEditingVariable(false)
+            } else if (type === "goal") {
+                setGoals(savedItems)
+                setEditingGoals(false)
+            }
+
+            // Actualizar overview
+            setOverview((prev) => ({
+                ...prev,
+                [type === "fixed" ? "fixedExpenses" : type === "variable" ? "variableExpenses" : "goals"]: savedItems,
+            }))
+
+            alert("Cambios guardados correctamente")
+        } catch (error) {
+            console.error(`Error saving ${type}:`, error)
+            alert(`Error al guardar ${type}`)
+        } finally {
+            setSaving(false)
+        }
+    }
+
+    // Funciones de manipulación de datos
+    const addItem = (type) => {
+        const tempId = Date.now()
+
+        if (type === "fixed") {
+            setFixedExpenses((prev) => [
+                ...prev,
+                {
+                    id: tempId,
+                    name: "",
+                    amount: 0,
+                    frequency: "MONTHLY",
+                    description: "",
+                    userId,
+                },
+            ])
+        } else if (type === "variable") {
+            setVariableExpenses((prev) => [
+                ...prev,
+                {
+                    id: tempId,
+                    name: "",
+                    amount: 0,
+                    expenseDate: new Date().toISOString().split("T")[0],
+                    description: "",
+                    userId,
+                },
+            ])
+        } else if (type === "goal") {
+            setGoals((prev) => [
+                ...prev,
+                {
+                    id: tempId,
+                    name: "",
+                    targetAmount: 0,
+                    savedAmount: 0,
+                    description: "",
+                    deadline: "",
+                    userId,
+                },
+            ])
+        }
+    }
+
+    const deleteItem = async (type, id) => {
+        if (id >= 1000000000000) {
+            // Item temporal, solo remover del estado
+            if (type === "fixed") setFixedExpenses((prev) => prev.filter((e) => e.id !== id))
+            else if (type === "variable") setVariableExpenses((prev) => prev.filter((e) => e.id !== id))
+            else if (type === "goal") setGoals((prev) => prev.filter((e) => e.id !== id))
+            return
+        }
+
+        try {
+            const token = localStorage.getItem("token")
+            let endpoint = ""
+            if (type === "fixed") endpoint = "fixed-expenses"
+            else if (type === "variable") endpoint = "variable-expenses"
+            else if (type === "goal") endpoint = "goals"
+
+            const res = await fetch(`https://economicallye-1.onrender.com/api/${endpoint}/${id}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+            })
+
+            if (res.ok) {
+                if (type === "fixed") setFixedExpenses((prev) => prev.filter((e) => e.id !== id))
+                else if (type === "variable") setVariableExpenses((prev) => prev.filter((e) => e.id !== id))
+                else if (type === "goal") setGoals((prev) => prev.filter((e) => e.id !== id))
+                alert("Elemento eliminado correctamente")
+            }
+        } catch (error) {
+            console.error("Error deleting:", error)
+            alert("Error al eliminar el elemento")
+        }
+    }
+
+    const updateField = (type, id, field, value) => {
+        if (type === "fixed") {
+            setFixedExpenses((prev) => prev.map((i) => (i.id === id ? { ...i, [field]: value } : i)))
+        } else if (type === "variable") {
+            setVariableExpenses((prev) => prev.map((i) => (i.id === id ? { ...i, [field]: value } : i)))
+        } else if (type === "goal") {
+            setGoals((prev) => prev.map((i) => (i.id === id ? { ...i, [field]: value } : i)))
+        }
+    }
 
     const handleGenerateAdvice = async () => {
         try {
@@ -168,8 +360,6 @@ function Perfil() {
                 })),
             }
 
-            console.log("Datos enviados para generar consejo:", requestData)
-
             const response = await fetch(`http://localhost:8080/api/advice`, {
                 method: "POST",
                 headers: {
@@ -182,12 +372,8 @@ function Perfil() {
 
             if (!response.ok) {
                 const errorText = await response.text()
-                console.error("Error del servidor:", errorText)
                 throw new Error(`Error generando el consejo: ${response.status} - ${errorText}`)
             }
-
-            const result = await response.json()
-            console.log("Consejo generado exitosamente:", result)
 
             alert("Nuevo consejo generado correctamente.")
             window.location.reload()
@@ -197,20 +383,27 @@ function Perfil() {
         }
     }
 
+    // Calcular totales
+    const totalFixed = fixedExpenses.reduce((sum, e) => sum + (e?.amount || 0), 0)
+    const totalVariable = variableExpenses.reduce((sum, e) => sum + (e?.amount || 0), 0)
+    const totalExpenses = totalFixed + totalVariable
+    const totalSavings = monthlyIncome - totalExpenses
+
     if (loading) {
         return (
-            <div className="modern-loading-container">
-                <div className="spinner-container">
-                    <div className="loading-spinner-modern">
+            <div className="elegant-loading-container">
+                <div className="loading-content">
+                    <div className="loading-spinner">
                         <div className="spinner-ring"></div>
                         <div className="spinner-ring"></div>
                         <div className="spinner-ring"></div>
                     </div>
+                    <h3>Cargando tu perfil financiero...</h3>
                 </div>
-
                 <div className="loading-background">
                     <div className="floating-shape shape-1"></div>
                     <div className="floating-shape shape-2"></div>
+                    <div className="floating-shape shape-3"></div>
                 </div>
             </div>
         )
@@ -218,239 +411,556 @@ function Perfil() {
 
     if (error) {
         return (
-            <div className="error-container">
-                <div className="error-card">
-                    <h2>❌ Error</h2>
+            <div className="elegant-error-container">
+                <div className="error-content">
+                    <div className="error-icon">⚠️</div>
+                    <h2>Oops! Algo salió mal</h2>
                     <p>{error}</p>
-                    <button className="btn btn-primary" onClick={() => navigate("/")}>
-                        Volver al Inicio
+                    <button className="elegant-btn primary" onClick={() => window.location.reload()}>
+                        Reintentar
                     </button>
                 </div>
             </div>
         )
     }
 
-    if (!overview) {
-        return (
-            <div className="error-container">
-                <div className="error-card">
-                    <h2>⚠️ Sin Datos</h2>
-                    <p>No hay datos disponibles para mostrar.</p>
-                    <button className="btn btn-primary" onClick={() => navigate("/")}>
-                        Volver al Inicio
-                    </button>
-                </div>
-            </div>
-        )
-    }
-
-    // Calcular totales con validaciones
-    const fixedExpenses = overview.fixedExpenses || []
-    const variableExpenses = overview.variableExpenses || []
-    const goals = overview.goals || []
-    const monthlyIncome = overview.monthlyIncome || 0
-
-    const totalFixed = fixedExpenses.reduce((sum, e) => sum + (e?.amount || 0), 0)
-    const totalVariable = variableExpenses.reduce((sum, e) => sum + (e?.amount || 0), 0)
-    const totalExpenses = totalFixed + totalVariable
-    const totalSavings = monthlyIncome - totalExpenses
+    // Configurar los enlaces para el ScrollNav
+    const scrollNavLinks = [
+        {
+            href: "#inicio",
+            label: "Inicio",
+            onClick: () => navigate("/"),
+        },
+        {
+            href: "#consejos",
+            label: "Ver Consejos",
+            onClick: () => navigate(`/consejos/${userId}`),
+        },
+        {
+            href: "#dashboard",
+            label: "Dashboard",
+            onClick: () => navigate(`/dashboard/${userId}`),
+        },
+        {
+            href: "#generar",
+            label: "Generar Consejo",
+            onClick: handleGenerateAdvice,
+        },
+    ]
 
     return (
-        <div className="profile-container">
+        <div className="elegant-profile-container">
+            {/* Formas de fondo */}
+            <div className="background-shapes">
+                <div className="shape shape-1"></div>
+                <div className="shape shape-2"></div>
+                <div className="shape shape-3"></div>
+            </div>
+
+            {/* ScrollNav */}
+            <ScrollNav links={scrollNavLinks} user={user} />
+
             {/* Header */}
-            <header className="profile-header">
+            <motion.header className="elegant-header" initial="hidden" animate="visible" variants={fadeUpVariants} custom={0}>
                 <div className="header-content">
-                    <h1 className="welcome-title">Hola, {overview.name}</h1>
+                    <div className="welcome-section">
+                        <h1 className="welcome-title">
+                            Hola, <span className="highlight">{overview?.name}</span>
+                        </h1>
+                        <p className="welcome-subtitle">Gestiona tu futuro financiero</p>
+                    </div>
                     <div className="header-actions">
-                        <button className="btn btn-outline" onClick={() => navigate("/")}>
-                            Volver al Inicio
+                        <button className="elegant-btn primary" onClick={() => navigate(`/consejos/${userId}`)}>
+                            <span className="btn-icon"></span>
+                            Ver Consejos
                         </button>
-                        <button className="btn btn-outline" onClick={() => navigate(`/editarInfo/${userId}`)}>
-                            Editar Información
-                        </button>
-                        <button className="btn btn-success" onClick={handleGenerateAdvice}>
-                            Generar nuevo consejo
+                        <button className="elegant-btn secondary" onClick={handleGenerateAdvice}>
+                            <span className="btn-icon"></span>
+                            Generar Consejo
                         </button>
                     </div>
                 </div>
-            </header>
+            </motion.header>
 
             {/* Resumen económico */}
-            <section className="economic-summary">
-                <h2 className="section-title">📊 Resumen Económico</h2>
-                <div className="summary-grid">
-                    <div className="summary-card income">
-                        <div className="card-icon">💰</div>
-                        <h3>Ingresos Mensuales</h3>
-                        <p className="amount">{monthlyIncome.toLocaleString()} €</p>
+            <motion.section
+                className="economic-overview"
+                initial="hidden"
+                animate="visible"
+                variants={fadeUpVariants}
+                custom={1}
+            >
+                <h2 className="section-title">
+                    <span className="title-icon"></span>
+                    Resumen Financiero
+                </h2>
+                <div className="overview-grid">
+                    <div className="overview-card income">
+                        <div className="card-header">
+                            <div className="card-icon"></div>
+                            <h3>Ingresos</h3>
+                        </div>
+                        <div className="card-value">€{monthlyIncome.toLocaleString()}</div>
+                        <div className="card-label">Mensuales</div>
                     </div>
 
-                    <div className="summary-card expenses">
-                        <div className="card-icon">💳</div>
-                        <h3>Gastos Totales</h3>
-                        <p className="amount">{totalExpenses.toLocaleString()} €</p>
+                    <div className="overview-card expenses">
+                        <div className="card-header">
+                            <div className="card-icon"></div>
+                            <h3>Gastos</h3>
+                        </div>
+                        <div className="card-value">€{totalExpenses.toLocaleString()}</div>
+                        <div className="card-label">Totales</div>
                     </div>
 
-                    <div className={`summary-card ${totalSavings >= 0 ? "savings" : "deficit"}`}>
-                        <div className="card-icon">{totalSavings >= 0 ? "🏦" : "⚠️"}</div>
-                        <h3>{totalSavings >= 0 ? "Ahorro Estimado" : "Déficit"}</h3>
-                        <p className="amount">{Math.abs(totalSavings).toLocaleString()} €</p>
+                    <div className={`overview-card ${totalSavings >= 0 ? "savings" : "deficit"}`}>
+                        <div className="card-header">
+                            <div className="card-icon">{totalSavings >= 0 ? "" : ""}</div>
+                            <h3>{totalSavings >= 0 ? "Ahorro" : "Déficit"}</h3>
+                        </div>
+                        <div className="card-value">€{Math.abs(totalSavings).toLocaleString()}</div>
+                        <div className="card-label">Estimado</div>
                     </div>
 
-                    <div className="summary-card percentage">
-                        <div className="card-icon">📈</div>
-                        <h3>% de Ahorro</h3>
-                        <p className="amount">{monthlyIncome > 0 ? ((totalSavings / monthlyIncome) * 100).toFixed(1) : "0.0"}%</p>
+                    <div className="overview-card percentage">
+                        <div className="card-header">
+                            <div className="card-icon"></div>
+                            <h3>% Ahorro</h3>
+                        </div>
+                        <div className="card-value">
+                            {monthlyIncome > 0 ? ((totalSavings / monthlyIncome) * 100).toFixed(1) : "0.0"}%
+                        </div>
+                        <div className="card-label">Del ingreso</div>
                     </div>
                 </div>
-            </section>
+            </motion.section>
 
-            {/* Desglose de gastos */}
-            <section className="expenses-breakdown">
-                <div className="expenses-grid">
-                    <div className="expense-card fixed-expenses">
-                        <div className="card-header">
-                            <h3>🏠 Gastos Fijos</h3>
-                        </div>
-                        <div className="card-content">
-                            {fixedExpenses.length > 0 ? (
-                                <>
-                                    <div className="total-amount">
-                                        <strong>Total: {totalFixed.toLocaleString()} €</strong>
-                                    </div>
-                                    <div className="expense-list scrollable-list">
-                                        {fixedExpenses.map((expense, index) => (
-                                            <div key={expense?.id || index} className="expense-item">
-                                                <div className="expense-info">
-                          <span className="expense-name">
-                            {expense?.name || expense?.description || `Gasto fijo #${index + 1}`}
-                          </span>
-                                                    {expense?.category && <div className="expense-category">📁 {expense.category}</div>}
-                                                </div>
-                                                <span className="expense-amount">{expense?.amount || 0} €</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </>
-                            ) : (
-                                <p className="no-data">No hay gastos fijos registrados</p>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="expense-card variable-expenses">
-                        <div className="card-header">
-                            <h3>🛒 Gastos Variables</h3>
-                        </div>
-                        <div className="card-content">
-                            {variableExpenses.length > 0 ? (
-                                <>
-                                    <div className="total-amount">
-                                        <strong>Total: {totalVariable.toLocaleString()} €</strong>
-                                    </div>
-                                    <div className="expense-list scrollable-list">
-                                        {variableExpenses.map((expense, index) => (
-                                            <div key={expense?.id || index} className="expense-item">
-                                                <div className="expense-info">
-                          <span className="expense-name">
-                            {expense?.name || expense?.description || `Gasto variable #${index + 1}`}
-                          </span>
-                                                    {expense?.category && <div className="expense-category">📁 {expense.category}</div>}
-                                                    {expense?.date && (
-                                                        <div className="expense-date">📅 {new Date(expense.date).toLocaleDateString()}</div>
-                                                    )}
-                                                </div>
-                                                <span className="expense-amount">{expense?.amount || 0} €</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </>
-                            ) : (
-                                <p className="no-data">No hay gastos variables registrados</p>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Metas de ahorro */}
-            <section className="goals-section">
-                <div className="goals-card">
+            {/* Ingreso Mensual */}
+            <motion.section
+                className="income-section"
+                initial="hidden"
+                animate="visible"
+                variants={fadeUpVariants}
+                custom={2}
+            >
+                <div className="elegant-card">
                     <div className="card-header">
-                        <h3>🎯 Metas de Ahorro</h3>
+                        <h3>
+                            <span className="header-icon"></span>
+                            Ingreso Mensual
+                        </h3>
+                        <button className="elegant-btn outline" onClick={() => setEditingIncome(!editingIncome)}>
+                            {editingIncome ? "Cancelar" : "Editar"}
+                        </button>
                     </div>
                     <div className="card-content">
-                        {goals.length > 0 ? (
-                            <div className="goals-content">
-                                <div className="goals-detail">
-                                    <h4>Detalle de Metas</h4>
-                                    <div className="goals-list scrollable-list">
+                        {editingIncome ? (
+                            <div className="edit-form">
+                                <div className="form-group">
+                                    <label>Cantidad (€)</label>
+                                    <input
+                                        type="number"
+                                        className="elegant-input"
+                                        value={monthlyIncome}
+                                        onChange={(e) => setMonthlyIncome(Number.parseFloat(e.target.value) || 0)}
+                                        placeholder="0.00"
+                                        min="0"
+                                        step="0.01"
+                                    />
+                                </div>
+                                <div className="form-actions">
+                                    <button className="elegant-btn primary" onClick={saveIncome} disabled={saving}>
+                                        {saving ? "Guardando..." : "Guardar"}
+                                    </button>
+                                    <button
+                                        className="elegant-btn outline"
+                                        onClick={() => {
+                                            setMonthlyIncome(overview?.monthlyIncome || 0)
+                                            setEditingIncome(false)
+                                        }}
+                                    >
+                                        Cancelar
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="income-display">
+                                <div className="amount-display">€{monthlyIncome.toLocaleString()}</div>
+                                <div className="amount-label">Por mes</div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </motion.section>
+
+            {/* Gastos */}
+            <motion.section
+                className="expenses-section"
+                initial="hidden"
+                animate="visible"
+                variants={fadeUpVariants}
+                custom={3}
+            >
+                <div className="expenses-grid">
+                    {/* Gastos Fijos */}
+                    <div className="elegant-card fixed-expenses">
+                        <div className="card-header">
+                            <h3>
+                                <span className="header-icon"></span>
+                                Gastos Fijos
+                            </h3>
+                            <div className="header-actions">
+                                <span className="total-badge">€{totalFixed.toLocaleString()}</span>
+                                {editingFixed && (
+                                    <button className="elegant-btn success small" onClick={() => addItem("fixed")}>
+                                        Añadir
+                                    </button>
+                                )}
+                                <button className="elegant-btn outline small" onClick={() => setEditingFixed(!editingFixed)}>
+                                    {editingFixed ? "Cancelar" : "Editar"}
+                                </button>
+                            </div>
+                        </div>
+                        <div className="card-content">
+                            {editingFixed ? (
+                                <div className="edit-form">
+                                    <div className="expense-list">
+                                        {fixedExpenses.map((expense) => (
+                                            <div key={expense.id} className="expense-edit-item">
+                                                <div className="expense-inputs">
+                                                    <input
+                                                        type="text"
+                                                        className="elegant-input"
+                                                        value={expense.name || ""}
+                                                        onChange={(e) => updateField("fixed", expense.id, "name", e.target.value)}
+                                                        placeholder="Nombre del gasto"
+                                                    />
+                                                    <input
+                                                        type="number"
+                                                        className="elegant-input"
+                                                        value={expense.amount || ""}
+                                                        onChange={(e) =>
+                                                            updateField("fixed", expense.id, "amount", Number.parseFloat(e.target.value) || 0)
+                                                        }
+                                                        placeholder="0.00"
+                                                    />
+                                                    <select
+                                                        className="elegant-select"
+                                                        value={expense.frequency || "MONTHLY"}
+                                                        onChange={(e) => updateField("fixed", expense.id, "frequency", e.target.value)}
+                                                    >
+                                                        {frequencyOptions.map((option) => (
+                                                            <option key={option.value} value={option.value}>
+                                                                {option.label}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                    <input
+                                                        type="text"
+                                                        className="elegant-input"
+                                                        value={expense.description || ""}
+                                                        onChange={(e) => updateField("fixed", expense.id, "description", e.target.value)}
+                                                        placeholder="Descripción"
+                                                    />
+                                                </div>
+                                                <button className="elegant-btn danger small" onClick={() => deleteItem("fixed", expense.id)}>
+                                                    Eliminar
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="form-actions">
+                                        <button className="elegant-btn primary" onClick={() => saveAllItems("fixed")} disabled={saving}>
+                                            {saving ? "Guardando..." : "Guardar Cambios"}
+                                        </button>
+                                        <button
+                                            className="elegant-btn outline"
+                                            onClick={() => {
+                                                setFixedExpenses(overview?.fixedExpenses || [])
+                                                setEditingFixed(false)
+                                            }}
+                                        >
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="expense-list-display">
+                                    {fixedExpenses.length > 0 ? (
+                                        fixedExpenses.map((expense, index) => (
+                                            <div key={expense?.id || index} className="expense-display-item">
+                                                <div className="expense-info">
+                                                    <div className="expense-name">
+                                                        {expense?.name || expense?.description || `Gasto fijo #${index + 1}`}
+                                                    </div>
+                                                    {expense?.frequency && (
+                                                        <div className="expense-frequency">
+                                                            {frequencyOptions.find((f) => f.value === expense.frequency)?.label || expense.frequency}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="expense-amount">€{expense?.amount || 0}</div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="no-data">
+                                            <div className="no-data-icon"></div>
+                                            <p>No hay gastos fijos registrados</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Gastos Variables */}
+                    <div className="elegant-card variable-expenses">
+                        <div className="card-header">
+                            <h3>
+                                <span className="header-icon"></span>
+                                Gastos Variables
+                            </h3>
+                            <div className="header-actions">
+                                <span className="total-badge">€{totalVariable.toLocaleString()}</span>
+                                {editingVariable && (
+                                    <button className="elegant-btn success small" onClick={() => addItem("variable")}>
+                                        Añadir
+                                    </button>
+                                )}
+                                <button className="elegant-btn outline small" onClick={() => setEditingVariable(!editingVariable)}>
+                                    {editingVariable ? "Cancelar" : "Editar"}
+                                </button>
+                            </div>
+                        </div>
+                        <div className="card-content">
+                            {editingVariable ? (
+                                <div className="edit-form">
+                                    <div className="expense-list">
+                                        {variableExpenses.map((expense) => (
+                                            <div key={expense.id} className="expense-edit-item">
+                                                <div className="expense-inputs">
+                                                    <input
+                                                        type="text"
+                                                        className="elegant-input"
+                                                        value={expense.name || ""}
+                                                        onChange={(e) => updateField("variable", expense.id, "name", e.target.value)}
+                                                        placeholder="Nombre del gasto"
+                                                    />
+                                                    <input
+                                                        type="number"
+                                                        className="elegant-input"
+                                                        value={expense.amount || ""}
+                                                        onChange={(e) =>
+                                                            updateField("variable", expense.id, "amount", Number.parseFloat(e.target.value) || 0)
+                                                        }
+                                                        placeholder="0.00"
+                                                    />
+                                                    <input
+                                                        type="date"
+                                                        className="elegant-input"
+                                                        value={expense.expenseDate || ""}
+                                                        onChange={(e) => updateField("variable", expense.id, "expenseDate", e.target.value)}
+                                                    />
+                                                    <input
+                                                        type="text"
+                                                        className="elegant-input"
+                                                        value={expense.description || ""}
+                                                        onChange={(e) => updateField("variable", expense.id, "description", e.target.value)}
+                                                        placeholder="Descripción"
+                                                    />
+                                                </div>
+                                                <button className="elegant-btn danger small" onClick={() => deleteItem("variable", expense.id)}>
+                                                    Eliminar
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="form-actions">
+                                        <button className="elegant-btn primary" onClick={() => saveAllItems("variable")} disabled={saving}>
+                                            {saving ? "Guardando..." : "Guardar Cambios"}
+                                        </button>
+                                        <button
+                                            className="elegant-btn outline"
+                                            onClick={() => {
+                                                setVariableExpenses(overview?.variableExpenses || [])
+                                                setEditingVariable(false)
+                                            }}
+                                        >
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="expense-list-display">
+                                    {variableExpenses.length > 0 ? (
+                                        variableExpenses.map((expense, index) => (
+                                            <div key={expense?.id || index} className="expense-display-item">
+                                                <div className="expense-info">
+                                                    <div className="expense-name">
+                                                        {expense?.name || expense?.description || `Gasto variable #${index + 1}`}
+                                                    </div>
+                                                    {expense?.expenseDate && (
+                                                        <div className="expense-date">{new Date(expense.expenseDate).toLocaleDateString()}</div>
+                                                    )}
+                                                </div>
+                                                <div className="expense-amount">€{expense?.amount || 0}</div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="no-data">
+                                            <div className="no-data-icon"></div>
+                                            <p>No hay gastos variables registrados</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </motion.section>
+
+            {/* Metas de Ahorro */}
+            <motion.section className="goals-section" initial="hidden" animate="visible" variants={fadeUpVariants} custom={4}>
+                <div className="elegant-card goals">
+                    <div className="card-header">
+                        <h3>
+                            <span className="header-icon"></span>
+                            Metas de Ahorro
+                        </h3>
+                        <div className="header-actions">
+                            {editingGoals && (
+                                <button className="elegant-btn success small" onClick={() => addItem("goal")}>
+                                    Añadir
+                                </button>
+                            )}
+                            <button className="elegant-btn outline small" onClick={() => setEditingGoals(!editingGoals)}>
+                                {editingGoals ? "Cancelar" : "Editar"}
+                            </button>
+                        </div>
+                    </div>
+                    <div className="card-content">
+                        {editingGoals ? (
+                            <div className="edit-form">
+                                <div className="goals-list">
+                                    {goals.map((goal) => (
+                                        <div key={goal.id} className="goal-edit-item">
+                                            <div className="goal-inputs">
+                                                <input
+                                                    type="text"
+                                                    className="elegant-input"
+                                                    value={goal.name || ""}
+                                                    onChange={(e) => updateField("goal", goal.id, "name", e.target.value)}
+                                                    placeholder="Nombre de la meta"
+                                                />
+                                                <input
+                                                    type="number"
+                                                    className="elegant-input"
+                                                    value={goal.targetAmount || ""}
+                                                    onChange={(e) =>
+                                                        updateField("goal", goal.id, "targetAmount", Number.parseFloat(e.target.value) || 0)
+                                                    }
+                                                    placeholder="Meta (€)"
+                                                />
+                                                <input
+                                                    type="number"
+                                                    className="elegant-input"
+                                                    value={goal.currentAmount || ""}
+                                                    onChange={(e) =>
+                                                        updateField("goal", goal.id, "currentAmount", Number.parseFloat(e.target.value) || 0)
+                                                    }
+                                                    placeholder="Actual (€)"
+                                                />
+                                                <input
+                                                    type="date"
+                                                    className="elegant-input"
+                                                    value={goal.deadline || ""}
+                                                    onChange={(e) => updateField("goal", goal.id, "deadline", e.target.value)}
+                                                />
+                                                <input
+                                                    type="text"
+                                                    className="elegant-input"
+                                                    value={goal.description || ""}
+                                                    onChange={(e) => updateField("goal", goal.id, "description", e.target.value)}
+                                                    placeholder="Descripción"
+                                                />
+                                            </div>
+                                            <button className="elegant-btn danger small" onClick={() => deleteItem("goal", goal.id)}>
+                                                Eliminar
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="form-actions">
+                                    <button className="elegant-btn primary" onClick={() => saveAllItems("goal")} disabled={saving}>
+                                        {saving ? "Guardando..." : "Guardar Cambios"}
+                                    </button>
+                                    <button
+                                        className="elegant-btn outline"
+                                        onClick={() => {
+                                            setGoals(overview?.goals || [])
+                                            setEditingGoals(false)
+                                        }}
+                                    >
+                                        Cancelar
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="goals-display">
+                                {goals.length > 0 ? (
+                                    <div className="goals-grid">
                                         {goals.map((goal) => {
                                             const currentAmount = goal?.currentAmount || 0
                                             const targetAmount = goal?.targetAmount || 1
                                             const progress = (currentAmount / targetAmount) * 100
                                             const progressCapped = Math.min(progress, 100)
                                             return (
-                                                <div key={goal?.id || Math.random()} className="goal-item">
+                                                <div key={goal?.id || Math.random()} className="goal-display-item">
                                                     <div className="goal-header">
-                                                        <h5>{goal?.name || "Meta sin nombre"}</h5>
+                                                        <h4>{goal?.name || "Meta sin nombre"}</h4>
                                                         <span
-                                                            className={`progress-badge ${progress >= 100 ? "complete" : progress >= 50 ? "medium" : "low"}`}
+                                                            className={`progress-badge ${
+                                                                progress >= 100 ? "complete" : progress >= 50 ? "medium" : "low"
+                                                            }`}
                                                         >
                               {progressCapped.toFixed(1)}%
                             </span>
                                                     </div>
                                                     {goal?.description && <p className="goal-description">{goal.description}</p>}
-                                                    <div className="progress-bar">
+                                                    <div className="progress-container">
                                                         <div
-                                                            className={`progress-fill ${progress >= 100 ? "complete" : progress >= 50 ? "medium" : "low"}`}
+                                                            className={`progress-fill ${
+                                                                progress >= 100 ? "complete" : progress >= 50 ? "medium" : "low"
+                                                            }`}
                                                             style={{ width: `${Math.min(progress, 100)}%` }}
                                                         ></div>
                                                     </div>
                                                     <div className="goal-footer">
                             <span className="goal-amounts">
-                              {currentAmount.toLocaleString()}€ / {targetAmount.toLocaleString()}€
+                              €{currentAmount.toLocaleString()} / €{targetAmount.toLocaleString()}
                             </span>
-                                                        {goal?.targetDate && (
-                                                            <span className="goal-date">📅 {new Date(goal.targetDate).toLocaleDateString()}</span>
+                                                        {goal?.deadline && (
+                                                            <span className="goal-date">{new Date(goal.deadline).toLocaleDateString()}</span>
                                                         )}
                                                     </div>
                                                 </div>
                                             )
                                         })}
                                     </div>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="no-goals">
-                                <div className="no-goals-icon">🎯</div>
-                                <h4>No tienes metas de ahorro registradas</h4>
-                                <p>¡Establece tus primeras metas para comenzar a ahorrar!</p>
+                                ) : (
+                                    <div className="no-data">
+                                        <div className="no-data-icon"></div>
+                                        <h4>No tienes metas de ahorro</h4>
+                                        <p>¡Establece tus primeras metas para comenzar a ahorrar!</p>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
                 </div>
-            </section>
+            </motion.section>
 
-            {/* Botones de acción */}
-            <section className="actions-section">
-                <div className="actions-card">
-                    <h3>Acciones Rápidas</h3>
-                    <div className="actions-grid">
-                        <button className="action-btn primary" onClick={() => navigate(`/consejos/${userId}`)}>
-                            💡 Ver Consejos Personalizados
-                        </button>
-                        <button className="action-btn secondary" onClick={() => navigate(`/editarInfo/${userId}`)}>
-                            🎯 Gestionar Metas
-                        </button>
-                        <button className="action-btn secondary" onClick={() => navigate(`/editarInfo/${userId}`)}>
-                            💳 Gestionar Gastos
-                        </button>
-                    </div>
-                </div>
-            </section>
+            <Footer />
         </div>
     )
 }
-
-export default Perfil

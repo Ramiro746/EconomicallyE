@@ -1,4 +1,57 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap');
+
+/* --- Variables CSS --- */
+:root{
+    /* Colores principales */
+    --primary-color: #4361ee; /* Azul vibrante */
+    --primary-dark: #3a0ca3; /* Azul más oscuro */
+    --primary-light: #4895ef; /* Azul claro */
+
+    --secondary-color: #7209b7; /* Púrpura */
+    --secondary-dark: #560bad; /* Púrpura oscuro */
+    --secondary-light: #b5179e; /* Rosa púrpura */
+
+    --accent-color: #4cc9f0; /* Turquesa */
+    --accent-dark: #4895ef; /* Azul claro */
+
+    --success-color: #2ecc71; /* Verde */
+    --warning-color: #f39c12; /* Amarillo/naranja */
+    --danger-color: #e74c3c; /* Rojo */
+
+    /* Colores de fondo para tema claro */
+    --bg-primary: #ffffff; /* Blanco */
+    --bg-secondary: #f8f9fa; /* Gris muy claro */
+    --bg-tertiary: #e9ecef; /* Gris claro */
+    --bg-card: rgba(255, 255, 255, 0.9); /* Blanco con ligera transparencia */
+    --bg-glass: rgba(255, 255, 255, 0.7); /* Blanco más transparente */
+
+    /* Colores de texto para fondo claro */
+    --text-primary: #212529; /* Casi negro */
+    --text-secondary: #495057; /* Gris oscuro */
+    --text-muted: #6c757d; /* Gris medio */
+
+    /* Sombras más sutiles para tema claro */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
+    --shadow-glow: 0 0 20px rgba(67, 97, 238, 0.2);
+
+    --border-radius: 16px;
+    --border-radius-sm: 8px;
+    --border-radius-lg: 24px;
+
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 0.75rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-2xl: 3rem;
+
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 h1, h2, h3 {
     font-family: 'Montserrat', sans-serif;
 }
@@ -69,6 +122,7 @@ body{
     }
 }
 
+/* Corrección para el header principal */
 header {
     position: absolute;
     top: 2rem;
@@ -77,13 +131,19 @@ header {
     z-index: 10;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: center; /* ASEGURA: Alineación vertical de todos los elementos */
     width: calc(100% - 4rem);
+    height: 60px; /* AGREGADO: Altura fija para el header */
 }
+
 
 header .container-logo {
     flex: 1;
+    display: flex;
+    align-items: center; /* AGREGADO: Alineación vertical */
+    gap: 0.25rem;
 }
+
 header .items {
     flex: 1;
     display: flex;
@@ -96,42 +156,273 @@ header .container-logo image {
     height: auto;
 }
 
+/* --------------- ESTILOS DE BOTONES DEL HEADER --------------- */
+
+/* Contenedor de botones del header */
 .header-buttons {
     flex: 1;
     display: flex;
     justify-content: flex-end;
+    align-items: center; /* AGREGADO: Alinea verticalmente */
     gap: 1rem;
+    padding: 0;
+    margin: 0; /* AGREGADO: Elimina cualquier margen */
 }
+
+/* Estilo base para todos los botones dentro de .header-buttons */
+.header-buttons button {
+    padding: 10px 20px; /* Padding consistente */
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem; /* AGREGADO: Tamaño de fuente consistente */
+    line-height: 1.2; /* AGREGADO: Altura de línea consistente */
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    border: none;
+    margin: 0; /* AGREGADO: Elimina márgenes */
+    height: 40px; /* AGREGADO: Altura fija para todos los botones */
+    display: flex; /* AGREGADO: Para centrar el contenido */
+    align-items: center; /* AGREGADO: Centra verticalmente el texto */
+    justify-content: center; /* AGREGADO: Centra horizontalmente el texto */
+    white-space: nowrap; /* AGREGADO: Evita que el texto se divida en líneas */
+}
+
+/* Pseudo-elemento para el efecto de brillo */
+.header-buttons button::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease-out;
+    z-index: 1;
+}
+
+.header-buttons button:hover::before {
+    left: 100%; /* Se mueve hacia la derecha */
+}
+
+/* Estilos específicos para el botón de Login */
+.login-btn {
+    background-color: transparent;
+    border: 1px solid #0d85fd;
+    color: #0d85fd;
+}
+
+.login-btn:hover {
+    background-color: #0d85fd;
+    color: white;
+    border-color: #0d85fd;
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
+}
+
+/* Estilos específicos para el botón de Register */
+.register-btn {
+    background-color: #0d85fd;
+    border: 1px solid #0d85fd;
+    color: white;
+}
+
+.register-btn:hover {
+    background-color: #0b5ed7; /* Azul ligeramente más oscuro al pasar el ratón */
+    border-color: #0b5ed7;
+    box-shadow: var(--shadow-sm); /* Sombra al pasar el ratón */
+    transform: translateY(-1px); /* Ligero levantamiento */
+}
+
+/* Estilos para el botón de Sign-Out */
+.sign-out-btn {
+    background-color: #dc3545;
+    color: white;
+    border: 1px solid #dc3545; /* AGREGADO: Borde consistente */
+}
+
+.sign-out-btn:hover {
+    background-color: #c82333;
+    border-color: #c82333; /* AGREGADO: Borde hover consistente */
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+/* Pseudo-elemento para el efecto de brillo en Sign-Out si no quieres que lo herede de .header-buttons button */
+/* Pseudo-elemento para el efecto de brillo en Sign-Out */
+.sign-out-btn::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease-out;
+    z-index: 1;
+}
+
+.sign-out-btn:hover::before {
+    left: 100%;
+}
+
+
+/* Estilos para los botones "Cuenta" y "Progreso" (si user está logueado) */
+/* Les damos una nueva clase para evitar conflictos con .header-buttons button */
+.header-nav-btn {
+    margin: 0; /* CORREGIDO: Elimina margen */
+    background-color: white;
+    border: 1px solid #ccc;
+    color: black;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem; /* AGREGADO: Tamaño consistente */
+    line-height: 1.2; /* AGREGADO: Altura de línea consistente */
+    height: 40px; /* AGREGADO: Altura fija */
+    display: flex; /* AGREGADO: Para centrar contenido */
+    align-items: center; /* AGREGADO: Centra verticalmente */
+    justify-content: center; /* AGREGADO: Centra horizontalmente */
+    white-space: nowrap; /* AGREGADO: Evita división de texto */
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    font-weight: 500;
+}
+
+.header-nav-btn:hover {
+    background-color: #f0f0f0;
+    border-color: #bbb;
+    color: #333;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+/* Pseudo-elemento para el efecto de brillo en .header-nav-btn */
+.header-nav-btn::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s ease-out;
+    z-index: 1;
+}
+
+.header-nav-btn:hover::before {
+    left: 100%;
+}
+
+/* Contenedor de elementos de navegación del header */
+.items {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center; /* AGREGADO: Alineación vertical */
+    gap: 3rem;
+    margin: 0; /* AGREGADO: Elimina márgenes */
+    padding: 0; /* AGREGADO: Elimina padding */
+}
+/* ELIMINAR ESTO: Está causando conflictos. Los estilos específicos deben sobrescribir. */
+/* .items button{
+    margin-top: 0px;
+    background-color: white;
+    border: 1px solid #ccc;
+    color: black;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: none;
+} */
+/* ELIMINAR ESTO: Ya se maneja en .header-buttons button::before */
+/* .items button::before{
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+} */
+/* ELIMINAR ESTO: Ya se maneja en .header-buttons button:hover::before */
+/* .items button:hover::before{
+    left: 100%;
+} */
+
+/* ELIMINAR ESTO: Esto no es para botones, es para el contenedor, y su padding se duplica con los botones */
+/* .header-buttons{
+    margin-top: 0px;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+} */
+
+/* --------------- ESTILOS PARA BOTÓN "COMIENZA AHORA" --------------- */
+
+/* Utiliza cta-btn como tu clase principal y más específica */
+.cta-btn {
+    padding: 1rem 2.5rem;
+    font-size: 1.1rem;
+    background: linear-gradient(135deg, #0d6efd, #053f78); /* Gradiente azul */
+    color: white;
+    border: none;
+    border-radius: 8px; /* Ligeramente más redondeado */
+    cursor: pointer;
+    transition: var(--transition); /* Usar la variable de transición */
+    font-weight: 700; /* Más negrita */
+    box-shadow: 0 4px 6px rgba(13, 110, 253, 0.2); /* Sombra */
+    position: relative;
+    overflow: hidden; /* Para el efecto de brillo */
+    z-index: 1; /* Asegura que el botón y su contenido estén por encima del brillo */
+}
+
+.cta-btn:hover {
+    background: linear-gradient(135deg, #0b5ed7, #043566); /* Gradiente más oscuro al hover */
+    transform: translateY(-2px); /* Se eleva un poco */
+    box-shadow: 0 6px 12px rgba(13, 110, 253, 0.35); /* Sombra más grande */
+}
+
+/* Efecto de brillo para .cta-btn */
+.cta-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.15); /* Una capa blanca transparente */
+    transform: skewX(-30deg); /* Inclina la capa */
+    transition: all 0.7s ease; /* Transición más larga para un efecto más suave */
+    z-index: 0; /* Asegura que esté por debajo del texto del botón */
+}
+
+.cta-btn:hover::before {
+    left: 100%; /* Desliza la capa de brillo de izquierda a derecha */
+}
+
+/* La regla .cta-section button es menos específica y puede eliminarse o usarse para un fallback */
+/* Si la de arriba (.cta-btn) es la principal, puedes eliminar esta */
+/* .cta-section button {
+    background-color: #0d85fd;
+    color: white;
+}
+.cta-section button:hover {
+    background-color: #053f78;
+    transform: translateY(2px);
+} */
+
+
+/* Resto de tu CSS... (asegúrate de que todo lo demás esté después de esto para que las reglas específicas tengan prioridad) */
+
 
 form {
     display: flex;
     flex-direction: column;
     gap: 20px;
     width: 100%;
-}
-
-.login-btn {
-    background-color: transparent;
-    border: 1px solid #0d85fd;
-    color: black;
-    border-radius: 4px;
-}
-
-.login-btn:hover {
-    background-color: rgb(78, 154, 230);
-    border-color: #0d85fd;
-}
-
-.register-btn {
-    background-color: #0d85fd;
-    border: 1px solid #0d85fd;
-    border-radius: 4px;
-    color: black;
-}
-
-.register-btn:hover {
-    background-color: #4e9ae6;
-    border-color: #4e9ae6;
 }
 
 .content {
@@ -142,35 +433,6 @@ form {
     margin-top: 20%;
     gap: 5rem;
     padding-bottom: 6rem;
-}
-
-.cta-section button {
-    background-color: #0d85fd;
-    color: white;
-}
-
-.cta-btn {
-    padding: 1rem 2.5rem;
-    font-size: 1.1rem;
-    background-color: #0d6efd;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 600;
-    box-shadow: 0 4px 6px rgba(13, 110, 253, 0.2);
-}
-
-.cta-section button:hover {
-    background-color: #053f78;
-    transform: translateY(2px);
-}
-
-.cta-btn:hover {
-    background-color: #0b5ed7;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 8px rgba(13, 110, 253, 0.25);
 }
 
 .information {
@@ -188,6 +450,7 @@ form {
     display: flex;
     background-color: #c6c2c2;
     padding: 4px;
+
 }
 .buttons .botones {
     margin-top: 0px;
@@ -198,30 +461,14 @@ form {
     border-radius: 4px;
     cursor: pointer;
     transition: none;
+
+
 }
 
 .buttons .botones:hover {
     background-color: white;
     border: 1px solid #ccc;
     color: black;
-}
-
-.items button{
-    margin-top: 0px;
-    background-color: white;
-    border: 1px solid #ccc;
-    color: black;
-    padding: 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: none;
-}
-
-.header-buttons{
-    margin-top: 0px;
-    padding: 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
 }
 
 .card {
@@ -271,7 +518,7 @@ form {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 1001; /* Z-index muy alto para estar por encima del nav */
     animation: fadeInOverlay 0.3s ease-in-out;
 }
 
@@ -480,16 +727,11 @@ form {
 
     /* Header responsive */
     header {
-        position: relative;
-        top: 0;
-        left: 0;
-        right: 0;
-        width: 100%;
+        height: auto; /* Permite altura automática en móvil */
         flex-direction: column;
         gap: 1rem;
         padding: 1rem;
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
+
         border-radius: 10px;
         margin-bottom: 2rem;
     }
@@ -508,9 +750,11 @@ form {
         justify-content: center;
         gap: 1rem;
         flex-wrap: wrap;
+        margin: 0;
+        padding: 0;
     }
 
-    header .items button {
+    header .items button { /* Aquí podemos usar la clase header-nav-btn */
         padding: 8px 16px;
         font-size: 0.9rem;
     }
@@ -520,11 +764,18 @@ form {
         justify-content: center;
         gap: 0.5rem;
         padding: 0;
+        margin: 0;
     }
-
     .header-buttons button {
         padding: 10px 20px;
         font-size: 0.9rem;
+        height: 40px; /* Mantiene altura consistente en móvil */
+    }
+
+    .header-nav-btn {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+        height: 36px; /* Ligeramente más pequeño en móvil */
     }
 
     /* Content section responsive */
@@ -555,6 +806,8 @@ form {
         font-size: 1rem;
         width: auto;
         min-width: 200px;
+
+
     }
 
     /* Financial features responsive */
@@ -791,4 +1044,290 @@ form {
     header {
         position: static;
     }
+}
+
+
+/* Animaciones para el header principal */
+.main-header {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    right: 2rem;
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: calc(100% - 4rem);
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.main-header.header-visible {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+}
+
+.main-header.header-hidden {
+    transform: translateY(-120%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* Animación adicional para los elementos del header */
+.main-header .container-logo,
+.main-header .items,
+.main-header .header-buttons {
+    transition: all 0.3s ease;
+
+}
+
+.main-header.header-hidden .container-logo,
+.main-header.header-hidden .items,
+.main-header.header-hidden .header-buttons {
+    transform: translateY(-20px);
+    opacity: 0;
+}
+
+/* Asegurar que el header original mantenga su estilo */
+.main-header .container-logo {
+    flex: 1;
+}
+
+.main-header .items {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    padding-right: 3rem;
+
+}
+
+.main-header .header-buttons {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding-top: 0px; /* Ya lo eliminas en el general, esto se vuelve redundante si lo mantienes */
+}
+
+.about-section {
+    padding: 4rem 2rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.about-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.about-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.about-header h3 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #1e293b;
+}
+
+.about-description {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: #475569;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.about-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.about-feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.about-icon {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    padding: 0.75rem;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.about-text h4 {
+    margin: 0 0 0.5rem 0;
+    color: #1e293b;
+    font-size: 1.1rem;
+}
+
+.about-text p {
+    margin: 0;
+    color: #64748b;
+    line-height: 1.5;
+}
+/* Responsive para el header animado */
+@media (max-width: 768px) {
+    .main-header {
+        position: relative;
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+
+    .main-header.header-hidden {
+        transform: translateY(-150%);
+        margin-bottom: 0;
+    }
+
+    .main-header .container-logo {
+        flex: none;
+        justify-content: center;
+        height: 80% ;
+    }
+
+    .main-header .items {
+        flex: none;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .main-header .header-buttons {
+        flex: none;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0;
+    }
+}
+
+/* Ajuste para el scroll nav para que aparezca un poco antes */
+.scroll-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    z-index: 999;
+    transform: translateY(-100%);
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    border-bottom: 1px solid rgba(13, 133, 253, 0.1);
+}
+
+/* Efecto de entrada más suave para el scroll nav */
+.scroll-nav-visible {
+    transform: translateY(0);
+    animation: slideInSmoothly 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes slideInSmoothly {
+    0% {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Ajuste para que el contenido no se vea afectado cuando el header desaparece */
+.content {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+    margin-top: 20%;
+    gap: 5rem;
+    padding-bottom: 6rem;
+    transition: margin-top 0.4s ease;
+}
+
+/* Responsive para móvil - ajustar el margen cuando el header desaparece */
+@media (max-width: 768px) {
+    .content {
+        margin-top: 2rem;
+        transition: margin-top 0.4s ease;
+    }
+
+    /* Cuando el header está oculto, reducir el margen superior */
+    .main-header.header-hidden ~ .content {
+        margin-top: 1rem;
+    }
+}
+
+
+/* Animaciones adicionales */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.elegant-card,
+.overview-card {
+    animation: slideInUp 0.6s ease-out;
+}
+
+/* Efectos de hover mejorados */
+.elegant-card:hover .card-header {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.15), rgba(139, 92, 246, 0.15));
+}
+
+.overview-card:hover .card-icon {
+    transform: scale(1.1);
+    transition: transform 0.3s ease;
+}
+
+/* Mejoras de accesibilidad */
+.elegant-btn:focus,
+.elegant-input:focus,
+.elegant-select:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Efectos de glassmorphism */
+.elegant-card,
+.overview-card {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+/* Gradientes de texto */
+.section-title {
+    background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }

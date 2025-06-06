@@ -29,7 +29,7 @@ export default function LoginForm({ closeModal, openRegisterModal }) {
         try {
             console.log("Making login request..."); // Debug log
 
-            const res = await fetch("https://economicallye-1.onrender.com/api/auth/login", {
+            const res = await fetch("http://localhost:8080/api/auth/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

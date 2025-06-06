@@ -359,6 +359,15 @@ export default function FinancialDashboard({ onFormCompleted }) {
                             <div key={i} className="expense-item goal-item">
                                 <div className="input-group">
                                     <input
+                                        placeholder="Nombre"
+                                        value={goal.name}
+                                        onChange={(e) => handleChange(setGoals, i, "name", e.target.value)}
+                                        className="input-field"
+                                        required
+                                    />
+                                </div>
+                                <div className="input-group">
+                                    <input
                                         placeholder="Descripción"
                                         value={goal.description}
                                         onChange={(e) => handleChange(setGoals, i, "description", e.target.value)}
