@@ -52,4 +52,11 @@ public class GlobalExceptionHandler {
     }
     return error.getDefaultMessage();
   }
+  @ExceptionHandler(EmailAlreadyExistsException.class)
+  public ResponseEntity<Map<String, String>> handleEmailAlreadyExistsException(EmailAlreadyExistsException ex) {
+    Map<String, String> error = new HashMap<>();
+    error.put("email", ex.getMessage());
+    return ResponseEntity.badRequest().body(error);
+  }
+
 }

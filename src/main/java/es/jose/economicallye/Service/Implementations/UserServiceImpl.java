@@ -2,15 +2,16 @@ package es.jose.economicallye.Service.Implementations;
 
 import es.jose.economicallye.Dto.UserDTO;
 import es.jose.economicallye.Entity.User;
+import es.jose.economicallye.Exception.EmailAlreadyExistsException;
 import es.jose.economicallye.Exception.UserNotFoundException;
 import es.jose.economicallye.Mapper.UserMapper;
 import es.jose.economicallye.Repository.UserRepository;
-import es.jose.economicallye.Service.Implementations.AuthenticationService;
 import es.jose.economicallye.Service.UserService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,14 +21,15 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-
-    private final BCryptPasswordEncoder passwordEncoder;  // Inyección del encoder
+    private final MessageSource messageSource;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, BCryptPasswordEncoder  passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, BCryptPasswordEncoder passwordEncoder, MessageSource messageSource) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
+        this.messageSource = messageSource;
     }
 
     @Override
@@ -36,17 +38,21 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Los datos del usuario no pueden ser nulos");
         }
 
+        if (userRepository.existsByEmail(userDTO.getEmail())) {
+            throw new EmailAlreadyExistsException(
+                    messageSource.getMessage("user.email.duplicate", null, LocaleContextHolder.getLocale())
+            );
+        }
         User user = userMapper.toEntity(userDTO);
-        // Cifra la contraseña antes de guardarla en la base de datos
+
         String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
         user.setPassword(encodedPassword);
-
-        // Establecer la fecha actual de registro directamente en la entidad
         user.setRegistrationDate(LocalDateTime.now());
 
         user = userRepository.save(user);
         return userMapper.toDto(user);
     }
+
 
     @Override
     public UserDTO getUserById(Long id) {
