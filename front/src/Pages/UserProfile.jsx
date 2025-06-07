@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom"
 import "./Perfil.css"
 import ScrollNav from "../Components/Nav/ScrollNav.jsx"
 import Footer from "../Components/Footer/footer.jsx"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 
 const fadeUpVariants = {
     hidden: { opacity: 0, y: 30 },
@@ -20,6 +20,78 @@ const fadeUpVariants = {
     }),
 }
 
+// Componente del Modal de Carga
+const LoadingModal = ({ isVisible, onClose }) => {
+    return (
+        <AnimatePresence>
+            {isVisible && (
+                <motion.div
+                    className="loading-modal-overlay"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    <motion.div
+                        className="loading-modal-content"
+                        initial={{ opacity: 0, scale: 0.8, y: 50 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.8, y: 50 }}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
+                    >
+                        <div className="loading-modal-header">
+                            <div className="loading-brain-icon">
+                                <div className="brain-wave"></div>
+                                <div className="brain-wave"></div>
+                                <div className="brain-wave"></div>
+                            </div>
+                        </div>
+
+                        <div className="loading-modal-body">
+                            <h3>Generando tu consejo personalizado</h3>
+                            <p>Nuestro asistente está analizando tu situación financiera...</p>
+
+                            <div className="loading-steps">
+                                <div className="loading-step active">
+                                    <div className="step-icon">📊</div>
+                                    <span>Analizando ingresos</span>
+                                </div>
+                                <div className="loading-step active">
+                                    <div className="step-icon">💰</div>
+                                    <span>Evaluando gastos</span>
+                                </div>
+                                <div className="loading-step active">
+                                    <div className="step-icon">🎯</div>
+                                    <span>Revisando metas</span>
+                                </div>
+                                <div className="loading-step">
+                                    <div className="step-icon">🤖</div>
+                                    <span>Generando recomendaciones</span>
+                                </div>
+                            </div>
+
+                            <div className="progress-bar-container">
+                                <div className="progress-bar">
+                                    <div className="progress-fill"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="loading-particles">
+                            <div className="particle"></div>
+                            <div className="particle"></div>
+                            <div className="particle"></div>
+                            <div className="particle"></div>
+                            <div className="particle"></div>
+                        </div>
+                    </motion.div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    )
+}
+
+
 export default function PerfilEditable() {
     // Estados principales
     const [overview, setOverview] = useState(null)
@@ -30,6 +102,9 @@ export default function PerfilEditable() {
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState(null)
     const navigate = useNavigate()
+
+    // Estado para el modal de carga del consejo
+    const [generatingAdvice, setGeneratingAdvice] = useState(false)
 
     // Estados de edición
     const [editingIncome, setEditingIncome] = useState(false)
@@ -326,6 +401,8 @@ export default function PerfilEditable() {
     }
 
     const handleGenerateAdvice = async () => {
+        setGeneratingAdvice(true) // Mostrar modal de carga
+
         try {
             const token = localStorage.getItem("token")
 
@@ -375,11 +452,17 @@ export default function PerfilEditable() {
                 throw new Error(`Error generando el consejo: ${response.status} - ${errorText}`)
             }
 
+            // Simular un pequeño delay para mostrar el modal
+            await new Promise(resolve => setTimeout(resolve, 1000))
+
             alert("Nuevo consejo generado correctamente.")
-            window.location.reload()
+            navigate(`/consejos/${userId}`);
+
         } catch (error) {
             console.error("Error al generar el consejo:", error)
             alert(`No se pudo generar el nuevo consejo: ${error.message}`)
+        }finally {
+            setGeneratingAdvice(false) // Ocultar modal de carga
         }
     }
 
@@ -450,6 +533,9 @@ export default function PerfilEditable() {
 
     return (
         <div className="elegant-profile-container">
+            {/* Modal de carga para generar consejo */}
+            <LoadingModal isVisible={generatingAdvice} />
+
             {/* Formas de fondo */}
             <div className="background-shapes">
                 <div className="shape shape-1"></div>

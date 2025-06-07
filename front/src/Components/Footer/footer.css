@@ -1,16 +1,33 @@
 /* Footer Styles */
 .footer {
-    width: 100%;
+    /* Hacer que el footer ocupe todo el ancho de la ventana */
+    width: 100vw;
+
+    /* Posicionar relativo a la ventana del navegador, no al contenedor padre */
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+
+    /* Asegurar que esté en el nivel superior */
+    z-index: 1;
+
+    /* Eliminar cualquier padding/margin que pueda afectar */
+    box-sizing: border-box;
+
+    /* Colores y espaciado del footer */
     background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
     color: white;
-    margin-top: 4rem;
-    position: relative; /* importante si otros usan position absolute */
-    z-index: 1; /* asegúrate que esté por encima solo si necesario */
+    padding: 60px 0 20px 0;
+    margin-top: 80px;
 }
 
 .footer-container {
     max-width: 1200px;
     margin: 0 auto;
+    padding: 0 20px;
+    width: 100%;
 }
 
 .footer-content {

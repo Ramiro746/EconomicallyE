@@ -164,7 +164,7 @@ const Homepage = () => {
         ...(user
             ? [
                 {
-                    href: "#",
+                    href: "#MiCuenta",
                     label: "Mi Cuenta",
                     onClick: () => navigate(`/perfil/${user.id}`),
                 },
@@ -176,7 +176,7 @@ const Homepage = () => {
                 ...(hasCompletedFirstForm
                     ? [
                         {
-                            href: "#",
+                            href: "#Consejos",
                             label: "Consejos",
                             onClick: () => navigate(`/consejos/${user.id}`),
                         },
