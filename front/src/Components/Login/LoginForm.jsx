@@ -8,6 +8,7 @@ export default function LoginForm({ closeModal, openRegisterModal }) {
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
+    //EJEMPLO SIII
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
