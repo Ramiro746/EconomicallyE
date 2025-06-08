@@ -18,7 +18,7 @@ function HistorialConsejos() {
         const fetchConsejos = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const response = await fetch(`http://localhost:8080/api/advice/${userId}`, {
+                const response = await fetch(`https://economicallye-1.onrender.com/api/advice/${userId}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',

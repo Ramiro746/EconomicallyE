@@ -6,7 +6,6 @@ import "../Components/Footer/footer.css"
 import { useNavigate } from "react-router-dom"
 import FloatingShapes from "./Fondo/HeroGeometric.jsx"
 import SpiralAnimation from "../Components/Logo/Logo"
-import CreditCardAnimation from "../Components/CreditCard/credit-card-animation.jsx"
 import FinancialDashboard from "../Components/FinancialDashboard.jsx"
 import Footer from "../Components/Footer/footer.jsx"
 import { motion } from "framer-motion"
@@ -30,11 +29,11 @@ const fadeUpVariants = {
 
 const Homepage = () => {
     const [modalOpen, setModalOpen] = useState(false)
+    const [modalType, setModalType] = useState("login") // Nuevo estado para el tipo de modal
     const [user, setUser] = useState(null)
     const [graficoActivo, setGraficoActivo] = useState("gastos")
     const [hasCompletedFirstForm, setHasCompletedFirstForm] = useState(false)
     const [loadingAdviceHistory, setLoadingAdviceHistory] = useState(false)
-    // Nuevo estado para controlar la visibilidad del header
     const [headerVisible, setHeaderVisible] = useState(true)
     const navigate = useNavigate()
 
@@ -45,7 +44,6 @@ const Homepage = () => {
         }
     }, [])
 
-    // Nuevo useEffect para manejar el scroll del header
     useEffect(() => {
         const handleScroll = () => {
             const scrolled = window.scrollY > 150
@@ -58,7 +56,7 @@ const Homepage = () => {
 
     const fetchUserData = async (token) => {
         try {
-            const res = await fetch("http://localhost:8080/api/users/me", {
+            const res = await fetch("https://economicallye-1.onrender.com/api/users/me", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -92,7 +90,7 @@ const Homepage = () => {
                 return
             }
 
-            const response = await fetch(`http://localhost:8080/api/advice/${userId}`, {
+            const response = await fetch(`https://economicallye-1.onrender.com/api/advice/${userId}`, {
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
@@ -119,11 +117,23 @@ const Homepage = () => {
         setHasCompletedFirstForm(true)
     }
 
-    const openModal = (e) => {
+    // Función modificada para abrir modal de login
+    const openLoginModal = (e) => {
         if (e) {
             e.preventDefault()
             e.stopPropagation()
         }
+        setModalType("login")
+        setModalOpen(true)
+    }
+
+    // Función modificada para abrir modal de register
+    const openRegisterModal = (e) => {
+        if (e) {
+            e.preventDefault()
+            e.stopPropagation()
+        }
+        setModalType("register")
         setModalOpen(true)
     }
 
@@ -150,7 +160,7 @@ const Homepage = () => {
                 section.scrollIntoView({ behavior: "smooth" })
             }
         } else {
-            openModal()
+            openRegisterModal() // Por defecto abre registro para "Comienza Ahora"
         }
     }
 
@@ -203,8 +213,8 @@ const Homepage = () => {
                 links={scrollNavLinks}
                 user={user}
                 onSignOut={signOut}
-                onOpenLogin={openModal}
-                onOpenRegister={openModal}
+                onOpenLogin={openLoginModal}
+                onOpenRegister={openRegisterModal}
             />
 
             <FloatingShapes />
@@ -217,26 +227,29 @@ const Homepage = () => {
                 </div>
                 {user && (
                     <div className="items">
-                        <button onClick={() => navigate(`/perfil/${user.id}`)} className="header-nav-btn">Cuenta
+                        <button onClick={() => navigate(`/perfil/${user.id}`)} className="header-nav-btn">
+                            Cuenta
                         </button>
-                        <button onClick={() => navigate(`/dashboard/${user.id}`)} className="header-nav-btn">Progreso
+                        <button onClick={() => navigate(`/dashboard/${user.id}`)} className="header-nav-btn">
+                            Progreso
                         </button>
                     </div>
                 )}
                 {!user && (
                     <div className="header-buttons">
-                        <button onClick={openModal} className="login-btn">
+                        <button onClick={openLoginModal} className="login-btn">
                             Login
                         </button>
-                        <button onClick={openModal} className="register-btn">
+                        <button onClick={openRegisterModal} className="register-btn">
                             Register
                         </button>
                     </div>
                 )}
                 {user && (
                     <div className="header-buttons">
-                        <button onClick={signOut} className="sign-out-btn">Sign-Out</button>
-
+                        <button onClick={signOut} className="sign-out-btn">
+                            Sign-Out
+                        </button>
                     </div>
                 )}
             </header>
@@ -274,17 +287,13 @@ const Homepage = () => {
 
             {/* Nueva sección: ¿Qué es EconomicallyE? */}
             <section className="about-section">
-                <motion.div
-                    className="about-container"
-                    custom={2}
-                    initial="hidden"
-                    animate="visible"
-                    variants={fadeUpVariants}
-                >
+                <motion.div className="about-container" custom={2} initial="hidden" animate="visible" variants={fadeUpVariants}>
                     <div className="about-header">
                         <h3>¿Qué es EconomicallyE?</h3>
                         <p className="about-description">
-                            EconomicallyE es una aplicación web diseñada para ayudarte a tomar el control de tus finanzas personales de forma sencilla e inteligente. A través de un análisis basado en tus ingresos, gastos y metas de ahorro, la aplicación genera recomendaciones personalizadas con el apoyo de inteligencia artificial.
+                            EconomicallyE es una aplicación web diseñada para ayudarte a tomar el control de tus finanzas personales
+                            de forma sencilla e inteligente. A través de un análisis basado en tus ingresos, gastos y metas de ahorro,
+                            la aplicación genera recomendaciones personalizadas con el apoyo de inteligencia artificial.
                         </p>
                     </div>
 
@@ -426,8 +435,6 @@ const Homepage = () => {
                 </section>
             )}
 
-            {/*<CreditCardAnimation />*/}
-
             {user && hasCompletedFirstForm && !loadingAdviceHistory && (
                 <section className="information">
                     <div className="text-center p-4">
@@ -451,7 +458,7 @@ const Homepage = () => {
                         <button className="modal-close" onClick={closeModal} aria-label="Cerrar modal">
                             &times;
                         </button>
-                        <AuthModal closeModal={closeModal} />
+                        <AuthModal closeModal={closeModal} initialMode={modalType} />
                     </div>
                 </div>
             )}

@@ -21,7 +21,7 @@ export default function AdviceForm() {
             try {
                 const token = localStorage.getItem("token");
                 console.log("Token:", token);
-                const res = await fetch("http://localhost:8080/api/users/me",{
+                const res = await fetch("https://economicallye-1.onrender.com/api/users/me",{
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -76,7 +76,7 @@ export default function AdviceForm() {
         };
 
         try {
-            await fetch(`http://localhost:8080/api/users/${userId}`, {
+            await fetch(`https://economicallye-1.onrender.com/api/users/${userId}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -84,7 +84,7 @@ export default function AdviceForm() {
                 },
                 body: JSON.stringify({ monthlyIncome: parseFloat(monthlyIncome) })
             });
-            const res = await fetch("http://localhost:8080/api/advice", {
+            const res = await fetch("https://economicallye-1.onrender.com/api/advice", {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "Authorization": "Bearer " + localStorage.getItem("token") },
                 body: JSON.stringify(questionnaire),

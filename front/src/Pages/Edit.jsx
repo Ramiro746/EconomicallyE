@@ -3,7 +3,8 @@
     import { useEffect, useState } from "react"
     import { useNavigate, useParams } from "react-router-dom"
     import "./edit.css"
-    
+
+
     function Edit() {
         const { userId } = useParams()
         const [userData, setUserData] = useState({

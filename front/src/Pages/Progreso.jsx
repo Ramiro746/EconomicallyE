@@ -35,7 +35,7 @@ function Dashboard() {
                 const token = localStorage.getItem("token");
 
                 if (!userId) {
-                    const resUser = await fetch("http://localhost:8080/api/users/me", {
+                    const resUser = await fetch("https://economicallye-1.onrender.com/api/users/me", {
                         headers: { "Authorization": `Bearer ${token}` }
                     });
                     const userData = await resUser.json();
@@ -43,7 +43,7 @@ function Dashboard() {
                     setCurrentUserId(userId);
                 }
 
-                const advicesRes = await fetch(`http://localhost:8080/api/advice/${userId}`, {
+                const advicesRes = await fetch(`https://economicallye-1.onrender.com/api/advice/${userId}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
 
@@ -71,7 +71,7 @@ function Dashboard() {
 
                     if (changed || !savedAdviceData.reportGenerated) {
                         console.log('Generando nuevo reporte...');
-                        const reportRes = await fetch(`http://localhost:8080/api/advice/progress/${userId}`, {
+                        const reportRes = await fetch(`https://economicallye-1.onrender.com/api/advice/progress/${userId}`, {
                             headers: { Authorization: `Bearer ${token}` },
                         });
 

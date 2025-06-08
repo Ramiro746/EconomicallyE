@@ -132,7 +132,7 @@ export default function PerfilEditable() {
             try {
                 const token = localStorage.getItem("token")
 
-                const res = await fetch(`http://localhost:8080/api/users/me`, {
+                const res = await fetch(`https://economicallye-1.onrender.com/api/users/me`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -145,7 +145,7 @@ export default function PerfilEditable() {
                 const currentUserId = data.id
                 setUserId(currentUserId)
 
-                const overviewRes = await fetch(`http://localhost:8080/api/overview/${currentUserId}`, {
+                const overviewRes = await fetch(`https://economicallye-1.onrender.com/api/overview/${currentUserId}`, {
                     headers: {
                         Authorization: "Bearer " + token,
                     },
@@ -157,7 +157,7 @@ export default function PerfilEditable() {
                 // Cargar datos detallados
                 let detailedFixedExpenses = []
                 try {
-                    const fixedExpensesRes = await fetch(`http://localhost:8080/api/fixed-expenses/${currentUserId}`, {
+                    const fixedExpensesRes = await fetch(`https://economicallye-1.onrender.com/api/fixed-expenses/${currentUserId}`, {
                         headers: { Authorization: "Bearer " + token },
                     })
                     if (fixedExpensesRes.ok) {
@@ -169,7 +169,7 @@ export default function PerfilEditable() {
 
                 let detailedVariableExpenses = []
                 try {
-                    const variableExpensesRes = await fetch(`http://localhost:8080/api/variable-expenses/${currentUserId}`, {
+                    const variableExpensesRes = await fetch(`https://economicallye-1.onrender.com/api/variable-expenses/${currentUserId}`, {
                         headers: { Authorization: "Bearer " + token },
                     })
                     if (variableExpensesRes.ok) {
@@ -181,7 +181,7 @@ export default function PerfilEditable() {
 
                 let detailedGoals = []
                 try {
-                    const goalsRes = await fetch(`http://localhost:8080/api/goals/${currentUserId}`, {
+                    const goalsRes = await fetch(`https://economicallye-1.onrender.com/api/goals/${currentUserId}`, {
                         headers: { Authorization: "Bearer " + token },
                     })
                     if (goalsRes.ok) {
@@ -220,7 +220,7 @@ export default function PerfilEditable() {
         setSaving(true)
         try {
             const token = localStorage.getItem("token")
-            const res = await fetch(`http://localhost:8080/api/users/${userId}/income`, {
+            const res = await fetch(`https://economicallye-1.onrender.com/api/users/${userId}/income`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -251,11 +251,11 @@ export default function PerfilEditable() {
         else if (type === "goal") endpoint = "goals"
 
         let method = "PUT"
-        let url = `http://localhost:8080/api/${endpoint}/${item.id}`
+        let url = `https://economicallye-1.onrender.com/api/${endpoint}/${item.id}`
 
         if (item.id >= 1000000000000) {
             method = "POST"
-            url = `http://localhost:8080/api/${endpoint}`
+            url = `https://economicallye-1.onrender.com/api/${endpoint}`
             const { id, ...itemWithoutId } = item
             item = { ...itemWithoutId, userId }
         }
@@ -437,7 +437,7 @@ export default function PerfilEditable() {
                 })),
             }
 
-            const response = await fetch(`http://localhost:8080/api/advice`, {
+            const response = await fetch(`https://economicallye-1.onrender.com/api/advice`, {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${token}`,

@@ -1,18 +1,24 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import "./auth-modal.css"
 
 /**
  * Auth Modal Component
  * @param {Object} props
  * @param {Function} props.closeModal - Función para cerrar el modal
+ * @param {string} props.initialMode - Modo inicial: 'login' o 'register'
  */
-export default function AuthModal({ closeModal }) {
-    const [isActive, setIsActive] = useState(false)
+export default function AuthModal({ closeModal, initialMode = "login" }) {
+    const [isActive, setIsActive] = useState(initialMode === "register")
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState("")
     const [message, setMessage] = useState("")
+
+    // Actualizar el estado cuando cambie el initialMode
+    useEffect(() => {
+        setIsActive(initialMode === "register")
+    }, [initialMode])
 
     // Login form state
     const [loginData, setLoginData] = useState({
@@ -53,7 +59,7 @@ export default function AuthModal({ closeModal }) {
         try {
             console.log("Making login request...")
 
-            const res = await fetch("http://localhost:8080/api/auth/login", {
+            const res = await fetch("https://economicallye-1.onrender.com/api/auth/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -108,7 +114,7 @@ export default function AuthModal({ closeModal }) {
         try {
             console.log("Registering user:", registerData)
 
-            const response = await fetch("http://localhost:8080/api/users", {
+            const response = await fetch("https://economicallye-1.onrender.com/api/users", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
