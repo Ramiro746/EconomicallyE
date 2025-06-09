@@ -40,9 +40,9 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(
-                "http://localhost:5174",  // Tu frontend principal
                 "http://localhost:5173",
-                "https://economically-e.vercel.app"// Otro posible origen de desarrollo
+                "http://localhost:5174",
+                "https://economically-e.vercel.app"
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
@@ -70,7 +70,15 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
-                        .requestMatchers("/api/users/register", "/api/variable-expenses", "/api/goals", "/api/overview/**", "/api/advice/progress/").authenticated()  // Protege este endpoint
+                        .requestMatchers(
+                                "/api/users/**",
+                                "/api/fixed-expenses/**",
+                                "/api/variable-expenses/**",
+                                "/api/goals/**",
+                                "/api/overview/**",
+                                "/api/advice/**",
+                                "/api/monthly-report/**"
+                        ).authenticated()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
