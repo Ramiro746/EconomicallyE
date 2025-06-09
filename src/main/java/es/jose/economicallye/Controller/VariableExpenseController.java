@@ -2,6 +2,7 @@ package es.jose.economicallye.Controller;
 
 import es.jose.economicallye.Dto.VariableExpenseDTO;
 import es.jose.economicallye.Service.VariableExpenseService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +18,7 @@ public class VariableExpenseController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public VariableExpenseDTO createVariableExpense(@RequestBody VariableExpenseDTO variableExpenseDTO) {
+    public VariableExpenseDTO createVariableExpense(@Valid @RequestBody VariableExpenseDTO variableExpenseDTO) {
         return variableExpenseService.createVariableExpense(variableExpenseDTO);
     }
 
@@ -27,7 +28,7 @@ public class VariableExpenseController {
     }
 
     @PutMapping("/{id}")
-    public VariableExpenseDTO updateVariableExpense(@PathVariable Long id, @RequestBody VariableExpenseDTO variableExpenseDTO) {
+    public VariableExpenseDTO updateVariableExpense(@PathVariable Long id,@Valid @RequestBody VariableExpenseDTO variableExpenseDTO) {
         return variableExpenseService.updateVariableExpense(id, variableExpenseDTO);
     }
 

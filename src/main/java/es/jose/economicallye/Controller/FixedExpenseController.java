@@ -28,7 +28,7 @@
         }
 
         @PutMapping("/{id}")
-        public FixedExpenseDTO updateFixedExpense(@Valid @PathVariable Long id, @RequestBody FixedExpenseDTO fixedExpenseDTO) {
+        public FixedExpenseDTO updateFixedExpense(@PathVariable Long id,@Valid @RequestBody FixedExpenseDTO fixedExpenseDTO) {
             return fixedExpenseService.updateFixedExpense(id, fixedExpenseDTO);
         }
 
