@@ -2,16 +2,17 @@
 
 import { useState, useEffect } from "react"
 import "./styles.css"
+import "../Components/Footer/footer.css"
 import { useNavigate } from "react-router-dom"
 import FloatingShapes from "./Fondo/HeroGeometric.jsx"
-import FormUser from "../Components/FormUser/FormUser.jsx"
-import LoginForm from "../Components/Login/LoginForm.jsx"
 import SpiralAnimation from "../Components/Logo/Logo"
-import CreditCardAnimation from "../Components/CreditCard/credit-card-animation.jsx"
 import FinancialDashboard from "../Components/FinancialDashboard.jsx"
+import Footer from "../Components/Footer/footer.jsx"
 import { motion } from "framer-motion"
 import Inflation from "../Components/Inflation/Inflation.jsx"
-import { TrendingUp, DollarSign, PieChart } from "lucide-react"
+import { TrendingUp, DollarSign, PieChart, Target, Brain, BarChart3, Moon, Sun } from "lucide-react"
+import ScrollNav from "../Components/Nav/ScrollNav.jsx"
+import AuthModal from "../Components/NuevoModal/auth-modal.jsx"
 
 const fadeUpVariants = {
     hidden: { opacity: 0, y: 30 },
@@ -27,14 +28,37 @@ const fadeUpVariants = {
 }
 
 const Homepage = () => {
-    const [modalOpen, setModalOpen] = useState(null) // 'login' o 'register'
-    const [isClosing, setIsClosing] = useState(false)
+    const [modalOpen, setModalOpen] = useState(false)
+    const [modalType, setModalType] = useState("login") // Nuevo estado para el tipo de modal
     const [user, setUser] = useState(null)
     const [graficoActivo, setGraficoActivo] = useState("gastos")
     const [hasCompletedFirstForm, setHasCompletedFirstForm] = useState(false)
     const [loadingAdviceHistory, setLoadingAdviceHistory] = useState(false)
+    const [headerVisible, setHeaderVisible] = useState(true)
+    const [darkMode, setDarkMode] = useState(false)
     const navigate = useNavigate()
 
+    // Inicializar tema oscuro desde localStorage
+    useEffect(() => {
+        const savedTheme = localStorage.getItem("darkMode")
+        if (savedTheme) {
+            setDarkMode(JSON.parse(savedTheme))
+        }
+    }, [])
+
+    // Aplicar tema oscuro al body
+    useEffect(() => {
+        if (darkMode) {
+            document.body.classList.add("dark-theme")
+        } else {
+            document.body.classList.remove("dark-theme")
+        }
+        localStorage.setItem("darkMode", JSON.stringify(darkMode))
+    }, [darkMode])
+
+    const toggleDarkMode = () => {
+        setDarkMode(!darkMode)
+    }
     useEffect(() => {
         const token = localStorage.getItem("token")
         if (token) {
@@ -42,9 +66,19 @@ const Homepage = () => {
         }
     }, [])
 
+    useEffect(() => {
+        const handleScroll = () => {
+            const scrolled = window.scrollY > 150
+            setHeaderVisible(!scrolled)
+        }
+
+        window.addEventListener("scroll", handleScroll)
+        return () => window.removeEventListener("scroll", handleScroll)
+    }, [])
+
     const fetchUserData = async (token) => {
         try {
-            const res = await fetch("http://localhost:8080/api/users/me", {
+            const res = await fetch("https://economicallye-1.onrender.com/api/users/me", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -78,7 +112,7 @@ const Homepage = () => {
                 return
             }
 
-            const response = await fetch(`http://localhost:8080/api/advice/${userId}`, {
+            const response = await fetch(`https://economicallye-1.onrender.com/api/advice/${userId}`, {
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
@@ -105,22 +139,24 @@ const Homepage = () => {
         setHasCompletedFirstForm(true)
     }
 
+    // Función modificada para abrir modal de login
     const openLoginModal = (e) => {
         if (e) {
             e.preventDefault()
             e.stopPropagation()
         }
-        setIsClosing(false)
-        setModalOpen("login")
+        setModalType("login")
+        setModalOpen(true)
     }
 
+    // Función modificada para abrir modal de register
     const openRegisterModal = (e) => {
         if (e) {
             e.preventDefault()
             e.stopPropagation()
         }
-        setIsClosing(false)
-        setModalOpen("register")
+        setModalType("register")
+        setModalOpen(true)
     }
 
     const signOut = () => {
@@ -136,21 +172,7 @@ const Homepage = () => {
             e.preventDefault()
             e.stopPropagation()
         }
-        setIsClosing(true)
-        setTimeout(() => {
-            setModalOpen(null)
-            setIsClosing(false)
-        }, 300)
-    }
-
-    const switchModal = (modalType, e) => {
-        if (e) {
-            e.preventDefault()
-            e.stopPropagation()
-        }
-        console.log("Switching modal to:", modalType)
-        setIsClosing(false)
-        setModalOpen(modalType)
+        setModalOpen(false)
     }
 
     const handleStartNow = () => {
@@ -160,23 +182,87 @@ const Homepage = () => {
                 section.scrollIntoView({ behavior: "smooth" })
             }
         } else {
-            openLoginModal()
+            openRegisterModal() // Por defecto abre registro para "Comienza Ahora"
         }
     }
 
+    // Configurar los enlaces para el ScrollNav
+    const scrollNavLinks = [
+        {
+            href: "#inicio",
+            label: "Inicio",
+            onClick: () => window.scrollTo({ top: 0, behavior: "smooth" }),
+        },
+        ...(user
+            ? [
+                {
+                    href: "#MiCuenta",
+                    label: "Mi Cuenta",
+                    onClick: () => navigate(`/perfil/${user.id}`),
+                },
+                {
+                    href: "#",
+                    label: "Dashboard",
+                    onClick: () => navigate(`/dashboard/${user.id}`),
+                },
+                ...(hasCompletedFirstForm
+                    ? [
+                        {
+                            href: "#Consejos",
+                            label: "Consejos",
+                            onClick: () => navigate(`/consejos/${user.id}`),
+                        },
+                    ]
+                    : []),
+            ]
+            : []),
+        {
+            href: "#herramientas",
+            label: "Herramientas",
+            onClick: () => {
+                const section = document.querySelector(".financial-features")
+                if (section) {
+                    section.scrollIntoView({ behavior: "smooth" })
+                }
+            },
+        },
+    ]
+
     return (
         <div className="container">
-            <FloatingShapes/>
-            <header>
+            {/* Botón de modo oscuro flotante */}
+            <button
+                className="dark-mode-toggle"
+                onClick={toggleDarkMode}
+                aria-label={darkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+            >
+                {darkMode ? <Sun size={24} /> : <Moon size={24} />}
+            </button>
+            {/* ScrollNav */}
+            <ScrollNav
+                links={scrollNavLinks}
+                user={user}
+                onSignOut={signOut}
+                onOpenLogin={openLoginModal}
+                onOpenRegister={openRegisterModal}
+            />
+
+            <FloatingShapes darkMode={darkMode} />
+
+            {/* Header principal con animación de desaparición */}
+            <header className={`main-header ${headerVisible ? "header-visible" : "header-hidden"}`}>
                 <div className="container-logo">
-                    <SpiralAnimation/>
+                    <SpiralAnimation />
                     <h3>EconomicallyE</h3>
                 </div>
                 {user && (
                     <div className="items">
-                        <button onClick={() => navigate(`/perfil/${user.id}`)}>Cuenta</button>
-                        <button onClick={() => navigate(`/editarInfo/${user.id}`)}>Editar</button>
-                        <button onClick={() => navigate(`/dashboard/${user.id}`)}>Progreso</button>
+                        <button onClick={() => navigate(`/perfil/${user.id}`)} className="header-nav-btn">
+                            Cuenta
+                        </button>
+                        <button onClick={() => navigate(`/dashboard/${user.id}`)} className="header-nav-btn">
+                            Progreso
+                        </button>
                     </div>
                 )}
                 {!user && (
@@ -191,25 +277,28 @@ const Homepage = () => {
                 )}
                 {user && (
                     <div className="header-buttons">
-                        <button onClick={signOut}>Sign-Out</button>
+                        <button onClick={signOut} className="sign-out-btn">
+                            Sign-Out
+                        </button>
                     </div>
                 )}
             </header>
 
-            <section className="content">
+            {/* Hero Section actualizada */}
+            <section className="content" id="inicio">
                 <div>
                     <motion.h1 custom={0} initial="hidden" animate="visible" variants={fadeUpVariants}>
-                        {user ? `¡Bienvenido de vuelta, ${user.name}!` : "Bienvenido a EconomicallyE"}
+                        {user ? `¡Bienvenido de vuelta, ${user.name}!` : "EconomicallyE"}
                     </motion.h1>
 
                     <motion.h2 custom={1} initial="hidden" animate="visible" variants={fadeUpVariants}>
-                        El impulso para tus sueños
+                        {user ? "El impulso para tus sueños" : "Tu guía financiera inteligente"}
                     </motion.h2>
 
                     <motion.p custom={2} initial="hidden" animate="visible" variants={fadeUpVariants}>
                         {user
                             ? "Continúa mejorando tu salud financiera con nosotros."
-                            : "Tu plataforma para mejorar tu salud financiera."}
+                            : "Ahorra con cabeza, planifica con IA. Transforma tus finanzas personales con consejos inteligentes basados en tus ingresos, gastos y metas."}
                     </motion.p>
                 </div>
                 <div className="cta-section">
@@ -226,83 +315,140 @@ const Homepage = () => {
                 </div>
             </section>
 
-            {/* Nueva sección de características financieras integrada */}
-            <section className="financial-features">
-                <motion.div
-                    className="features-container"
-                    custom={3}
-                    initial="hidden"
-                    animate="visible"
-                    variants={fadeUpVariants}
-                >
-                    <div className="feature-header">
-                        <h3>Herramientas que te ayudan a crecer</h3>
-                        <p>Mantente informado sobre el panorama financiero actual</p>
+            {/* Nueva sección: ¿Qué es EconomicallyE? */}
+            <section className="about-section">
+                <motion.div className="about-container" custom={2} initial="hidden" animate="visible" variants={fadeUpVariants}>
+                    <div className="about-header">
+                        <h3>¿Qué es EconomicallyE?</h3>
+                        <p className="about-description">
+                            EconomicallyE es una aplicación web diseñada para ayudarte a tomar el control de tus finanzas personales
+                            de forma sencilla e inteligente. A través de un análisis basado en tus ingresos, gastos y metas de ahorro,
+                            la aplicación genera recomendaciones personalizadas con el apoyo de inteligencia artificial.
+                        </p>
                     </div>
 
-                    <div className="features-grid">
-                        {/* Tarjeta de crédito con contexto */}
+                    <div className="about-features">
                         <motion.div
-                            className="feature-card"
+                            className="about-feature"
+                            custom={3}
+                            initial="hidden"
+                            animate="visible"
+                            variants={fadeUpVariants}
+                        >
+                            <div className="about-icon">
+                                <Brain className="w-6 h-6" />
+                            </div>
+                            <div className="about-text">
+                                <h4>Inteligencia Artificial</h4>
+                                <p>Consejos personalizados generados con IA basados en tu situación financiera real</p>
+                            </div>
+                        </motion.div>
+
+                        <motion.div
+                            className="about-feature"
                             custom={4}
                             initial="hidden"
                             animate="visible"
                             variants={fadeUpVariants}
                         >
-                            <div className="feature-icon">
-                                <DollarSign className="w-8 h-8"/>
+                            <div className="about-icon">
+                                <Target className="w-6 h-6" />
                             </div>
-                            <h4>Gestión Inteligente</h4>
-                            <p>Optimiza tus gastos con nuestras herramientas avanzadas de análisis financiero</p>
-
+                            <div className="about-text">
+                                <h4>Metas Personalizadas</h4>
+                                <p>Establece objetivos de ahorro adaptados a tus ingresos y gastos actuales</p>
+                            </div>
                         </motion.div>
 
-                        {/* Inflación integrada con contexto */}
                         <motion.div
-                            className="feature-card"
+                            className="about-feature"
                             custom={5}
                             initial="hidden"
                             animate="visible"
                             variants={fadeUpVariants}
                         >
-                            <div className="feature-icon">
-                                <TrendingUp className="w-8 h-8"/>
+                            <div className="about-icon">
+                                <BarChart3 className="w-6 h-6" />
                             </div>
-                            <h4>Monitoreo de Inflación</h4>
-                            <p>Mantente al día con los indicadores económicos clave para proteger tu patrimonio</p>
-                            <div className="feature-demo">
-                                <Inflation/>
+                            <div className="about-text">
+                                <h4>Seguimiento Completo</h4>
+                                <p>Consulta tu índice de ahorro y sigue tu progreso financiero mes a mes</p>
                             </div>
                         </motion.div>
+                    </div>
+                </motion.div>
+            </section>
 
-                        {/* Tercera característica para balance */}
+            <section className="financial-features" id="herramientas">
+                <motion.div
+                    className="features-container"
+                    custom={6}
+                    initial="hidden"
+                    animate="visible"
+                    variants={fadeUpVariants}
+                >
+                    <div className="feature-header">
+                        <h3>Porque tus finanzas también merecen inteligencia</h3>
+                        <p>Planifica, ahorra y crece con una plataforma que entiende tu economía y te guía paso a paso</p>
+                    </div>
+
+                    <div className="features-grid">
                         <motion.div
                             className="feature-card"
-                            custom={6}
+                            custom={7}
                             initial="hidden"
                             animate="visible"
                             variants={fadeUpVariants}
                         >
                             <div className="feature-icon">
-                                <PieChart className="w-8 h-8"/>
+                                <DollarSign className="w-8 h-8" />
                             </div>
-                            <h4>Análisis Personalizado</h4>
-                            <p>Recibe consejos adaptados a tu situación financiera específica</p>
+                            <h4>Gestión Inteligente</h4>
+                            <p>Registra tus gastos fijos y variables, y recibe sugerencias para optimizar tus hábitos financieros</p>
+                        </motion.div>
+
+                        <motion.div
+                            className="feature-card"
+                            custom={8}
+                            initial="hidden"
+                            animate="visible"
+                            variants={fadeUpVariants}
+                        >
+                            <div className="feature-icon">
+                                <TrendingUp className="w-8 h-8" />
+                            </div>
+                            <h4>Monitoreo de Inflación</h4>
+                            <p>Mantente al día con los indicadores económicos clave para proteger tu patrimonio</p>
+                            <div className="feature-demo">
+                                <Inflation />
+                            </div>
+                        </motion.div>
+
+                        <motion.div
+                            className="feature-card"
+                            custom={9}
+                            initial="hidden"
+                            animate="visible"
+                            variants={fadeUpVariants}
+                        >
+                            <div className="feature-icon">
+                                <PieChart className="w-8 h-8" />
+                            </div>
+                            <h4>Tu Asistente de Ahorro Personal</h4>
+                            <p>Conoce tu índice de ahorro, sigue tu progreso y alcanza tus metas financieras con ayuda de la IA</p>
                             <div className="feature-preview">
                                 <div className="chart-placeholder">
-                                    <div className="chart-bar" style={{height: "60%"}}></div>
-                                    <div className="chart-bar" style={{height: "80%"}}></div>
-                                    <div className="chart-bar" style={{height: "40%"}}></div>
-                                    <div className="chart-bar" style={{height: "90%"}}></div>
+                                    <div className="chart-bar" style={{ height: "60%" }}></div>
+                                    <div className="chart-bar" style={{ height: "80%" }}></div>
+                                    <div className="chart-bar" style={{ height: "40%" }}></div>
+                                    <div className="chart-bar" style={{ height: "90%" }}></div>
                                 </div>
                             </div>
                         </motion.div>
                     </div>
-
                 </motion.div>
             </section>
 
-            {/* Loading state */}
             {user && loadingAdviceHistory && (
                 <section className="information">
                     <div className="text-center p-4">
@@ -311,20 +457,14 @@ const Homepage = () => {
                 </section>
             )}
 
-            {/* Solo mostrar FinancialDashboard si el usuario está logueado, NO ha completado su primer formulario y no está cargando */}
             {user && !hasCompletedFirstForm && !loadingAdviceHistory && (
                 <section className="information" id="form">
                     <div>
-                        <FinancialDashboard onFormCompleted={markFirstFormAsCompleted}/>
+                        <FinancialDashboard onFormCompleted={markFirstFormAsCompleted} />
                     </div>
                 </section>
             )}
 
-
-                <CreditCardAnimation/>
-
-
-            {/* Mensaje cuando ya completó el formulario */}
             {user && hasCompletedFirstForm && !loadingAdviceHistory && (
                 <section className="information">
                     <div className="text-center p-4">
@@ -340,7 +480,7 @@ const Homepage = () => {
             {modalOpen && (
                 <div className="modal-overlay" onClick={closeModal}>
                     <div
-                        className={`modal-content ${isClosing ? "closing" : ""}`}
+                        className="modal-content-new"
                         onClick={(e) => {
                             e.stopPropagation()
                         }}
@@ -348,29 +488,12 @@ const Homepage = () => {
                         <button className="modal-close" onClick={closeModal} aria-label="Cerrar modal">
                             &times;
                         </button>
-                        {modalOpen === "login" ? (
-                            <LoginForm
-                                closeModal={closeModal}
-                                openRegisterModal={(e) => {
-                                    console.log("openRegisterModal called from LoginForm")
-                                    switchModal("register", e)
-                                }}
-                            />
-                        ) : (
-                            <FormUser
-                                onRegisterSuccess={() => {
-                                    setTimeout(() => switchModal("login"), 1500)
-                                }}
-                                closeModal={closeModal}
-                                openLoginModal={(e) => {
-                                    console.log("openLoginModal called from FormUser")
-                                    switchModal("login", e)
-                                }}
-                            />
-                        )}
+                        <AuthModal closeModal={closeModal} initialMode={modalType} />
                     </div>
                 </div>
             )}
+
+            <Footer />
         </div>
     )
 }

@@ -3,105 +3,233 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import "./Perfil.css"
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from "chart.js"
+import ScrollNav from "../Components/Nav/ScrollNav.jsx"
+import Footer from "../Components/Footer/footer.jsx"
+import { motion, AnimatePresence } from "framer-motion"
+import { Moon, Sun } from "lucide-react"
+import { fetchWithErrorHandling, useErrorHandler } from "../Components/utils/error-handler.js"
+import { FieldError } from "../Components/ErrorDisplay.jsx"
+import { useToast, ToastContainer } from "../Components/toast-notification.jsx"
 
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement)
+const fadeUpVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: (i) => ({
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.8,
+            delay: 0.1 + i * 0.1,
+            ease: [0.25, 0.4, 0.25, 1],
+        },
+    }),
+}
 
-function Perfil() {
+// Componente del Modal de Carga
+const LoadingModal = ({ isVisible, onClose }) => {
+    return (
+        <AnimatePresence>
+            {isVisible && (
+                <motion.div
+                    className="loading-modal-overlay"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    <motion.div
+                        className="loading-modal-content"
+                        initial={{ opacity: 0, scale: 0.8, y: 50 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.8, y: 50 }}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
+                    >
+                        <div className="loading-modal-header">
+                            <div className="loading-brain-icon">
+                                <div className="brain-wave"></div>
+                                <div className="brain-wave"></div>
+                                <div className="brain-wave"></div>
+                            </div>
+                        </div>
+
+                        <div className="loading-modal-body">
+                            <h3>Generando tu consejo personalizado</h3>
+                            <p>Nuestro asistente está analizando tu situación financiera...</p>
+
+                            <div className="loading-steps">
+                                <div className="loading-step active">
+                                    <div className="step-icon">📊</div>
+                                    <span>Analizando ingresos</span>
+                                </div>
+                                <div className="loading-step active">
+                                    <div className="step-icon">💰</div>
+                                    <span>Evaluando gastos</span>
+                                </div>
+                                <div className="loading-step active">
+                                    <div className="step-icon">🎯</div>
+                                    <span>Revisando metas</span>
+                                </div>
+                                <div className="loading-step">
+                                    <div className="step-icon">🤖</div>
+                                    <span>Generando recomendaciones</span>
+                                </div>
+                            </div>
+
+                            <div className="progress-bar-container">
+                                <div className="progress-bar">
+                                    <div className="progress-fill"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="loading-particles">
+                            <div className="particle"></div>
+                            <div className="particle"></div>
+                            <div className="particle"></div>
+                            <div className="particle"></div>
+                            <div className="particle"></div>
+                        </div>
+                    </motion.div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    )
+}
+
+// Componente del botón de modo oscuro
+function DarkModeToggle({ darkMode, toggleDarkMode }) {
+    return (
+        <button
+            className="dark-mode-toggle"
+            onClick={toggleDarkMode}
+            aria-label={darkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+        >
+            {darkMode ? <Sun size={24} /> : <Moon size={24} />}
+        </button>
+    )
+}
+
+export default function PerfilEditable() {
+    // Hook para notificaciones toast
+
+    const toastFunctions = useToast()
+
+
+    // Hook personalizado para manejo de errores (ahora con toast integrado)
+    const { errors, setFieldError, clearFieldError, clearAllErrors, setSuccess, handleApiError, setGlobalError } =
+        useErrorHandler(toastFunctions)
+
+    // Estados principales
     const [overview, setOverview] = useState(null)
+    const [hasCompletedFirstForm, setHasCompletedFirstForm] = useState(false)
+    const [user, setUser] = useState(null)
     const [userId, setUserId] = useState(null)
     const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
+    const [saving, setSaving] = useState(false)
+    const [darkMode, setDarkMode] = useState(false)
     const navigate = useNavigate()
 
-    const updateUserDataInLocalStorage = (userData) => {
+    // Estado para el modal de carga del consejo
+    const [generatingAdvice, setGeneratingAdvice] = useState(false)
+
+    // Estados de edición
+    const [editingIncome, setEditingIncome] = useState(false)
+    const [editingFixed, setEditingFixed] = useState(false)
+    const [editingVariable, setEditingVariable] = useState(false)
+    const [editingGoals, setEditingGoals] = useState(false)
+
+    // Estados de datos editables
+    const [monthlyIncome, setMonthlyIncome] = useState(0)
+    const [fixedExpenses, setFixedExpenses] = useState([])
+    const [variableExpenses, setVariableExpenses] = useState([])
+    const [goals, setGoals] = useState([])
+
+    // Opciones de frecuencia
+    const frequencyOptions = [
+        { value: "MONTHLY", label: "Mensual" },
+        { value: "WEEKLY", label: "Semanal" },
+        { value: "YEARLY", label: "Anual" },
+        { value: "DAILY", label: "Diario" },
+    ]
+
+    // Inicializar tema oscuro desde localStorage
+    useEffect(() => {
+        const savedTheme = localStorage.getItem("darkMode")
+        if (savedTheme) {
+            setDarkMode(JSON.parse(savedTheme))
+        }
+    }, [])
+
+    // Aplicar tema oscuro al body
+    useEffect(() => {
+        if (darkMode) {
+            document.body.classList.add("dark-theme")
+        } else {
+            document.body.classList.remove("dark-theme")
+        }
+        localStorage.setItem("darkMode", JSON.stringify(darkMode))
+    }, [darkMode])
+
+    const toggleDarkMode = () => {
+        setDarkMode(!darkMode)
+    }
+
+    // Función mejorada para cargar datos con manejo de errores
+    const loadDataWithErrorHandling = async (url, context) => {
         try {
-            const currentData = JSON.parse(localStorage.getItem("user")) || {}
-            const updatedData = { ...currentData, ...userData }
-            localStorage.setItem("user", JSON.stringify(updatedData))
-
-            if (userData.monthlyIncome !== undefined) {
-                localStorage.setItem("monthlyIncome", userData.monthlyIncome.toString())
-            }
-
-            console.log("✅ Datos actualizados en localStorage:", updatedData)
-            console.log("💰 Monthly Income guardado:", updatedData.monthlyIncome)
-
-            return updatedData
+            const token = localStorage.getItem("token")
+            const response = await fetchWithErrorHandling(url, {
+                headers: { Authorization: `Bearer ${token}` },
+            })
+            return await response.json()
         } catch (error) {
-            console.error("❌ Error al actualizar localStorage:", error)
-            return null
+            console.warn(`Error al cargar ${context}:`, error.message)
+            handleApiError(error, `Error al cargar ${context}`)
+            return []
         }
     }
 
+    // Cargar datos iniciales con mejor manejo de errores
     useEffect(() => {
         const fetchOverview = async () => {
             try {
+                clearAllErrors()
                 const token = localStorage.getItem("token")
 
-                const res = await fetch(`http://localhost:8080/api/users/me`, {
+                // Obtener usuario actual
+                const userResponse = await fetchWithErrorHandling(`https://economicallye-1.onrender.com/api/users/me`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${token}`,
                     },
                 })
-                if (!res.ok) throw new Error("No se pudo obtener el usuario")
 
-                const data = await res.json()
-                const currentUserId = data.id
+                const userData = await userResponse.json()
+                const currentUserId = userData.id
                 setUserId(currentUserId)
 
-                const overviewRes = await fetch(`http://localhost:8080/api/overview/${currentUserId}`, {
-                    headers: {
-                        Authorization: "Bearer " + token,
+                // Obtener overview
+                const overviewResponse = await fetchWithErrorHandling(
+                    `https://economicallye-1.onrender.com/api/overview/${currentUserId}`,
+                    {
+                        headers: { Authorization: `Bearer ${token}` },
                     },
-                })
-                if (!overviewRes.ok) throw new Error("No se pudo obtener el overview")
+                )
 
-                const overviewData = await overviewRes.json()
+                const overviewData = await overviewResponse.json()
 
-                let detailedFixedExpenses = []
-                try {
-                    const fixedExpensesRes = await fetch(`http://localhost:8080/api/fixed-expenses/${currentUserId}`, {
-                        headers: {
-                            Authorization: "Bearer " + token,
-                        },
-                    })
-                    if (fixedExpensesRes.ok) {
-                        detailedFixedExpenses = await fixedExpensesRes.json()
-                    }
-                } catch (fixedError) {
-                    console.warn("No se pudieron cargar los gastos fijos detallados:", fixedError)
-                }
-
-                let detailedVariableExpenses = []
-                try {
-                    const variableExpensesRes = await fetch(`http://localhost:8080/api/variable-expenses/${currentUserId}`, {
-                        headers: {
-                            Authorization: "Bearer " + token,
-                        },
-                    })
-                    if (variableExpensesRes.ok) {
-                        detailedVariableExpenses = await variableExpensesRes.json()
-                    }
-                } catch (variableError) {
-                    console.warn("No se pudieron cargar los gastos variables detallados:", variableError)
-                }
-
-                let detailedGoals = []
-                try {
-                    const goalsRes = await fetch(`http://localhost:8080/api/goals/${currentUserId}`, {
-                        headers: {
-                            Authorization: "Bearer " + token,
-                        },
-                    })
-                    if (goalsRes.ok) {
-                        detailedGoals = await goalsRes.json()
-                    }
-                } catch (goalsError) {
-                    console.warn("No se pudieron cargar las metas detalladas:", goalsError)
-                }
+                // Cargar datos detallados con manejo de errores individual
+                const [detailedFixedExpenses, detailedVariableExpenses, detailedGoals] = await Promise.all([
+                    loadDataWithErrorHandling(
+                        `https://economicallye-1.onrender.com/api/fixed-expenses/${currentUserId}`,
+                        "gastos fijos",
+                    ),
+                    loadDataWithErrorHandling(
+                        `https://economicallye-1.onrender.com/api/variable-expenses/${currentUserId}`,
+                        "gastos variables",
+                    ),
+                    loadDataWithErrorHandling(`https://economicallye-1.onrender.com/api/goals/${currentUserId}`, "metas"),
+                ])
 
                 const enhancedOverview = {
                     ...overviewData,
@@ -111,20 +239,13 @@ function Perfil() {
                     goals: detailedGoals.length > 0 ? detailedGoals : overviewData.goals || [],
                 }
 
-                console.log("Datos recibidos:", enhancedOverview)
                 setOverview(enhancedOverview)
-
-                if (enhancedOverview.monthlyIncome !== undefined) {
-                    updateUserDataInLocalStorage({
-                        id: currentUserId,
-                        email: data.email,
-                        name: data.name,
-                        monthlyIncome: enhancedOverview.monthlyIncome,
-                    })
-                }
+                setMonthlyIncome(enhancedOverview.monthlyIncome || 0)
+                setFixedExpenses(enhancedOverview.fixedExpenses || [])
+                setVariableExpenses(enhancedOverview.variableExpenses || [])
+                setGoals(enhancedOverview.goals || [])
             } catch (error) {
-                console.error("Error al cargar el perfil: ", error)
-                setError("No se pudo obtener el perfil")
+                handleApiError(error, "Error al cargar el perfil")
             } finally {
                 setLoading(false)
             }
@@ -133,12 +254,254 @@ function Perfil() {
         fetchOverview()
     }, [])
 
+    // Función mejorada para guardar ingreso
+    const saveIncome = async () => {
+        setSaving(true)
+        clearAllErrors()
+
+        try {
+            const token = localStorage.getItem("token")
+            const response = await fetchWithErrorHandling(`https://economicallye-1.onrender.com/api/users/${userId}/income`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ monthlyIncome }),
+            })
+
+            setOverview((prev) => ({ ...prev, monthlyIncome }))
+            setEditingIncome(false)
+            localStorage.setItem("monthlyIncome", monthlyIncome.toString())
+            setSuccess("Ingreso actualizado correctamente")
+        } catch (error) {
+            // Manejar errores de validación específicos para el ingreso
+            if (error.fieldErrors) {
+                if (error.fieldErrors.monthlyIncome) {
+                    setFieldError("monthlyIncome", error.fieldErrors.monthlyIncome)
+                }
+            }
+            handleApiError(error, "Error al guardar el ingreso")
+        } finally {
+            setSaving(false)
+        }
+    }
+
+    // Función mejorada para guardar items individuales
+    const saveItem = async (type, item) => {
+        const token = localStorage.getItem("token")
+        let endpoint = ""
+        if (type === "fixed") endpoint = "fixed-expenses"
+        else if (type === "variable") endpoint = "variable-expenses"
+        else if (type === "goal") endpoint = "goals"
+
+        let method = "PUT"
+        let url = `https://economicallye-1.onrender.com/api/${endpoint}/${item.id}`
+
+        if (item.id >= 1000000000000) {
+            method = "POST"
+            url = `https://economicallye-1.onrender.com/api/${endpoint}`
+            const { id, ...itemWithoutId } = item
+            item = { ...itemWithoutId, userId }
+        }
+
+        try {
+            const response = await fetchWithErrorHandling(url, {
+                method: method,
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(item),
+            })
+
+            return await response.json()
+        } catch (error) {
+            // Si hay errores de campo específicos, mapearlos con el ID del item
+            if (error.fieldErrors) {
+                const mappedErrors = {}
+                Object.keys(error.fieldErrors).forEach((field) => {
+                    mappedErrors[`${type}_${item.id}_${field}`] = error.fieldErrors[field]
+                })
+                // Usar setFieldError para establecer los errores mapeados
+                Object.entries(mappedErrors).forEach(([field, message]) => {
+                    setFieldError(field, message)
+                })
+            }
+            throw error
+        }
+    }
+
+    // Función mejorada para guardar todos los items
+    const saveAllItems = async (type) => {
+        setSaving(true)
+        clearAllErrors()
+
+        try {
+            let items = []
+            if (type === "fixed") items = fixedExpenses
+            else if (type === "variable") items = variableExpenses
+            else if (type === "goal") items = goals
+
+            // Validar items básicos antes de enviar
+            const validItems = items.filter((item) => {
+                return item.name || (type === "goal" ? item.targetAmount : item.amount)
+            })
+
+            // Guardar items uno por uno para capturar errores específicos
+            const savedItems = []
+            let hasErrors = false
+
+            let firstErrorMessage = null
+
+            for (const item of validItems) {
+                try {
+                    const savedItem = await saveItem(type, item)
+                    savedItems.push(savedItem)
+                } catch (error) {
+                    hasErrors = true
+                    console.error(`Error saving item ${item.id}:`, error)
+                    // Los errores de campo ya se establecieron en saveItem
+
+                    // Guardar el primer mensaje de error relevante para mostrar en el toast
+                    if (!firstErrorMessage && error?.message) {
+                        firstErrorMessage = error.message
+                    }
+                }
+            }
+
+            // Si hay errores, no actualizar el estado y mostrar mensaje
+            if (hasErrors) {
+                const fallback = "Algunos elementos no se pudieron guardar. Por favor, revisa los errores y corrige los campos marcados."
+                setGlobalError(firstErrorMessage || fallback)
+                return
+            }
+
+            // Si todo se guardó correctamente, actualizar estado
+            if (type === "fixed") {
+                setFixedExpenses(savedItems)
+                setEditingFixed(false)
+            } else if (type === "variable") {
+                setVariableExpenses(savedItems)
+                setEditingVariable(false)
+            } else if (type === "goal") {
+                setGoals(savedItems)
+                setEditingGoals(false)
+            }
+
+            // Actualizar overview
+            setOverview((prev) => ({
+                ...prev,
+                [type === "fixed" ? "fixedExpenses" : type === "variable" ? "variableExpenses" : "goals"]: savedItems,
+            }))
+
+            setSuccess("Cambios guardados correctamente")
+        } catch (error) {
+            handleApiError(error, `Error al guardar ${type}`)
+        } finally {
+            setSaving(false)
+        }
+    }
+
+    // Función mejorada para eliminar items
+    const deleteItem = async (type, id) => {
+        if (id >= 1000000000000) {
+            // Item temporal, solo remover del estado
+            if (type === "fixed") setFixedExpenses((prev) => prev.filter((e) => e.id !== id))
+            else if (type === "variable") setVariableExpenses((prev) => prev.filter((e) => e.id !== id))
+            else if (type === "goal") setGoals((prev) => prev.filter((e) => e.id !== id))
+            return
+        }
+
+        try {
+            const token = localStorage.getItem("token")
+            let endpoint = ""
+            if (type === "fixed") endpoint = "fixed-expenses"
+            else if (type === "variable") endpoint = "variable-expenses"
+            else if (type === "goal") endpoint = "goals"
+
+            await fetchWithErrorHandling(`https://economicallye-1.onrender.com/api/${endpoint}/${id}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+            })
+
+            if (type === "fixed") setFixedExpenses((prev) => prev.filter((e) => e.id !== id))
+            else if (type === "variable") setVariableExpenses((prev) => prev.filter((e) => e.id !== id))
+            else if (type === "goal") setGoals((prev) => prev.filter((e) => e.id !== id))
+
+            setSuccess("Elemento eliminado correctamente")
+        } catch (error) {
+            handleApiError(error, "Error al eliminar el elemento")
+        }
+    }
+
+    const addItem = (type) => {
+        clearAllErrors() // Limpiar errores al añadir nuevo item
+        const tempId = Date.now()
+
+        if (type === "fixed") {
+            setFixedExpenses((prev) => [
+                ...prev,
+                {
+                    id: tempId,
+                    name: "",
+                    amount: 0,
+                    frequency: "MONTHLY",
+                    description: "",
+                    userId,
+                },
+            ])
+        } else if (type === "variable") {
+            setVariableExpenses((prev) => [
+                ...prev,
+                {
+                    id: tempId,
+                    name: "",
+                    amount: 0,
+                    expenseDate: new Date().toISOString().split("T")[0],
+                    description: "",
+                    userId,
+                },
+            ])
+        } else if (type === "goal") {
+            setGoals((prev) => [
+                ...prev,
+                {
+                    id: tempId,
+                    name: "",
+                    targetAmount: 0,
+                    savedAmount: 0,
+                    description: "",
+                    deadline: "",
+                    userId,
+                },
+            ])
+        }
+    }
+
+    const updateField = (type, id, field, value) => {
+        // Limpiar error del campo cuando se actualiza
+        clearFieldError(`${type}_${id}_${field}`)
+
+        if (type === "fixed") {
+            setFixedExpenses((prev) => prev.map((i) => (i.id === id ? { ...i, [field]: value } : i)))
+        } else if (type === "variable") {
+            setVariableExpenses((prev) => prev.map((i) => (i.id === id ? { ...i, [field]: value } : i)))
+        } else if (type === "goal") {
+            setGoals((prev) => prev.map((i) => (i.id === id ? { ...i, [field]: value } : i)))
+        }
+    }
+
+    // Función mejorada para generar consejo
     const handleGenerateAdvice = async () => {
+        setGeneratingAdvice(true)
+        clearAllErrors()
+
         try {
             const token = localStorage.getItem("token")
 
             if (!overview || !userId) {
-                alert("No hay datos suficientes para generar el consejo. Por favor, recarga la página.")
+                setGlobalError("No hay datos suficientes para generar el consejo. Por favor, recarga la página.")
                 return
             }
 
@@ -168,9 +531,7 @@ function Perfil() {
                 })),
             }
 
-            console.log("Datos enviados para generar consejo:", requestData)
-
-            const response = await fetch(`http://localhost:8080/api/advice`, {
+            await fetchWithErrorHandling(`https://economicallye-1.onrender.com/api/advice`, {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -180,277 +541,663 @@ function Perfil() {
                 body: JSON.stringify(requestData),
             })
 
-            if (!response.ok) {
-                const errorText = await response.text()
-                console.error("Error del servidor:", errorText)
-                throw new Error(`Error generando el consejo: ${response.status} - ${errorText}`)
-            }
+            // Simular un pequeño delay para mostrar el modal
+            await new Promise((resolve) => setTimeout(resolve, 1000))
 
-            const result = await response.json()
-            console.log("Consejo generado exitosamente:", result)
-
-            alert("Nuevo consejo generado correctamente.")
-            window.location.reload()
+            setSuccess("Nuevo consejo generado correctamente.")
+            navigate(`/consejos/${userId}`)
         } catch (error) {
-            console.error("Error al generar el consejo:", error)
-            alert(`No se pudo generar el nuevo consejo: ${error.message}`)
+            handleApiError(error, "Error al generar el consejo")
+        } finally {
+            setGeneratingAdvice(false)
         }
     }
 
-    if (loading) {
-        return (
-            <div className="modern-loading-container">
-                <div className="spinner-container">
-                    <div className="loading-spinner-modern">
-                        <div className="spinner-ring"></div>
-                        <div className="spinner-ring"></div>
-                        <div className="spinner-ring"></div>
-                    </div>
-                </div>
-
-                <div className="loading-background">
-                    <div className="floating-shape shape-1"></div>
-                    <div className="floating-shape shape-2"></div>
-                </div>
-            </div>
-        )
-    }
-
-    if (error) {
-        return (
-            <div className="error-container">
-                <div className="error-card">
-                    <h2>❌ Error</h2>
-                    <p>{error}</p>
-                    <button className="btn btn-primary" onClick={() => navigate("/")}>
-                        Volver al Inicio
-                    </button>
-                </div>
-            </div>
-        )
-    }
-
-    if (!overview) {
-        return (
-            <div className="error-container">
-                <div className="error-card">
-                    <h2>⚠️ Sin Datos</h2>
-                    <p>No hay datos disponibles para mostrar.</p>
-                    <button className="btn btn-primary" onClick={() => navigate("/")}>
-                        Volver al Inicio
-                    </button>
-                </div>
-            </div>
-        )
-    }
-
-    // Calcular totales con validaciones
-    const fixedExpenses = overview.fixedExpenses || []
-    const variableExpenses = overview.variableExpenses || []
-    const goals = overview.goals || []
-    const monthlyIncome = overview.monthlyIncome || 0
-
+    // Calcular totales
     const totalFixed = fixedExpenses.reduce((sum, e) => sum + (e?.amount || 0), 0)
     const totalVariable = variableExpenses.reduce((sum, e) => sum + (e?.amount || 0), 0)
     const totalExpenses = totalFixed + totalVariable
     const totalSavings = monthlyIncome - totalExpenses
 
+    const [globalError, setGlobalErrorState] = useState(null)
+
+    if (loading) {
+        return (
+            <div className={`elegant-loading-container ${darkMode ? "dark-theme" : ""}`}>
+                <div className="loading-content">
+                    <div className="loading-spinner">
+                        <div className="spinner-ring"></div>
+                        <div className="spinner-ring"></div>
+                        <div className="spinner-ring"></div>
+                    </div>
+                    <h3>Cargando tu perfil financiero...</h3>
+                </div>
+                <div className="loading-background">
+                    <div className="floating-shape shape-1"></div>
+                    <div className="floating-shape shape-2"></div>
+                    <div className="floating-shape shape-3"></div>
+                </div>
+            </div>
+        )
+    }
+
+    if (globalError && !overview) {
+        return (
+            <div className={`elegant-error-container ${darkMode ? "dark-theme" : ""}`}>
+                <div className="error-content">
+                    <div className="error-icon">⚠️</div>
+                    <h2>Oops! Algo salió mal</h2>
+                    <p>{globalError}</p>
+                    <button className="elegant-btn primary" onClick={() => window.location.reload()}>
+                        Reintentar
+                    </button>
+                </div>
+            </div>
+        )
+    }
+
+    // Configurar los enlaces para el ScrollNav
+    const scrollNavLinks = [
+        {
+            href: "#inicio",
+            label: "Inicio",
+            onClick: () => navigate("/"),
+        },
+        {
+            href: "#consejos",
+            label: "Ver Consejos",
+            onClick: () => navigate(`/consejos/${userId}`),
+        },
+        {
+            href: "#dashboard",
+            label: "Dashboard",
+            onClick: () => navigate(`/dashboard/${userId}`),
+        },
+        {
+            href: "#generar",
+            label: "Generar Consejo",
+            onClick: handleGenerateAdvice,
+        },
+    ]
+
     return (
-        <div className="profile-container">
+        <div className={`dashboard-container ${darkMode ? "dark-theme" : ""}`}>
+            {/* Botón de modo oscuro flotante */}
+            <DarkModeToggle darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+
+            {/* Modal de carga para generar consejo */}
+            <LoadingModal isVisible={generatingAdvice} />
+
+            {/* Contenedor de notificaciones toast */}
+            <ToastContainer toasts={toastFunctions.toasts} onRemove={toastFunctions.removeToast} />
+
+
+            {/* Formas de fondo */}
+            <div className="background-shapes">
+                <div className="shape shape-1"></div>
+                <div className="shape shape-2"></div>
+                <div className="shape shape-3"></div>
+            </div>
+
+            {/* ScrollNav */}
+            <ScrollNav links={scrollNavLinks} user={userId} />
+
             {/* Header */}
-            <header className="profile-header">
+            <motion.header className="elegant-header" initial="hidden" animate="visible" variants={fadeUpVariants} custom={0}>
                 <div className="header-content">
-                    <h1 className="welcome-title">Hola, {overview.name}</h1>
+                    <div className="welcome-section">
+                        <h1 className="welcome-title">
+                            Hola, <span className="highlight">{overview?.name}</span>
+                        </h1>
+                        <p className="welcome-subtitle">Gestiona tu futuro financiero</p>
+                    </div>
                     <div className="header-actions">
-                        <button className="btn btn-outline" onClick={() => navigate("/")}>
-                            Volver al Inicio
+                        <button className="elegant-btn primary" onClick={() => navigate(`/consejos/${userId}`)}>
+                            <span className="btn-icon"></span>
+                            Ver Consejos
                         </button>
-                        <button className="btn btn-outline" onClick={() => navigate(`/editarInfo/${userId}`)}>
-                            Editar Información
-                        </button>
-                        <button className="btn btn-success" onClick={handleGenerateAdvice}>
-                            Generar nuevo consejo
+                        <button className="elegant-btn secondary" onClick={handleGenerateAdvice}>
+                            <span className="btn-icon"></span>
+                            Generar Consejo
                         </button>
                     </div>
                 </div>
-            </header>
+            </motion.header>
 
             {/* Resumen económico */}
-            <section className="economic-summary">
-                <h2 className="section-title">📊 Resumen Económico</h2>
-                <div className="summary-grid">
-                    <div className="summary-card income">
-                        <div className="card-icon">💰</div>
-                        <h3>Ingresos Mensuales</h3>
-                        <p className="amount">{monthlyIncome.toLocaleString()} €</p>
+            <motion.section
+                className="economic-overview"
+                initial="hidden"
+                animate="visible"
+                variants={fadeUpVariants}
+                custom={1}
+            >
+                <h2 className="section-title">
+                    <span className="title-icon"></span>
+                    Resumen Financiero
+                </h2>
+                <div className="overview-grid">
+                    <div className="overview-card income">
+                        <div className="card-header">
+                            <div className="card-icon"></div>
+                            <h3>Ingresos</h3>
+                        </div>
+                        <div className="card-value">€{monthlyIncome.toLocaleString()}</div>
+                        <div className="card-label">Mensuales</div>
                     </div>
 
-                    <div className="summary-card expenses">
-                        <div className="card-icon">💳</div>
-                        <h3>Gastos Totales</h3>
-                        <p className="amount">{totalExpenses.toLocaleString()} €</p>
+                    <div className="overview-card expenses">
+                        <div className="card-header">
+                            <div className="card-icon"></div>
+                            <h3>Gastos</h3>
+                        </div>
+                        <div className="card-value">€{totalExpenses.toLocaleString()}</div>
+                        <div className="card-label">Totales</div>
                     </div>
 
-                    <div className={`summary-card ${totalSavings >= 0 ? "savings" : "deficit"}`}>
-                        <div className="card-icon">{totalSavings >= 0 ? "🏦" : "⚠️"}</div>
-                        <h3>{totalSavings >= 0 ? "Ahorro Estimado" : "Déficit"}</h3>
-                        <p className="amount">{Math.abs(totalSavings).toLocaleString()} €</p>
+                    <div className={`overview-card ${totalSavings >= 0 ? "savings" : "deficit"}`}>
+                        <div className="card-header">
+                            <div className="card-icon">{totalSavings >= 0 ? "" : ""}</div>
+                            <h3>{totalSavings >= 0 ? "Ahorro" : "Déficit"}</h3>
+                        </div>
+                        <div className="card-value">€{Math.abs(totalSavings).toLocaleString()}</div>
+                        <div className="card-label">Estimado</div>
                     </div>
 
-                    <div className="summary-card percentage">
-                        <div className="card-icon">📈</div>
-                        <h3>% de Ahorro</h3>
-                        <p className="amount">{monthlyIncome > 0 ? ((totalSavings / monthlyIncome) * 100).toFixed(1) : "0.0"}%</p>
+                    <div className="overview-card percentage">
+                        <div className="card-header">
+                            <div className="card-icon"></div>
+                            <h3>% Ahorro</h3>
+                        </div>
+                        <div className="card-value">
+                            {monthlyIncome > 0 ? ((totalSavings / monthlyIncome) * 100).toFixed(1) : "0.0"}%
+                        </div>
+                        <div className="card-label">Del ingreso</div>
                     </div>
                 </div>
-            </section>
+            </motion.section>
 
-            {/* Desglose de gastos */}
-            <section className="expenses-breakdown">
-                <div className="expenses-grid">
-                    <div className="expense-card fixed-expenses">
-                        <div className="card-header">
-                            <h3>🏠 Gastos Fijos</h3>
-                        </div>
-                        <div className="card-content">
-                            {fixedExpenses.length > 0 ? (
-                                <>
-                                    <div className="total-amount">
-                                        <strong>Total: {totalFixed.toLocaleString()} €</strong>
-                                    </div>
-                                    <div className="expense-list scrollable-list">
-                                        {fixedExpenses.map((expense, index) => (
-                                            <div key={expense?.id || index} className="expense-item">
-                                                <div className="expense-info">
-                          <span className="expense-name">
-                            {expense?.name || expense?.description || `Gasto fijo #${index + 1}`}
-                          </span>
-                                                    {expense?.category && <div className="expense-category">📁 {expense.category}</div>}
-                                                </div>
-                                                <span className="expense-amount">{expense?.amount || 0} €</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </>
-                            ) : (
-                                <p className="no-data">No hay gastos fijos registrados</p>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="expense-card variable-expenses">
-                        <div className="card-header">
-                            <h3>🛒 Gastos Variables</h3>
-                        </div>
-                        <div className="card-content">
-                            {variableExpenses.length > 0 ? (
-                                <>
-                                    <div className="total-amount">
-                                        <strong>Total: {totalVariable.toLocaleString()} €</strong>
-                                    </div>
-                                    <div className="expense-list scrollable-list">
-                                        {variableExpenses.map((expense, index) => (
-                                            <div key={expense?.id || index} className="expense-item">
-                                                <div className="expense-info">
-                          <span className="expense-name">
-                            {expense?.name || expense?.description || `Gasto variable #${index + 1}`}
-                          </span>
-                                                    {expense?.category && <div className="expense-category">📁 {expense.category}</div>}
-                                                    {expense?.date && (
-                                                        <div className="expense-date">📅 {new Date(expense.date).toLocaleDateString()}</div>
-                                                    )}
-                                                </div>
-                                                <span className="expense-amount">{expense?.amount || 0} €</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </>
-                            ) : (
-                                <p className="no-data">No hay gastos variables registrados</p>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Metas de ahorro */}
-            <section className="goals-section">
-                <div className="goals-card">
+            {/* Ingreso Mensual */}
+            <motion.section
+                className="income-section"
+                initial="hidden"
+                animate="visible"
+                variants={fadeUpVariants}
+                custom={2}
+            >
+                <div className="elegant-card">
                     <div className="card-header">
-                        <h3>🎯 Metas de Ahorro</h3>
+                        <h3>
+                            <span className="header-icon"></span>
+                            Ingreso Mensual
+                        </h3>
+                        <button className="elegant-btn outline" onClick={() => setEditingIncome(!editingIncome)}>
+                            {editingIncome ? "Cancelar" : "Editar"}
+                        </button>
                     </div>
                     <div className="card-content">
-                        {goals.length > 0 ? (
-                            <div className="goals-content">
-                                <div className="goals-detail">
-                                    <h4>Detalle de Metas</h4>
-                                    <div className="goals-list scrollable-list">
+                        {editingIncome ? (
+                            <div className="edit-form">
+                                <div className="form-group">
+                                    <label>Cantidad (€)</label>
+                                    <input
+                                        type="number"
+                                        className="elegant-input"
+                                        value={monthlyIncome}
+                                        onChange={(e) => setMonthlyIncome(Number.parseFloat(e.target.value) || 0)}
+                                        placeholder="0.00"
+                                        min="0"
+                                        step="0.01"
+                                    />
+                                    <FieldError error={errors.monthlyIncome} />
+                                </div>
+                                <div className="form-actions">
+                                    <button className="elegant-btn primary" onClick={saveIncome} disabled={saving}>
+                                        {saving ? "Guardando..." : "Guardar"}
+                                    </button>
+                                    <button
+                                        className="elegant-btn outline"
+                                        onClick={() => {
+                                            setMonthlyIncome(overview?.monthlyIncome || 0)
+                                            setEditingIncome(false)
+                                            clearAllErrors()
+                                        }}
+                                    >
+                                        Cancelar
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="income-display">
+                                <div className="amount-display">€{monthlyIncome.toLocaleString()}</div>
+                                <div className="amount-label">Por mes</div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </motion.section>
+
+            {/* Gastos */}
+            <motion.section
+                className="expenses-section"
+                initial="hidden"
+                animate="visible"
+                variants={fadeUpVariants}
+                custom={3}
+            >
+                <div className="expenses-grid">
+                    {/* Gastos Fijos */}
+                    <div className="elegant-card fixed-expenses">
+                        <div className="card-header">
+                            <h3>
+                                <span className="header-icon"></span>
+                                Gastos Fijos
+                            </h3>
+                            <div className="header-actions">
+                                <span className="total-badge">€{totalFixed.toLocaleString()}</span>
+                                {editingFixed && (
+                                    <button className="elegant-btn success small" onClick={() => addItem("fixed")}>
+                                        Añadir
+                                    </button>
+                                )}
+                                <button className="elegant-btn outline small" onClick={() => setEditingFixed(!editingFixed)}>
+                                    {editingFixed ? "Cancelar" : "Editar"}
+                                </button>
+                            </div>
+                        </div>
+                        <div className="card-content">
+                            {editingFixed ? (
+                                <div className="edit-form">
+                                    <div className="expense-list">
+                                        {fixedExpenses.map((expense) => (
+                                            <div key={expense.id} className="expense-edit-item">
+                                                <div className="expense-inputs">
+                                                    <div className="input-group">
+                                                        <input
+                                                            type="text"
+                                                            className="elegant-input"
+                                                            value={expense.name || ""}
+                                                            onChange={(e) => updateField("fixed", expense.id, "name", e.target.value)}
+                                                            placeholder="Nombre del gasto"
+                                                        />
+                                                        <FieldError error={errors[`fixed_${expense.id}_name`]} />
+                                                    </div>
+
+                                                    <div className="input-group">
+                                                        <input
+                                                            type="number"
+                                                            className="elegant-input"
+                                                            value={expense.amount || ""}
+                                                            onChange={(e) =>
+                                                                updateField("fixed", expense.id, "amount", Number.parseFloat(e.target.value) || 0)
+                                                            }
+                                                            placeholder="0.00"
+                                                        />
+                                                        <FieldError error={errors[`fixed_${expense.id}_amount`]} />
+                                                    </div>
+
+                                                    <div className="input-group">
+                                                        <select
+                                                            className="elegant-select"
+                                                            value={expense.frequency || "MONTHLY"}
+                                                            onChange={(e) => updateField("fixed", expense.id, "frequency", e.target.value)}
+                                                        >
+                                                            {frequencyOptions.map((option) => (
+                                                                <option key={option.value} value={option.value}>
+                                                                    {option.label}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                        <FieldError error={errors[`fixed_${expense.id}_frequency`]} />
+                                                    </div>
+
+                                                    <div className="input-group">
+                                                        <input
+                                                            type="text"
+                                                            className="elegant-input"
+                                                            value={expense.description || ""}
+                                                            onChange={(e) => updateField("fixed", expense.id, "description", e.target.value)}
+                                                            placeholder="Descripción"
+                                                        />
+                                                        <FieldError error={errors[`fixed_${expense.id}_description`]} />
+                                                    </div>
+                                                </div>
+                                                <button className="elegant-btn danger small" onClick={() => deleteItem("fixed", expense.id)}>
+                                                    Eliminar
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="form-actions">
+                                        <button className="elegant-btn primary" onClick={() => saveAllItems("fixed")} disabled={saving}>
+                                            {saving ? "Guardando..." : "Guardar Cambios"}
+                                        </button>
+                                        <button
+                                            className="elegant-btn outline"
+                                            onClick={() => {
+                                                setFixedExpenses(overview?.fixedExpenses || [])
+                                                setEditingFixed(false)
+                                                clearAllErrors()
+                                            }}
+                                        >
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="expense-list-display">
+                                    {fixedExpenses.length > 0 ? (
+                                        fixedExpenses.map((expense, index) => (
+                                            <div key={expense?.id || index} className="expense-display-item">
+                                                <div className="expense-info">
+                                                    <div className="expense-name">
+                                                        {expense?.name || expense?.description || `Gasto fijo #${index + 1}`}
+                                                    </div>
+                                                    {expense?.frequency && (
+                                                        <div className="expense-frequency">
+                                                            {frequencyOptions.find((f) => f.value === expense.frequency)?.label || expense.frequency}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="expense-amount">€{expense?.amount || 0}</div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="no-data">
+                                            <div className="no-data-icon"></div>
+                                            <p>No hay gastos fijos registrados</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Gastos Variables */}
+                    <div className="elegant-card variable-expenses">
+                        <div className="card-header">
+                            <h3>
+                                <span className="header-icon"></span>
+                                Gastos Variables
+                            </h3>
+                            <div className="header-actions">
+                                <span className="total-badge">€{totalVariable.toLocaleString()}</span>
+                                {editingVariable && (
+                                    <button className="elegant-btn success small" onClick={() => addItem("variable")}>
+                                        Añadir
+                                    </button>
+                                )}
+                                <button className="elegant-btn outline small" onClick={() => setEditingVariable(!editingVariable)}>
+                                    {editingVariable ? "Cancelar" : "Editar"}
+                                </button>
+                            </div>
+                        </div>
+                        <div className="card-content">
+                            {editingVariable ? (
+                                <div className="edit-form">
+                                    <div className="expense-list">
+                                        {variableExpenses.map((expense) => (
+                                            <div key={expense.id} className="expense-edit-item">
+                                                <div className="expense-inputs">
+                                                    <div className="input-group">
+                                                        <input
+                                                            type="text"
+                                                            className="elegant-input"
+                                                            value={expense.name || ""}
+                                                            onChange={(e) => updateField("variable", expense.id, "name", e.target.value)}
+                                                            placeholder="Nombre del gasto"
+                                                        />
+                                                        <FieldError error={errors[`variable_${expense.id}_name`]} />
+                                                    </div>
+
+                                                    <div className="input-group">
+                                                        <input
+                                                            type="number"
+                                                            className="elegant-input"
+                                                            value={expense.amount || ""}
+                                                            onChange={(e) =>
+                                                                updateField("variable", expense.id, "amount", Number.parseFloat(e.target.value) || 0)
+                                                            }
+                                                            placeholder="0.00"
+                                                        />
+                                                        <FieldError error={errors[`variable_${expense.id}_amount`]} />
+                                                    </div>
+
+                                                    <div className="input-group">
+                                                        <input
+                                                            type="date"
+                                                            className="elegant-input"
+                                                            value={expense.expenseDate || ""}
+                                                            onChange={(e) => updateField("variable", expense.id, "expenseDate", e.target.value)}
+                                                        />
+                                                        <FieldError error={errors[`variable_${expense.id}_expenseDate`]} />
+                                                    </div>
+
+                                                    <div className="input-group">
+                                                        <input
+                                                            type="text"
+                                                            className="elegant-input"
+                                                            value={expense.description || ""}
+                                                            onChange={(e) => updateField("variable", expense.id, "description", e.target.value)}
+                                                            placeholder="Descripción"
+                                                        />
+                                                        <FieldError error={errors[`variable_${expense.id}_description`]} />
+                                                    </div>
+                                                </div>
+
+                                                <button className="elegant-btn danger small" onClick={() => deleteItem("variable", expense.id)}>
+                                                    Eliminar
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="form-actions">
+                                        <button className="elegant-btn primary" onClick={() => saveAllItems("variable")} disabled={saving}>
+                                            {saving ? "Guardando..." : "Guardar Cambios"}
+                                        </button>
+                                        <button
+                                            className="elegant-btn outline"
+                                            onClick={() => {
+                                                setVariableExpenses(overview?.variableExpenses || [])
+                                                setEditingVariable(false)
+                                                clearAllErrors()
+                                            }}
+                                        >
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="expense-list-display">
+                                    {variableExpenses.length > 0 ? (
+                                        variableExpenses.map((expense, index) => (
+                                            <div key={expense?.id || index} className="expense-display-item">
+                                                <div className="expense-info">
+                                                    <div className="expense-name">
+                                                        {expense?.name || expense?.description || `Gasto variable #${index + 1}`}
+                                                    </div>
+                                                    {expense?.expenseDate && (
+                                                        <div className="expense-date">{new Date(expense.expenseDate).toLocaleDateString()}</div>
+                                                    )}
+                                                </div>
+                                                <div className="expense-amount">€{expense?.amount || 0}</div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="no-data">
+                                            <div className="no-data-icon"></div>
+                                            <p>No hay gastos variables registrados</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </motion.section>
+
+            {/* Metas de Ahorro */}
+            <motion.section className="goals-section" initial="hidden" animate="visible" variants={fadeUpVariants} custom={4}>
+                <div className="elegant-card goals">
+                    <div className="card-header">
+                        <h3>
+                            <span className="header-icon"></span>
+                            Metas de Ahorro
+                        </h3>
+                        <div className="header-actions">
+                            {editingGoals && (
+                                <button className="elegant-btn success small" onClick={() => addItem("goal")}>
+                                    Añadir
+                                </button>
+                            )}
+                            <button className="elegant-btn outline small" onClick={() => setEditingGoals(!editingGoals)}>
+                                {editingGoals ? "Cancelar" : "Editar"}
+                            </button>
+                        </div>
+                    </div>
+                    <div className="card-content">
+                        {editingGoals ? (
+                            <div className="edit-form">
+                                <div className="goals-list">
+                                    {goals.map((goal) => (
+                                        <div key={goal.id} className="goal-edit-item">
+                                            <div className="goal-inputs">
+                                                <div className="input-group">
+                                                    <input
+                                                        type="text"
+                                                        className="elegant-input"
+                                                        value={goal.name || ""}
+                                                        onChange={(e) => updateField("goal", goal.id, "name", e.target.value)}
+                                                        placeholder="Nombre de la meta"
+                                                    />
+                                                    <FieldError error={errors[`goal_${goal.id}_name`]} />
+                                                </div>
+
+                                                <div className="input-group">
+                                                    <input
+                                                        type="number"
+                                                        className="elegant-input"
+                                                        value={goal.targetAmount || ""}
+                                                        onChange={(e) =>
+                                                            updateField("goal", goal.id, "targetAmount", Number.parseFloat(e.target.value) || 0)
+                                                        }
+                                                        placeholder="Meta (€)"
+                                                    />
+                                                    <FieldError error={errors[`goal_${goal.id}_targetAmount`]} />
+                                                </div>
+
+                                                <div className="input-group">
+                                                    <input
+                                                        type="number"
+                                                        className="elegant-input"
+                                                        value={goal.currentAmount || ""}
+                                                        onChange={(e) =>
+                                                            updateField("goal", goal.id, "currentAmount", Number.parseFloat(e.target.value) || 0)
+                                                        }
+                                                        placeholder="Actual (€)"
+                                                    />
+                                                    <FieldError error={errors[`goal_${goal.id}_currentAmount`]} />
+                                                </div>
+
+                                                <div className="input-group">
+                                                    <input
+                                                        type="date"
+                                                        className="elegant-input"
+                                                        value={goal.deadline || ""}
+                                                        onChange={(e) => updateField("goal", goal.id, "deadline", e.target.value)}
+                                                    />
+                                                    <FieldError error={errors[`goal_${goal.id}_deadline`]} />
+                                                </div>
+
+                                                <div className="input-group">
+                                                    <input
+                                                        type="text"
+                                                        className="elegant-input"
+                                                        value={goal.description || ""}
+                                                        onChange={(e) => updateField("goal", goal.id, "description", e.target.value)}
+                                                        placeholder="Descripción"
+                                                    />
+                                                    <FieldError error={errors[`goal_${goal.id}_description`]} />
+                                                </div>
+                                            </div>
+                                            <button className="elegant-btn danger small" onClick={() => deleteItem("goal", goal.id)}>
+                                                Eliminar
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="form-actions">
+                                    <button className="elegant-btn primary" onClick={() => saveAllItems("goal")} disabled={saving}>
+                                        {saving ? "Guardando..." : "Guardar Cambios"}
+                                    </button>
+                                    <button
+                                        className="elegant-btn outline"
+                                        onClick={() => {
+                                            setGoals(overview?.goals || [])
+                                            setEditingGoals(false)
+                                            clearAllErrors()
+                                        }}
+                                    >
+                                        Cancelar
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="goals-display">
+                                {goals.length > 0 ? (
+                                    <div className="goals-grid">
                                         {goals.map((goal) => {
                                             const currentAmount = goal?.currentAmount || 0
                                             const targetAmount = goal?.targetAmount || 1
                                             const progress = (currentAmount / targetAmount) * 100
                                             const progressCapped = Math.min(progress, 100)
                                             return (
-                                                <div key={goal?.id || Math.random()} className="goal-item">
+                                                <div key={goal?.id || Math.random()} className="goal-display-item">
                                                     <div className="goal-header">
-                                                        <h5>{goal?.name || "Meta sin nombre"}</h5>
+                                                        <h4>{goal?.name || "Meta sin nombre"}</h4>
                                                         <span
-                                                            className={`progress-badge ${progress >= 100 ? "complete" : progress >= 50 ? "medium" : "low"}`}
+                                                            className={`progress-badge ${
+                                                                progress >= 100 ? "complete" : progress >= 50 ? "medium" : "low"
+                                                            }`}
                                                         >
                               {progressCapped.toFixed(1)}%
                             </span>
                                                     </div>
                                                     {goal?.description && <p className="goal-description">{goal.description}</p>}
-                                                    <div className="progress-bar">
+                                                    <div className="progress-container">
                                                         <div
-                                                            className={`progress-fill ${progress >= 100 ? "complete" : progress >= 50 ? "medium" : "low"}`}
+                                                            className={`progress-fill ${
+                                                                progress >= 100 ? "complete" : progress >= 50 ? "medium" : "low"
+                                                            }`}
                                                             style={{ width: `${Math.min(progress, 100)}%` }}
                                                         ></div>
                                                     </div>
                                                     <div className="goal-footer">
                             <span className="goal-amounts">
-                              {currentAmount.toLocaleString()}€ / {targetAmount.toLocaleString()}€
+                              €{currentAmount.toLocaleString()} / €{targetAmount.toLocaleString()}
                             </span>
-                                                        {goal?.targetDate && (
-                                                            <span className="goal-date">📅 {new Date(goal.targetDate).toLocaleDateString()}</span>
+                                                        {goal?.deadline && (
+                                                            <span className="goal-date">{new Date(goal.deadline).toLocaleDateString()}</span>
                                                         )}
                                                     </div>
                                                 </div>
                                             )
                                         })}
                                     </div>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="no-goals">
-                                <div className="no-goals-icon">🎯</div>
-                                <h4>No tienes metas de ahorro registradas</h4>
-                                <p>¡Establece tus primeras metas para comenzar a ahorrar!</p>
+                                ) : (
+                                    <div className="no-data">
+                                        <div className="no-data-icon"></div>
+                                        <h4>No tienes metas de ahorro</h4>
+                                        <p>¡Establece tus primeras metas para comenzar a ahorrar!</p>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
                 </div>
-            </section>
+            </motion.section>
 
-            {/* Botones de acción */}
-            <section className="actions-section">
-                <div className="actions-card">
-                    <h3>Acciones Rápidas</h3>
-                    <div className="actions-grid">
-                        <button className="action-btn primary" onClick={() => navigate(`/consejos/${userId}`)}>
-                            💡 Ver Consejos Personalizados
-                        </button>
-                        <button className="action-btn secondary" onClick={() => navigate(`/editarInfo/${userId}`)}>
-                            🎯 Gestionar Metas
-                        </button>
-                        <button className="action-btn secondary" onClick={() => navigate(`/editarInfo/${userId}`)}>
-                            💳 Gestionar Gastos
-                        </button>
-                    </div>
-                </div>
-            </section>
+            <Footer />
         </div>
     )
 }
-
-export default Perfil

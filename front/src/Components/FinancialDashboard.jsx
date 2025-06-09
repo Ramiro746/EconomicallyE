@@ -22,7 +22,7 @@ export default function FinancialDashboard({ onFormCompleted }) {
     useEffect(() => {
         const fetchUserId = async () => {
             try {
-                const res = await fetch("http://localhost:8080/api/users/me", {
+                const res = await fetch("https://economicallye-1.onrender.com/api/users/me", {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": "Bearer " + localStorage.getItem("token"),
@@ -91,7 +91,7 @@ export default function FinancialDashboard({ onFormCompleted }) {
         try {
             // Enviar gastos fijos
             await Promise.all(parsedFixedExpenses.map(exp =>
-                fetch("http://localhost:8080/api/fixed-expenses", {
+                fetch("https://economicallye-1.onrender.com/api/fixed-expenses", {
                     method: "POST",
                     headers: {
                         'Authorization': 'Bearer ' + localStorage.getItem('token'),
@@ -103,7 +103,7 @@ export default function FinancialDashboard({ onFormCompleted }) {
 
             // Enviar gastos variables
             await Promise.all(parsedVariableExpenses.map(exp =>
-                fetch("http://localhost:8080/api/variable-expenses", {
+                fetch("https://economicallye-1.onrender.com/api/variable-expenses", {
                     method: "POST",
                     headers: {
                         'Authorization': 'Bearer ' + localStorage.getItem('token'),
@@ -115,7 +115,7 @@ export default function FinancialDashboard({ onFormCompleted }) {
 
             // Enviar objetivos
             await Promise.all(parsedGoals.map(goal =>
-                fetch("http://localhost:8080/api/goals", {
+                fetch("https://economicallye-1.onrender.com/api/goals", {
                     method: "POST",
                     headers: {
                         'Authorization': 'Bearer ' + localStorage.getItem('token'),
@@ -136,7 +136,7 @@ export default function FinancialDashboard({ onFormCompleted }) {
                 goals: parsedGoals,
             };
 
-            const res = await fetch("http://localhost:8080/api/advice", {
+            const res = await fetch("https://economicallye-1.onrender.com/api/advice", {
                 method: "POST",
                 headers: baseHeaders,
                 body: JSON.stringify(payload),
@@ -357,6 +357,15 @@ export default function FinancialDashboard({ onFormCompleted }) {
                         <h2 className="section-title">Objetivos</h2>
                         {goals.map((goal, i) => (
                             <div key={i} className="expense-item goal-item">
+                                <div className="input-group">
+                                    <input
+                                        placeholder="Nombre"
+                                        value={goal.name}
+                                        onChange={(e) => handleChange(setGoals, i, "name", e.target.value)}
+                                        className="input-field"
+                                        required
+                                    />
+                                </div>
                                 <div className="input-group">
                                     <input
                                         placeholder="Descripción"

@@ -3,7 +3,8 @@
     import { useEffect, useState } from "react"
     import { useNavigate, useParams } from "react-router-dom"
     import "./edit.css"
-    
+
+
     function Edit() {
         const { userId } = useParams()
         const [userData, setUserData] = useState({
@@ -55,7 +56,7 @@
                     }
 
                     // Luego cargamos los datos del usuario desde la API
-                    const resUser = await fetch("http://localhost:8080/api/users/me", {
+                    const resUser = await fetch("https://economicallye-1.onrender.com/api/users/me", {
                         headers: { Authorization: `Bearer ${token}` },
                     })
 
@@ -91,13 +92,13 @@
 
                     // Cargamos el resto de datos
                     const [resFixed, resVar, resGoals] = await Promise.all([
-                        fetch(`http://localhost:8080/api/fixed-expenses/${user.id}`, {
+                        fetch(`https://economicallye-1.onrender.com/api/fixed-expenses/${user.id}`, {
                             headers: { Authorization: `Bearer ${token}` },
                         }),
-                        fetch(`http://localhost:8080/api/variable-expenses/${user.id}`, {
+                        fetch(`https://economicallye-1.onrender.com/api/variable-expenses/${user.id}`, {
                             headers: { Authorization: `Bearer ${token}` },
                         }),
-                        fetch(`http://localhost:8080/api/goals/${user.id}`, {
+                        fetch(`https://economicallye-1.onrender.com/api/goals/${user.id}`, {
                             headers: { Authorization: `Bearer ${token}` },
                         }),
                     ])
@@ -148,7 +149,7 @@
                 else if (type === "variable") endpoint = "variable-expenses"
                 else if (type === "goal") endpoint = "goals"
     
-                const res = await fetch(`http://localhost:8080/api/${endpoint}/${id}`, {
+                const res = await fetch(`https://economicallye-1.onrender.com/api/${endpoint}/${id}`, {
                     method: "DELETE",
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -231,7 +232,7 @@
             }
     
             try {
-                const res = await fetch(`http://localhost:8080/api/users/${currentUserId}/income`, {
+                const res = await fetch(`https://economicallye-1.onrender.com/api/users/${currentUserId}/income`, {
                     method: "PATCH",
                     headers: {
                         "Content-Type": "application/json",
@@ -278,11 +279,11 @@
                 else if (type === "goal") endpoint = "goals"
     
                 let method = "PUT"
-                let url = `http://localhost:8080/api/${endpoint}/${item.id}`
+                let url = `https://economicallye-1.onrender.com/api/${endpoint}/${item.id}`
     
                 if (item.id >= 1000000000000) {
                     method = "POST"
-                    url = `http://localhost:8080/api/${endpoint}`
+                    url = `https://economicallye-1.onrender.com/api/${endpoint}`
                     const { id, ...itemWithoutId } = item
                     item = { ...itemWithoutId, userId: currentUserId }
                 }
