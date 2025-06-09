@@ -29,4 +29,8 @@ public class Advice {
 
     @Column(nullable = false)
     private LocalDateTime recommendationDate;
+
+    @Column(name = "data_hash")
+    private String dataHash;
+
 }

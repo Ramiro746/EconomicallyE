@@ -36,11 +36,10 @@ public class OpenAIServiceImpl implements AIService {
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("model", model);
         requestBody.put("messages", List.of(
-                Map.of("role", "system", "content", "Eres un asesor financiero experto que da recomendaciones claras, personalizadas y prácticas sobre los datos que te estoy pasando, quiero que me des calculos reales de ahorro."),
                 Map.of("role", "user", "content", prompt)
         ));
         requestBody.put("temperature", 0.7);
-        requestBody.put("max_tokens", 700);
+        requestBody.put("max_tokens", 1000);
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 

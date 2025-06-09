@@ -6,6 +6,7 @@ import es.jose.economicallye.Repository.UserRepository;
 import es.jose.economicallye.Security.CustomUserDetails;
 import es.jose.economicallye.Security.CustomUserDetailsService;
 import es.jose.economicallye.Service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,7 +28,7 @@ public class UserController {
     private UserRepository userRepository;
 
     @PostMapping
-    public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<UserDTO> createUser(@Valid @RequestBody UserDTO userDTO) {
         return new ResponseEntity<>(userService.createUser(userDTO), HttpStatus.CREATED);
     }
 
@@ -42,7 +43,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody UserDTO userDTO) {
+    public ResponseEntity<UserDTO> updateUser(@Valid @PathVariable Long id, @RequestBody UserDTO userDTO) {
         return ResponseEntity.ok(userService.updateUser(id, userDTO));
     }
 
@@ -66,9 +67,6 @@ public class UserController {
         Double newIncome = update.get("monthlyIncome");
         return ResponseEntity.ok(userService.updateUserIncome(id, newIncome));
     }
-
-
-
     @GetMapping("/me")
     public UserDTO getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
         return new UserDTO(userDetails.getId(), userDetails.getUsername(), userDetails.getName());
