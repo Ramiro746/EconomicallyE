@@ -185,6 +185,10 @@
         "editInfo": "Editar Información",
         "advice": "Consejos"
       }
+    },
+    "progressReportTitle": "Reporte de Progreso",
+    "progressReportInfo": "Reporte de Progreso Disponible Pronto",
+    "progressReportDescription": "Genera un consejo más para desbloquear tu reporte de progreso personalizado que compara tu evolución financiera."
     }
   }
-}
+

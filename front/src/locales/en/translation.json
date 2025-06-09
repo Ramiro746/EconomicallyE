@@ -185,6 +185,10 @@
         "editInfo": "Edit Information",
         "advice": "Advice"
       }
-    }
+    },
+    "progressReportTitle": "Progress Report",
+    "progressReportInfo": "Progress Report Available Soon",
+    "progressReportDescription": "Generate one more advice to unlock your personalized progress report comparing your financial evolution."
+
   }
 }

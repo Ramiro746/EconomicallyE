@@ -174,7 +174,7 @@ function Dashboard() {
         const fetchData = async () => {
             setLoading(true)
             try {
-                let userId = currentUserId
+                let userId = currentUserId || id // Usar id del parámetro si currentUserId no está disponible
                 const token = localStorage.getItem("token")
 
                 // Obtener ID de usuario si no está disponible
@@ -186,6 +186,8 @@ function Dashboard() {
                     userId = userData.id
                     setCurrentUserId(userId)
                 }
+
+                console.log(`📊 Obteniendo datos para usuario: ${userId}`)
 
                 // Obtener historial de consejos
                 const advicesRes = await fetch(`https://economicallye-1.onrender.com/api/advice/${userId}`, {
@@ -207,10 +209,11 @@ function Dashboard() {
             }
         }
 
-        if (currentUserId) {
+        // Ejecutar siempre que tengamos un ID (del parámetro o del estado)
+        if (currentUserId || id) {
             fetchData()
         }
-    }, [currentUserId])
+    }, [currentUserId, id])
 
     const calculateMetrics = () => {
         const totalFixedExpenses = data.fixedExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0)
@@ -420,7 +423,7 @@ function Dashboard() {
                     return m ? `<li>${m[1]}</li>` : ""
                 })
                 .join("")
-            return `<ul>${items}</ol>`
+            return `<ul>${items}</ul>`
         })
         formatted = formatted.replace(/\n{2,}/g, "</p><p>")
         formatted = `<p>${formatted.replace(/\n/g, " ")}</p>`
