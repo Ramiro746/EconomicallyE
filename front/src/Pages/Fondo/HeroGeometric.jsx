@@ -10,6 +10,7 @@ function ElegantShape({
                           rotate = 0,
                           shapeClass = "shape-indigo",
                           style = {},
+                          darkMode = false,
                       }) {
     return (
         <motion.div
@@ -29,7 +30,7 @@ function ElegantShape({
                 ease: [0.23, 0.86, 0.39, 0.96],
                 opacity: { duration: 1.2 },
             }}
-            className={`elegant-shape ${className}`}
+            className={`elegant-shape ${className} ${darkMode ? "dark-mode" : ""}`}
             style={style}
         >
             <motion.div
@@ -47,16 +48,16 @@ function ElegantShape({
                     height,
                 }}
             >
-                <div className={`shape-element ${shapeClass}`} />
+                <div className={`shape-element ${shapeClass} ${darkMode ? "dark" : ""}`} />
             </motion.div>
         </motion.div>
     )
 }
 
-export default function HeroGeometric() {
+export default function HeroGeometric({ darkMode = false }) {
     return (
-        <div className="hero-container">
-            <div className="background-gradient" />
+        <div className={`hero-container ${darkMode ? "dark-mode" : ""}`}>
+            <div className={`background-gradient ${darkMode ? "dark" : ""}`} />
 
             <div className="shapes-container">
                 <ElegantShape
@@ -70,6 +71,7 @@ export default function HeroGeometric() {
                         top: "15%",
                     }}
                     className="shape-1"
+                    darkMode={darkMode}
                 />
                 <ElegantShape
                     delay={0.5}
@@ -82,6 +84,7 @@ export default function HeroGeometric() {
                         top: "70%",
                     }}
                     className="shape-2"
+                    darkMode={darkMode}
                 />
                 <ElegantShape
                     delay={0.4}
@@ -94,6 +97,7 @@ export default function HeroGeometric() {
                         bottom: "5%",
                     }}
                     className="shape-3"
+                    darkMode={darkMode}
                 />
                 <ElegantShape
                     delay={0.6}
@@ -106,6 +110,7 @@ export default function HeroGeometric() {
                         top: "10%",
                     }}
                     className="shape-4"
+                    darkMode={darkMode}
                 />
                 <ElegantShape
                     delay={0.7}
@@ -118,10 +123,11 @@ export default function HeroGeometric() {
                         top: "5%",
                     }}
                     className="shape-5"
+                    darkMode={darkMode}
                 />
             </div>
 
-            <div className="overlay-gradient" />
+            <div className={`overlay-gradient ${darkMode ? "dark" : ""}`} />
         </div>
     )
 }

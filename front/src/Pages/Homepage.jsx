@@ -10,7 +10,7 @@ import FinancialDashboard from "../Components/FinancialDashboard.jsx"
 import Footer from "../Components/Footer/footer.jsx"
 import { motion } from "framer-motion"
 import Inflation from "../Components/Inflation/Inflation.jsx"
-import { TrendingUp, DollarSign, PieChart, Target, Brain, BarChart3 } from "lucide-react"
+import { TrendingUp, DollarSign, PieChart, Target, Brain, BarChart3, Moon, Sun } from "lucide-react"
 import ScrollNav from "../Components/Nav/ScrollNav.jsx"
 import AuthModal from "../Components/NuevoModal/auth-modal.jsx"
 
@@ -35,8 +35,30 @@ const Homepage = () => {
     const [hasCompletedFirstForm, setHasCompletedFirstForm] = useState(false)
     const [loadingAdviceHistory, setLoadingAdviceHistory] = useState(false)
     const [headerVisible, setHeaderVisible] = useState(true)
+    const [darkMode, setDarkMode] = useState(false)
     const navigate = useNavigate()
 
+    // Inicializar tema oscuro desde localStorage
+    useEffect(() => {
+        const savedTheme = localStorage.getItem("darkMode")
+        if (savedTheme) {
+            setDarkMode(JSON.parse(savedTheme))
+        }
+    }, [])
+
+    // Aplicar tema oscuro al body
+    useEffect(() => {
+        if (darkMode) {
+            document.body.classList.add("dark-theme")
+        } else {
+            document.body.classList.remove("dark-theme")
+        }
+        localStorage.setItem("darkMode", JSON.stringify(darkMode))
+    }, [darkMode])
+
+    const toggleDarkMode = () => {
+        setDarkMode(!darkMode)
+    }
     useEffect(() => {
         const token = localStorage.getItem("token")
         if (token) {
@@ -208,6 +230,14 @@ const Homepage = () => {
 
     return (
         <div className="container">
+            {/* Botón de modo oscuro flotante */}
+            <button
+                className="dark-mode-toggle"
+                onClick={toggleDarkMode}
+                aria-label={darkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+            >
+                {darkMode ? <Sun size={24} /> : <Moon size={24} />}
+            </button>
             {/* ScrollNav */}
             <ScrollNav
                 links={scrollNavLinks}
@@ -217,7 +247,7 @@ const Homepage = () => {
                 onOpenRegister={openRegisterModal}
             />
 
-            <FloatingShapes />
+            <FloatingShapes darkMode={darkMode} />
 
             {/* Header principal con animación de desaparición */}
             <header className={`main-header ${headerVisible ? "header-visible" : "header-hidden"}`}>

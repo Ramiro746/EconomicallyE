@@ -6,6 +6,7 @@ import "./Perfil.css"
 import ScrollNav from "../Components/Nav/ScrollNav.jsx"
 import Footer from "../Components/Footer/footer.jsx"
 import { motion, AnimatePresence } from "framer-motion"
+import { Moon, Sun } from "lucide-react"
 
 const fadeUpVariants = {
     hidden: { opacity: 0, y: 30 },
@@ -91,6 +92,18 @@ const LoadingModal = ({ isVisible, onClose }) => {
     )
 }
 
+// Componente del botón de modo oscuro
+function DarkModeToggle({ darkMode, toggleDarkMode }) {
+    return (
+        <button
+            className="dark-mode-toggle"
+            onClick={toggleDarkMode}
+            aria-label={darkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+        >
+            {darkMode ? <Sun size={24} /> : <Moon size={24} />}
+        </button>
+    )
+}
 
 export default function PerfilEditable() {
     // Estados principales
@@ -101,6 +114,7 @@ export default function PerfilEditable() {
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState(null)
+    const [darkMode, setDarkMode] = useState(false)
     const navigate = useNavigate()
 
     // Estado para el modal de carga del consejo
@@ -125,6 +139,28 @@ export default function PerfilEditable() {
         { value: "YEARLY", label: "Anual" },
         { value: "DAILY", label: "Diario" },
     ]
+
+    // Inicializar tema oscuro desde localStorage
+    useEffect(() => {
+        const savedTheme = localStorage.getItem("darkMode")
+        if (savedTheme) {
+            setDarkMode(JSON.parse(savedTheme))
+        }
+    }, [])
+
+    // Aplicar tema oscuro al body
+    useEffect(() => {
+        if (darkMode) {
+            document.body.classList.add("dark-theme")
+        } else {
+            document.body.classList.remove("dark-theme")
+        }
+        localStorage.setItem("darkMode", JSON.stringify(darkMode))
+    }, [darkMode])
+
+    const toggleDarkMode = () => {
+        setDarkMode(!darkMode)
+    }
 
     // Cargar datos iniciales
     useEffect(() => {
@@ -157,9 +193,12 @@ export default function PerfilEditable() {
                 // Cargar datos detallados
                 let detailedFixedExpenses = []
                 try {
-                    const fixedExpensesRes = await fetch(`https://economicallye-1.onrender.com/api/fixed-expenses/${currentUserId}`, {
-                        headers: { Authorization: "Bearer " + token },
-                    })
+                    const fixedExpensesRes = await fetch(
+                        `https://economicallye-1.onrender.com/api/fixed-expenses/${currentUserId}`,
+                        {
+                            headers: { Authorization: "Bearer " + token },
+                        },
+                    )
                     if (fixedExpensesRes.ok) {
                         detailedFixedExpenses = await fixedExpensesRes.json()
                     }
@@ -169,9 +208,12 @@ export default function PerfilEditable() {
 
                 let detailedVariableExpenses = []
                 try {
-                    const variableExpensesRes = await fetch(`https://economicallye-1.onrender.com/api/variable-expenses/${currentUserId}`, {
-                        headers: { Authorization: "Bearer " + token },
-                    })
+                    const variableExpensesRes = await fetch(
+                        `https://economicallye-1.onrender.com/api/variable-expenses/${currentUserId}`,
+                        {
+                            headers: { Authorization: "Bearer " + token },
+                        },
+                    )
                     if (variableExpensesRes.ok) {
                         detailedVariableExpenses = await variableExpensesRes.json()
                     }
@@ -453,15 +495,14 @@ export default function PerfilEditable() {
             }
 
             // Simular un pequeño delay para mostrar el modal
-            await new Promise(resolve => setTimeout(resolve, 1000))
+            await new Promise((resolve) => setTimeout(resolve, 1000))
 
             alert("Nuevo consejo generado correctamente.")
-            navigate(`/consejos/${userId}`);
-
+            navigate(`/consejos/${userId}`)
         } catch (error) {
             console.error("Error al generar el consejo:", error)
             alert(`No se pudo generar el nuevo consejo: ${error.message}`)
-        }finally {
+        } finally {
             setGeneratingAdvice(false) // Ocultar modal de carga
         }
     }
@@ -474,7 +515,7 @@ export default function PerfilEditable() {
 
     if (loading) {
         return (
-            <div className="elegant-loading-container">
+            <div className={`elegant-loading-container ${darkMode ? "dark-theme" : ""}`}>
                 <div className="loading-content">
                     <div className="loading-spinner">
                         <div className="spinner-ring"></div>
@@ -494,7 +535,7 @@ export default function PerfilEditable() {
 
     if (error) {
         return (
-            <div className="elegant-error-container">
+            <div className={`elegant-error-container ${darkMode ? "dark-theme" : ""}`}>
                 <div className="error-content">
                     <div className="error-icon">⚠️</div>
                     <h2>Oops! Algo salió mal</h2>
@@ -532,7 +573,10 @@ export default function PerfilEditable() {
     ]
 
     return (
-        <div className="elegant-profile-container">
+        <div className={`dashboard-container ${darkMode ? "dark-theme" : ""}`}>
+            {/* Botón de modo oscuro flotante */}
+            <DarkModeToggle darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+
             {/* Modal de carga para generar consejo */}
             <LoadingModal isVisible={generatingAdvice} />
 
@@ -544,7 +588,7 @@ export default function PerfilEditable() {
             </div>
 
             {/* ScrollNav */}
-            <ScrollNav links={scrollNavLinks} user={user} />
+            <ScrollNav links={scrollNavLinks} user={userId} />
 
             {/* Header */}
             <motion.header className="elegant-header" initial="hidden" animate="visible" variants={fadeUpVariants} custom={0}>
