@@ -112,7 +112,7 @@ export default function AuthModal({ closeModal, initialMode = "login" }) {
         setError("")
 
         try {
-            console.log("Registering user:", registerData)
+            console.log("Registering user:", registerData);
 
             const response = await fetch("https://economicallye-1.onrender.com/api/users", {
                 method: "POST",
@@ -120,32 +120,42 @@ export default function AuthModal({ closeModal, initialMode = "login" }) {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(registerData),
-            })
+            });
 
-            console.log("Registration response status:", response.status)
+            console.log("Registration response status:", response.status);
 
             if (response.ok) {
-                const text = await response.text()
-                const newUser = text ? JSON.parse(text) : null
+                const text = await response.text();
+                const newUser = text ? JSON.parse(text) : null;
                 setMessage(
-                    newUser ? `Usuario registrado correctamente. ID: ${newUser.id}` : "Usuario registrado correctamente.",
-                )
+                    newUser ? `Usuario registrado correctamente. ID: ${newUser.id}` : "Usuario registrado correctamente."
+                );
 
-                // Después del registro exitoso, cambiar al modal de login
                 setTimeout(() => {
-                    showLogin()
-                }, 1500)
+                    showLogin();
+                }, 1500);
             } else {
-                const errorText = await response.text()
-                console.error("Respuesta de error del backend:", errorText)
-                setError(`Error: ${errorText || "Error desconocido"}`)
+                // Intentar extraer el mensaje del backend como JSON o como texto
+                let errorMessage = "Error desconocido";
+
+                try {
+                    const data = await response.json();
+                    errorMessage = data.message || JSON.stringify(data);
+                } catch {
+                    const text = await response.text();
+                    if (text) errorMessage = text;
+                }
+
+                console.error("Respuesta de error del backend:", errorMessage);
+                setError(`Error: ${errorMessage}`);
             }
         } catch (error) {
-            console.error("Registration error:", error)
-            setError(`Error: ${error.message}`)
+            console.error("Registration error:", error);
+            setError(`Error: ${error.message}`);
         } finally {
-            setIsLoading(false)
+            setIsLoading(false);
         }
+
     }
 
     const showRegister = () => {
@@ -178,7 +188,7 @@ export default function AuthModal({ closeModal, initialMode = "login" }) {
                                 name="email"
                                 value={loginData.email}
                                 onChange={handleLoginChange}
-                                required
+
                                 disabled={isLoading}
                             />
                             <label>Email</label>
@@ -191,7 +201,7 @@ export default function AuthModal({ closeModal, initialMode = "login" }) {
                                 name="password"
                                 value={loginData.password}
                                 onChange={handleLoginChange}
-                                required
+
                                 disabled={isLoading}
                             />
                             <label>Password</label>
@@ -244,7 +254,7 @@ export default function AuthModal({ closeModal, initialMode = "login" }) {
                                 name="name"
                                 value={registerData.name}
                                 onChange={handleRegisterChange}
-                                required
+
                                 disabled={isLoading}
                             />
                             <label>Nombre</label>
@@ -257,7 +267,7 @@ export default function AuthModal({ closeModal, initialMode = "login" }) {
                                 name="email"
                                 value={registerData.email}
                                 onChange={handleRegisterChange}
-                                required
+
                                 disabled={isLoading}
                             />
                             <label>Email</label>
@@ -270,7 +280,7 @@ export default function AuthModal({ closeModal, initialMode = "login" }) {
                                 name="password"
                                 value={registerData.password}
                                 onChange={handleRegisterChange}
-                                required
+
                                 disabled={isLoading}
                             />
                             <label>Password</label>
@@ -283,7 +293,7 @@ export default function AuthModal({ closeModal, initialMode = "login" }) {
                                 name="monthlyIncome"
                                 value={registerData.monthlyIncome}
                                 onChange={handleRegisterChange}
-                                required
+
                                 disabled={isLoading}
                             />
                             <label>Ingreso Mensual</label>

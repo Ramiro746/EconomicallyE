@@ -7,6 +7,9 @@ import ScrollNav from "../Components/Nav/ScrollNav.jsx"
 import Footer from "../Components/Footer/footer.jsx"
 import { motion, AnimatePresence } from "framer-motion"
 import { Moon, Sun } from "lucide-react"
+import { fetchWithErrorHandling, useErrorHandler } from "../Components/utils/error-handler.js"
+import { FieldError } from "../Components/ErrorDisplay.jsx"
+import { useToast, ToastContainer } from "../Components/toast-notification.jsx"
 
 const fadeUpVariants = {
     hidden: { opacity: 0, y: 30 },
@@ -106,6 +109,15 @@ function DarkModeToggle({ darkMode, toggleDarkMode }) {
 }
 
 export default function PerfilEditable() {
+    // Hook para notificaciones toast
+
+    const toastFunctions = useToast()
+
+
+    // Hook personalizado para manejo de errores (ahora con toast integrado)
+    const { errors, setFieldError, clearFieldError, clearAllErrors, setSuccess, handleApiError, setGlobalError } =
+        useErrorHandler(toastFunctions)
+
     // Estados principales
     const [overview, setOverview] = useState(null)
     const [hasCompletedFirstForm, setHasCompletedFirstForm] = useState(false)
@@ -113,7 +125,6 @@ export default function PerfilEditable() {
     const [userId, setUserId] = useState(null)
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
-    const [error, setError] = useState(null)
     const [darkMode, setDarkMode] = useState(false)
     const navigate = useNavigate()
 
@@ -162,76 +173,63 @@ export default function PerfilEditable() {
         setDarkMode(!darkMode)
     }
 
-    // Cargar datos iniciales
+    // Función mejorada para cargar datos con manejo de errores
+    const loadDataWithErrorHandling = async (url, context) => {
+        try {
+            const token = localStorage.getItem("token")
+            const response = await fetchWithErrorHandling(url, {
+                headers: { Authorization: `Bearer ${token}` },
+            })
+            return await response.json()
+        } catch (error) {
+            console.warn(`Error al cargar ${context}:`, error.message)
+            handleApiError(error, `Error al cargar ${context}`)
+            return []
+        }
+    }
+
+    // Cargar datos iniciales con mejor manejo de errores
     useEffect(() => {
         const fetchOverview = async () => {
             try {
+                clearAllErrors()
                 const token = localStorage.getItem("token")
 
-                const res = await fetch(`https://economicallye-1.onrender.com/api/users/me`, {
+                // Obtener usuario actual
+                const userResponse = await fetchWithErrorHandling(`https://economicallye-1.onrender.com/api/users/me`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${token}`,
                     },
                 })
-                if (!res.ok) throw new Error("No se pudo obtener el usuario")
 
-                const data = await res.json()
-                const currentUserId = data.id
+                const userData = await userResponse.json()
+                const currentUserId = userData.id
                 setUserId(currentUserId)
 
-                const overviewRes = await fetch(`https://economicallye-1.onrender.com/api/overview/${currentUserId}`, {
-                    headers: {
-                        Authorization: "Bearer " + token,
+                // Obtener overview
+                const overviewResponse = await fetchWithErrorHandling(
+                    `https://economicallye-1.onrender.com/api/overview/${currentUserId}`,
+                    {
+                        headers: { Authorization: `Bearer ${token}` },
                     },
-                })
-                if (!overviewRes.ok) throw new Error("No se pudo obtener el overview")
+                )
 
-                const overviewData = await overviewRes.json()
+                const overviewData = await overviewResponse.json()
 
-                // Cargar datos detallados
-                let detailedFixedExpenses = []
-                try {
-                    const fixedExpensesRes = await fetch(
+                // Cargar datos detallados con manejo de errores individual
+                const [detailedFixedExpenses, detailedVariableExpenses, detailedGoals] = await Promise.all([
+                    loadDataWithErrorHandling(
                         `https://economicallye-1.onrender.com/api/fixed-expenses/${currentUserId}`,
-                        {
-                            headers: { Authorization: "Bearer " + token },
-                        },
-                    )
-                    if (fixedExpensesRes.ok) {
-                        detailedFixedExpenses = await fixedExpensesRes.json()
-                    }
-                } catch (fixedError) {
-                    console.warn("No se pudieron cargar los gastos fijos detallados:", fixedError)
-                }
-
-                let detailedVariableExpenses = []
-                try {
-                    const variableExpensesRes = await fetch(
+                        "gastos fijos",
+                    ),
+                    loadDataWithErrorHandling(
                         `https://economicallye-1.onrender.com/api/variable-expenses/${currentUserId}`,
-                        {
-                            headers: { Authorization: "Bearer " + token },
-                        },
-                    )
-                    if (variableExpensesRes.ok) {
-                        detailedVariableExpenses = await variableExpensesRes.json()
-                    }
-                } catch (variableError) {
-                    console.warn("No se pudieron cargar los gastos variables detallados:", variableError)
-                }
-
-                let detailedGoals = []
-                try {
-                    const goalsRes = await fetch(`https://economicallye-1.onrender.com/api/goals/${currentUserId}`, {
-                        headers: { Authorization: "Bearer " + token },
-                    })
-                    if (goalsRes.ok) {
-                        detailedGoals = await goalsRes.json()
-                    }
-                } catch (goalsError) {
-                    console.warn("No se pudieron cargar las metas detalladas:", goalsError)
-                }
+                        "gastos variables",
+                    ),
+                    loadDataWithErrorHandling(`https://economicallye-1.onrender.com/api/goals/${currentUserId}`, "metas"),
+                ])
 
                 const enhancedOverview = {
                     ...overviewData,
@@ -247,8 +245,7 @@ export default function PerfilEditable() {
                 setVariableExpenses(enhancedOverview.variableExpenses || [])
                 setGoals(enhancedOverview.goals || [])
             } catch (error) {
-                console.error("Error al cargar el perfil: ", error)
-                setError("No se pudo obtener el perfil")
+                handleApiError(error, "Error al cargar el perfil")
             } finally {
                 setLoading(false)
             }
@@ -257,12 +254,14 @@ export default function PerfilEditable() {
         fetchOverview()
     }, [])
 
-    // Funciones de guardado
+    // Función mejorada para guardar ingreso
     const saveIncome = async () => {
         setSaving(true)
+        clearAllErrors()
+
         try {
             const token = localStorage.getItem("token")
-            const res = await fetch(`https://economicallye-1.onrender.com/api/users/${userId}/income`, {
+            const response = await fetchWithErrorHandling(`https://economicallye-1.onrender.com/api/users/${userId}/income`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -271,20 +270,24 @@ export default function PerfilEditable() {
                 body: JSON.stringify({ monthlyIncome }),
             })
 
-            if (!res.ok) throw new Error("Error al actualizar el ingreso")
-
             setOverview((prev) => ({ ...prev, monthlyIncome }))
             setEditingIncome(false)
             localStorage.setItem("monthlyIncome", monthlyIncome.toString())
-            alert("Ingreso actualizado correctamente")
+            setSuccess("Ingreso actualizado correctamente")
         } catch (error) {
-            console.error("Error saving income:", error)
-            alert("Error al guardar el ingreso")
+            // Manejar errores de validación específicos para el ingreso
+            if (error.fieldErrors) {
+                if (error.fieldErrors.monthlyIncome) {
+                    setFieldError("monthlyIncome", error.fieldErrors.monthlyIncome)
+                }
+            }
+            handleApiError(error, "Error al guardar el ingreso")
         } finally {
             setSaving(false)
         }
     }
 
+    // Función mejorada para guardar items individuales
     const saveItem = async (type, item) => {
         const token = localStorage.getItem("token")
         let endpoint = ""
@@ -302,33 +305,79 @@ export default function PerfilEditable() {
             item = { ...itemWithoutId, userId }
         }
 
-        const res = await fetch(url, {
-            method: method,
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(item),
-        })
+        try {
+            const response = await fetchWithErrorHandling(url, {
+                method: method,
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(item),
+            })
 
-        if (!res.ok) throw new Error(`Error al guardar ${endpoint}`)
-        return await res.json()
+            return await response.json()
+        } catch (error) {
+            // Si hay errores de campo específicos, mapearlos con el ID del item
+            if (error.fieldErrors) {
+                const mappedErrors = {}
+                Object.keys(error.fieldErrors).forEach((field) => {
+                    mappedErrors[`${type}_${item.id}_${field}`] = error.fieldErrors[field]
+                })
+                // Usar setFieldError para establecer los errores mapeados
+                Object.entries(mappedErrors).forEach(([field, message]) => {
+                    setFieldError(field, message)
+                })
+            }
+            throw error
+        }
     }
 
+    // Función mejorada para guardar todos los items
     const saveAllItems = async (type) => {
         setSaving(true)
+        clearAllErrors()
+
         try {
             let items = []
             if (type === "fixed") items = fixedExpenses
             else if (type === "variable") items = variableExpenses
             else if (type === "goal") items = goals
 
-            const savePromises = items
-                .filter((item) => item.name && (type === "goal" ? item.targetAmount : item.amount))
-                .map((item) => saveItem(type, item))
+            // Validar items básicos antes de enviar
+            const validItems = items.filter((item) => {
+                return item.name || (type === "goal" ? item.targetAmount : item.amount)
+            })
 
-            const savedItems = await Promise.all(savePromises)
+            // Guardar items uno por uno para capturar errores específicos
+            const savedItems = []
+            let hasErrors = false
 
+            let firstErrorMessage = null
+
+            for (const item of validItems) {
+                try {
+                    const savedItem = await saveItem(type, item)
+                    savedItems.push(savedItem)
+                } catch (error) {
+                    hasErrors = true
+                    console.error(`Error saving item ${item.id}:`, error)
+                    // Los errores de campo ya se establecieron en saveItem
+
+                    // Guardar el primer mensaje de error relevante para mostrar en el toast
+                    if (!firstErrorMessage && error?.message) {
+                        firstErrorMessage = error.message
+                    }
+                }
+            }
+
+            // Si hay errores, no actualizar el estado y mostrar mensaje
+            if (hasErrors) {
+                const fallback = "Algunos elementos no se pudieron guardar. Por favor, revisa los errores y corrige los campos marcados."
+                setGlobalError(firstErrorMessage || fallback)
+                return
+            }
+
+            // Si todo se guardó correctamente, actualizar estado
             if (type === "fixed") {
                 setFixedExpenses(savedItems)
                 setEditingFixed(false)
@@ -346,17 +395,48 @@ export default function PerfilEditable() {
                 [type === "fixed" ? "fixedExpenses" : type === "variable" ? "variableExpenses" : "goals"]: savedItems,
             }))
 
-            alert("Cambios guardados correctamente")
+            setSuccess("Cambios guardados correctamente")
         } catch (error) {
-            console.error(`Error saving ${type}:`, error)
-            alert(`Error al guardar ${type}`)
+            handleApiError(error, `Error al guardar ${type}`)
         } finally {
             setSaving(false)
         }
     }
 
-    // Funciones de manipulación de datos
+    // Función mejorada para eliminar items
+    const deleteItem = async (type, id) => {
+        if (id >= 1000000000000) {
+            // Item temporal, solo remover del estado
+            if (type === "fixed") setFixedExpenses((prev) => prev.filter((e) => e.id !== id))
+            else if (type === "variable") setVariableExpenses((prev) => prev.filter((e) => e.id !== id))
+            else if (type === "goal") setGoals((prev) => prev.filter((e) => e.id !== id))
+            return
+        }
+
+        try {
+            const token = localStorage.getItem("token")
+            let endpoint = ""
+            if (type === "fixed") endpoint = "fixed-expenses"
+            else if (type === "variable") endpoint = "variable-expenses"
+            else if (type === "goal") endpoint = "goals"
+
+            await fetchWithErrorHandling(`https://economicallye-1.onrender.com/api/${endpoint}/${id}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+            })
+
+            if (type === "fixed") setFixedExpenses((prev) => prev.filter((e) => e.id !== id))
+            else if (type === "variable") setVariableExpenses((prev) => prev.filter((e) => e.id !== id))
+            else if (type === "goal") setGoals((prev) => prev.filter((e) => e.id !== id))
+
+            setSuccess("Elemento eliminado correctamente")
+        } catch (error) {
+            handleApiError(error, "Error al eliminar el elemento")
+        }
+    }
+
     const addItem = (type) => {
+        clearAllErrors() // Limpiar errores al añadir nuevo item
         const tempId = Date.now()
 
         if (type === "fixed") {
@@ -399,40 +479,10 @@ export default function PerfilEditable() {
         }
     }
 
-    const deleteItem = async (type, id) => {
-        if (id >= 1000000000000) {
-            // Item temporal, solo remover del estado
-            if (type === "fixed") setFixedExpenses((prev) => prev.filter((e) => e.id !== id))
-            else if (type === "variable") setVariableExpenses((prev) => prev.filter((e) => e.id !== id))
-            else if (type === "goal") setGoals((prev) => prev.filter((e) => e.id !== id))
-            return
-        }
-
-        try {
-            const token = localStorage.getItem("token")
-            let endpoint = ""
-            if (type === "fixed") endpoint = "fixed-expenses"
-            else if (type === "variable") endpoint = "variable-expenses"
-            else if (type === "goal") endpoint = "goals"
-
-            const res = await fetch(`https://economicallye-1.onrender.com/api/${endpoint}/${id}`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${token}` },
-            })
-
-            if (res.ok) {
-                if (type === "fixed") setFixedExpenses((prev) => prev.filter((e) => e.id !== id))
-                else if (type === "variable") setVariableExpenses((prev) => prev.filter((e) => e.id !== id))
-                else if (type === "goal") setGoals((prev) => prev.filter((e) => e.id !== id))
-                alert("Elemento eliminado correctamente")
-            }
-        } catch (error) {
-            console.error("Error deleting:", error)
-            alert("Error al eliminar el elemento")
-        }
-    }
-
     const updateField = (type, id, field, value) => {
+        // Limpiar error del campo cuando se actualiza
+        clearFieldError(`${type}_${id}_${field}`)
+
         if (type === "fixed") {
             setFixedExpenses((prev) => prev.map((i) => (i.id === id ? { ...i, [field]: value } : i)))
         } else if (type === "variable") {
@@ -442,14 +492,16 @@ export default function PerfilEditable() {
         }
     }
 
+    // Función mejorada para generar consejo
     const handleGenerateAdvice = async () => {
-        setGeneratingAdvice(true) // Mostrar modal de carga
+        setGeneratingAdvice(true)
+        clearAllErrors()
 
         try {
             const token = localStorage.getItem("token")
 
             if (!overview || !userId) {
-                alert("No hay datos suficientes para generar el consejo. Por favor, recarga la página.")
+                setGlobalError("No hay datos suficientes para generar el consejo. Por favor, recarga la página.")
                 return
             }
 
@@ -479,7 +531,7 @@ export default function PerfilEditable() {
                 })),
             }
 
-            const response = await fetch(`https://economicallye-1.onrender.com/api/advice`, {
+            await fetchWithErrorHandling(`https://economicallye-1.onrender.com/api/advice`, {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -489,21 +541,15 @@ export default function PerfilEditable() {
                 body: JSON.stringify(requestData),
             })
 
-            if (!response.ok) {
-                const errorText = await response.text()
-                throw new Error(`Error generando el consejo: ${response.status} - ${errorText}`)
-            }
-
             // Simular un pequeño delay para mostrar el modal
             await new Promise((resolve) => setTimeout(resolve, 1000))
 
-            alert("Nuevo consejo generado correctamente.")
+            setSuccess("Nuevo consejo generado correctamente.")
             navigate(`/consejos/${userId}`)
         } catch (error) {
-            console.error("Error al generar el consejo:", error)
-            alert(`No se pudo generar el nuevo consejo: ${error.message}`)
+            handleApiError(error, "Error al generar el consejo")
         } finally {
-            setGeneratingAdvice(false) // Ocultar modal de carga
+            setGeneratingAdvice(false)
         }
     }
 
@@ -512,6 +558,8 @@ export default function PerfilEditable() {
     const totalVariable = variableExpenses.reduce((sum, e) => sum + (e?.amount || 0), 0)
     const totalExpenses = totalFixed + totalVariable
     const totalSavings = monthlyIncome - totalExpenses
+
+    const [globalError, setGlobalErrorState] = useState(null)
 
     if (loading) {
         return (
@@ -533,13 +581,13 @@ export default function PerfilEditable() {
         )
     }
 
-    if (error) {
+    if (globalError && !overview) {
         return (
             <div className={`elegant-error-container ${darkMode ? "dark-theme" : ""}`}>
                 <div className="error-content">
                     <div className="error-icon">⚠️</div>
                     <h2>Oops! Algo salió mal</h2>
-                    <p>{error}</p>
+                    <p>{globalError}</p>
                     <button className="elegant-btn primary" onClick={() => window.location.reload()}>
                         Reintentar
                     </button>
@@ -579,6 +627,10 @@ export default function PerfilEditable() {
 
             {/* Modal de carga para generar consejo */}
             <LoadingModal isVisible={generatingAdvice} />
+
+            {/* Contenedor de notificaciones toast */}
+            <ToastContainer toasts={toastFunctions.toasts} onRemove={toastFunctions.removeToast} />
+
 
             {/* Formas de fondo */}
             <div className="background-shapes">
@@ -697,6 +749,7 @@ export default function PerfilEditable() {
                                         min="0"
                                         step="0.01"
                                     />
+                                    <FieldError error={errors.monthlyIncome} />
                                 </div>
                                 <div className="form-actions">
                                     <button className="elegant-btn primary" onClick={saveIncome} disabled={saving}>
@@ -707,6 +760,7 @@ export default function PerfilEditable() {
                                         onClick={() => {
                                             setMonthlyIncome(overview?.monthlyIncome || 0)
                                             setEditingIncome(false)
+                                            clearAllErrors()
                                         }}
                                     >
                                         Cancelar
@@ -758,40 +812,55 @@ export default function PerfilEditable() {
                                         {fixedExpenses.map((expense) => (
                                             <div key={expense.id} className="expense-edit-item">
                                                 <div className="expense-inputs">
-                                                    <input
-                                                        type="text"
-                                                        className="elegant-input"
-                                                        value={expense.name || ""}
-                                                        onChange={(e) => updateField("fixed", expense.id, "name", e.target.value)}
-                                                        placeholder="Nombre del gasto"
-                                                    />
-                                                    <input
-                                                        type="number"
-                                                        className="elegant-input"
-                                                        value={expense.amount || ""}
-                                                        onChange={(e) =>
-                                                            updateField("fixed", expense.id, "amount", Number.parseFloat(e.target.value) || 0)
-                                                        }
-                                                        placeholder="0.00"
-                                                    />
-                                                    <select
-                                                        className="elegant-select"
-                                                        value={expense.frequency || "MONTHLY"}
-                                                        onChange={(e) => updateField("fixed", expense.id, "frequency", e.target.value)}
-                                                    >
-                                                        {frequencyOptions.map((option) => (
-                                                            <option key={option.value} value={option.value}>
-                                                                {option.label}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                    <input
-                                                        type="text"
-                                                        className="elegant-input"
-                                                        value={expense.description || ""}
-                                                        onChange={(e) => updateField("fixed", expense.id, "description", e.target.value)}
-                                                        placeholder="Descripción"
-                                                    />
+                                                    <div className="input-group">
+                                                        <input
+                                                            type="text"
+                                                            className="elegant-input"
+                                                            value={expense.name || ""}
+                                                            onChange={(e) => updateField("fixed", expense.id, "name", e.target.value)}
+                                                            placeholder="Nombre del gasto"
+                                                        />
+                                                        <FieldError error={errors[`fixed_${expense.id}_name`]} />
+                                                    </div>
+
+                                                    <div className="input-group">
+                                                        <input
+                                                            type="number"
+                                                            className="elegant-input"
+                                                            value={expense.amount || ""}
+                                                            onChange={(e) =>
+                                                                updateField("fixed", expense.id, "amount", Number.parseFloat(e.target.value) || 0)
+                                                            }
+                                                            placeholder="0.00"
+                                                        />
+                                                        <FieldError error={errors[`fixed_${expense.id}_amount`]} />
+                                                    </div>
+
+                                                    <div className="input-group">
+                                                        <select
+                                                            className="elegant-select"
+                                                            value={expense.frequency || "MONTHLY"}
+                                                            onChange={(e) => updateField("fixed", expense.id, "frequency", e.target.value)}
+                                                        >
+                                                            {frequencyOptions.map((option) => (
+                                                                <option key={option.value} value={option.value}>
+                                                                    {option.label}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                        <FieldError error={errors[`fixed_${expense.id}_frequency`]} />
+                                                    </div>
+
+                                                    <div className="input-group">
+                                                        <input
+                                                            type="text"
+                                                            className="elegant-input"
+                                                            value={expense.description || ""}
+                                                            onChange={(e) => updateField("fixed", expense.id, "description", e.target.value)}
+                                                            placeholder="Descripción"
+                                                        />
+                                                        <FieldError error={errors[`fixed_${expense.id}_description`]} />
+                                                    </div>
                                                 </div>
                                                 <button className="elegant-btn danger small" onClick={() => deleteItem("fixed", expense.id)}>
                                                     Eliminar
@@ -808,6 +877,7 @@ export default function PerfilEditable() {
                                             onClick={() => {
                                                 setFixedExpenses(overview?.fixedExpenses || [])
                                                 setEditingFixed(false)
+                                                clearAllErrors()
                                             }}
                                         >
                                             Cancelar
@@ -869,36 +939,52 @@ export default function PerfilEditable() {
                                         {variableExpenses.map((expense) => (
                                             <div key={expense.id} className="expense-edit-item">
                                                 <div className="expense-inputs">
-                                                    <input
-                                                        type="text"
-                                                        className="elegant-input"
-                                                        value={expense.name || ""}
-                                                        onChange={(e) => updateField("variable", expense.id, "name", e.target.value)}
-                                                        placeholder="Nombre del gasto"
-                                                    />
-                                                    <input
-                                                        type="number"
-                                                        className="elegant-input"
-                                                        value={expense.amount || ""}
-                                                        onChange={(e) =>
-                                                            updateField("variable", expense.id, "amount", Number.parseFloat(e.target.value) || 0)
-                                                        }
-                                                        placeholder="0.00"
-                                                    />
-                                                    <input
-                                                        type="date"
-                                                        className="elegant-input"
-                                                        value={expense.expenseDate || ""}
-                                                        onChange={(e) => updateField("variable", expense.id, "expenseDate", e.target.value)}
-                                                    />
-                                                    <input
-                                                        type="text"
-                                                        className="elegant-input"
-                                                        value={expense.description || ""}
-                                                        onChange={(e) => updateField("variable", expense.id, "description", e.target.value)}
-                                                        placeholder="Descripción"
-                                                    />
+                                                    <div className="input-group">
+                                                        <input
+                                                            type="text"
+                                                            className="elegant-input"
+                                                            value={expense.name || ""}
+                                                            onChange={(e) => updateField("variable", expense.id, "name", e.target.value)}
+                                                            placeholder="Nombre del gasto"
+                                                        />
+                                                        <FieldError error={errors[`variable_${expense.id}_name`]} />
+                                                    </div>
+
+                                                    <div className="input-group">
+                                                        <input
+                                                            type="number"
+                                                            className="elegant-input"
+                                                            value={expense.amount || ""}
+                                                            onChange={(e) =>
+                                                                updateField("variable", expense.id, "amount", Number.parseFloat(e.target.value) || 0)
+                                                            }
+                                                            placeholder="0.00"
+                                                        />
+                                                        <FieldError error={errors[`variable_${expense.id}_amount`]} />
+                                                    </div>
+
+                                                    <div className="input-group">
+                                                        <input
+                                                            type="date"
+                                                            className="elegant-input"
+                                                            value={expense.expenseDate || ""}
+                                                            onChange={(e) => updateField("variable", expense.id, "expenseDate", e.target.value)}
+                                                        />
+                                                        <FieldError error={errors[`variable_${expense.id}_expenseDate`]} />
+                                                    </div>
+
+                                                    <div className="input-group">
+                                                        <input
+                                                            type="text"
+                                                            className="elegant-input"
+                                                            value={expense.description || ""}
+                                                            onChange={(e) => updateField("variable", expense.id, "description", e.target.value)}
+                                                            placeholder="Descripción"
+                                                        />
+                                                        <FieldError error={errors[`variable_${expense.id}_description`]} />
+                                                    </div>
                                                 </div>
+
                                                 <button className="elegant-btn danger small" onClick={() => deleteItem("variable", expense.id)}>
                                                     Eliminar
                                                 </button>
@@ -914,6 +1000,7 @@ export default function PerfilEditable() {
                                             onClick={() => {
                                                 setVariableExpenses(overview?.variableExpenses || [])
                                                 setEditingVariable(false)
+                                                clearAllErrors()
                                             }}
                                         >
                                             Cancelar
@@ -975,44 +1062,63 @@ export default function PerfilEditable() {
                                     {goals.map((goal) => (
                                         <div key={goal.id} className="goal-edit-item">
                                             <div className="goal-inputs">
-                                                <input
-                                                    type="text"
-                                                    className="elegant-input"
-                                                    value={goal.name || ""}
-                                                    onChange={(e) => updateField("goal", goal.id, "name", e.target.value)}
-                                                    placeholder="Nombre de la meta"
-                                                />
-                                                <input
-                                                    type="number"
-                                                    className="elegant-input"
-                                                    value={goal.targetAmount || ""}
-                                                    onChange={(e) =>
-                                                        updateField("goal", goal.id, "targetAmount", Number.parseFloat(e.target.value) || 0)
-                                                    }
-                                                    placeholder="Meta (€)"
-                                                />
-                                                <input
-                                                    type="number"
-                                                    className="elegant-input"
-                                                    value={goal.currentAmount || ""}
-                                                    onChange={(e) =>
-                                                        updateField("goal", goal.id, "currentAmount", Number.parseFloat(e.target.value) || 0)
-                                                    }
-                                                    placeholder="Actual (€)"
-                                                />
-                                                <input
-                                                    type="date"
-                                                    className="elegant-input"
-                                                    value={goal.deadline || ""}
-                                                    onChange={(e) => updateField("goal", goal.id, "deadline", e.target.value)}
-                                                />
-                                                <input
-                                                    type="text"
-                                                    className="elegant-input"
-                                                    value={goal.description || ""}
-                                                    onChange={(e) => updateField("goal", goal.id, "description", e.target.value)}
-                                                    placeholder="Descripción"
-                                                />
+                                                <div className="input-group">
+                                                    <input
+                                                        type="text"
+                                                        className="elegant-input"
+                                                        value={goal.name || ""}
+                                                        onChange={(e) => updateField("goal", goal.id, "name", e.target.value)}
+                                                        placeholder="Nombre de la meta"
+                                                    />
+                                                    <FieldError error={errors[`goal_${goal.id}_name`]} />
+                                                </div>
+
+                                                <div className="input-group">
+                                                    <input
+                                                        type="number"
+                                                        className="elegant-input"
+                                                        value={goal.targetAmount || ""}
+                                                        onChange={(e) =>
+                                                            updateField("goal", goal.id, "targetAmount", Number.parseFloat(e.target.value) || 0)
+                                                        }
+                                                        placeholder="Meta (€)"
+                                                    />
+                                                    <FieldError error={errors[`goal_${goal.id}_targetAmount`]} />
+                                                </div>
+
+                                                <div className="input-group">
+                                                    <input
+                                                        type="number"
+                                                        className="elegant-input"
+                                                        value={goal.currentAmount || ""}
+                                                        onChange={(e) =>
+                                                            updateField("goal", goal.id, "currentAmount", Number.parseFloat(e.target.value) || 0)
+                                                        }
+                                                        placeholder="Actual (€)"
+                                                    />
+                                                    <FieldError error={errors[`goal_${goal.id}_currentAmount`]} />
+                                                </div>
+
+                                                <div className="input-group">
+                                                    <input
+                                                        type="date"
+                                                        className="elegant-input"
+                                                        value={goal.deadline || ""}
+                                                        onChange={(e) => updateField("goal", goal.id, "deadline", e.target.value)}
+                                                    />
+                                                    <FieldError error={errors[`goal_${goal.id}_deadline`]} />
+                                                </div>
+
+                                                <div className="input-group">
+                                                    <input
+                                                        type="text"
+                                                        className="elegant-input"
+                                                        value={goal.description || ""}
+                                                        onChange={(e) => updateField("goal", goal.id, "description", e.target.value)}
+                                                        placeholder="Descripción"
+                                                    />
+                                                    <FieldError error={errors[`goal_${goal.id}_description`]} />
+                                                </div>
                                             </div>
                                             <button className="elegant-btn danger small" onClick={() => deleteItem("goal", goal.id)}>
                                                 Eliminar
@@ -1029,6 +1135,7 @@ export default function PerfilEditable() {
                                         onClick={() => {
                                             setGoals(overview?.goals || [])
                                             setEditingGoals(false)
+                                            clearAllErrors()
                                         }}
                                     >
                                         Cancelar
