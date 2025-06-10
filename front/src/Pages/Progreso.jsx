@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { useNavigate, useParams } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import "./Progreso.css"
@@ -147,7 +146,7 @@ function Dashboard() {
 
         // Obtener los últimos dos consejos (más recientes)
         const latestAdvice = adviceList.slice(-2)
-        const currentAdviceIds = latestAdvice.map((advice) => advice.id).sort()
+        const currentAdviceIds = latestAdvice.map((advice) => advice.id).sort((a, b) => a - b)
 
         console.log("📋 [PROGRESS] Últimos dos consejos:", currentAdviceIds)
 
@@ -163,14 +162,22 @@ function Dashboard() {
             lastGenerated,
         })
 
-        // Verificar si los consejos han cambiado
+        // 🔥 LÓGICA MEJORADA: Verificar si los consejos han cambiado
         const adviceIdsChanged =
             storedAdviceIds.length !== currentAdviceIds.length ||
-            !currentAdviceIds.every((id) => storedAdviceIds.includes(id))
+            JSON.stringify(storedAdviceIds.sort((a, b) => a - b)) !== JSON.stringify(currentAdviceIds)
 
         console.log("🔍 [PROGRESS] ¿Consejos cambiaron?", adviceIdsChanged)
+        console.log("🔍 [PROGRESS] IDs almacenados:", storedAdviceIds)
+        console.log("🔍 [PROGRESS] IDs actuales:", currentAdviceIds)
 
-        if (adviceIdsChanged || !storedReport) {
+        // 🔥 TAMBIÉN verificar si han pasado más de 5 minutos desde el último reporte
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+        const shouldRefreshByTime = !lastGenerated || lastGenerated < fiveMinutesAgo
+
+        console.log("⏰ [PROGRESS] ¿Debería refrescar por tiempo?", shouldRefreshByTime)
+
+        if (adviceIdsChanged || !storedReport || shouldRefreshByTime) {
             console.log("🚀 [PROGRESS] Generando nuevo reporte de progreso...")
 
             try {
@@ -202,6 +209,20 @@ function Dashboard() {
         }
 
         console.log("🏁 [PROGRESS] handleProgressReportLogic completado")
+    }
+
+    // 🔥 NUEVA FUNCIÓN: Forzar actualización del reporte
+    const forceRefreshReport = async () => {
+        if (!currentUserId || data.advice.length < 2) return
+
+        console.log("🔄 [FORCE] Forzando actualización del reporte...")
+
+        // Limpiar localStorage para forzar regeneración
+        const STORAGE_KEY = `progressReport_${currentUserId}`
+        localStorage.removeItem(STORAGE_KEY)
+
+        // Regenerar reporte
+        await handleProgressReportLogic(currentUserId, data.advice)
     }
 
     useEffect(() => {
@@ -407,8 +428,13 @@ function Dashboard() {
         return (
             <div className="progress-report-section">
                 <div className="report-header">
-                    <h5>📈 {t("profile.progressReportTitle")}</h5>
-                    {reportLoading && <span className="loading-indicator">⏳ Generando...</span>}
+                    <h5>📈 {t("profile.dashboard.progressReportTitle")}</h5>
+                    <div className="report-actions">
+                        {reportLoading && <span className="loading-indicator">⏳ Generando...</span>}
+                        <button className="elegant-btn outline small" onClick={forceRefreshReport} disabled={reportLoading}>
+                            🔄 Actualizar
+                        </button>
+                    </div>
                 </div>
                 <div className="report-content">
                     <div
@@ -683,7 +709,6 @@ function Dashboard() {
                     </div>
                 </div>
                 */}
-
             </div>
 
             {/* Tendencias y progreso de metas */}
