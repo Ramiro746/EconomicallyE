@@ -537,7 +537,9 @@ export default function PerfilEditable() {
                 })),
             }
 
-            await fetchWithErrorHandling(`https://economicallye-1.onrender.com/api/advice`, {
+            console.log("🚀 Enviando datos para generar consejo:", requestData)
+
+            const response = await fetchWithErrorHandling(`https://economicallye-1.onrender.com/api/advice`, {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -547,12 +549,33 @@ export default function PerfilEditable() {
                 body: JSON.stringify(requestData),
             })
 
-            // Simular un pequeño delay para mostrar el modal
-            await new Promise((resolve) => setTimeout(resolve, 1000))
+            const result = await response.json()
+            console.log("📋 Respuesta del servidor:", result)
 
+            // Verificar si la respuesta contiene un mensaje de error de validación
+            if (
+                result.iaResult &&
+                (result.iaResult.includes("Debes actualizar tu información financiera") ||
+                    result.iaResult.includes("You must update your financial information") ||
+                    result.iaResult.includes("Debes esperar al menos") ||
+                    result.iaResult.includes("You must wait at least") ||
+                    result.iaResult.includes("Debes tener al menos una meta") ||
+                    result.iaResult.includes("You must have at least one") ||
+                    result.iaResult.includes("Debes configurar tus ingresos") ||
+                    result.iaResult.includes("You must configure your monthly income"))
+            ) {
+                // Es un mensaje de error de validación, no un consejo válido
+                setGlobalError(result.iaResult)
+                console.log("❌ Error de validación:", result.iaResult)
+                return
+            }
+
+            // Si llegamos aquí, el consejo se generó correctamente
+            await new Promise((resolve) => setTimeout(resolve, 1000))
             setSuccess(t("profile.messages.adviceGenerated"))
             navigate(`/consejos/${userId}`)
         } catch (error) {
+            console.error("💥 Error al generar consejo:", error)
             handleApiError(error, t("profile.messages.errorGeneratingAdvice"))
         } finally {
             setGeneratingAdvice(false)

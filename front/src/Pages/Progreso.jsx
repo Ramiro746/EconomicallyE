@@ -26,9 +26,29 @@ function DarkModeToggle({ darkMode, toggleDarkMode }) {
 }
 
 function Dashboard() {
+    console.log("🎯 [DASHBOARD] Componente Dashboard montado/re-renderizado")
+
     const { t, i18n } = useTranslation()
-    const { id } = useParams()
+    const params = useParams()
     const navigate = useNavigate()
+
+    // Extraer el ID de diferentes maneras posibles
+    const urlId = params.id || params.userId
+
+    console.log("🎯 [DASHBOARD] useParams completo:", params)
+    console.log("🎯 [DASHBOARD] urlId extraído:", urlId)
+    console.log("🎯 [DASHBOARD] URL actual:", window.location.href)
+    console.log("🎯 [DASHBOARD] pathname:", window.location.pathname)
+
+    // También intentar extraer el ID directamente de la URL como fallback
+    const pathSegments = window.location.pathname.split("/")
+    const fallbackId = pathSegments[pathSegments.length - 1]
+    console.log("🎯 [DASHBOARD] fallbackId desde URL:", fallbackId)
+
+    const finalId = urlId || fallbackId
+
+    console.log("🎯 [DASHBOARD] ID final a usar:", finalId)
+
     const [hasCompletedFirstForm, setHasCompletedFirstForm] = useState(false)
     const [darkMode, setDarkMode] = useState(false)
 
@@ -41,7 +61,7 @@ function Dashboard() {
         income: 0,
     })
     const [loading, setLoading] = useState(true)
-    const [currentUserId, setCurrentUserId] = useState(id)
+    const [currentUserId, setCurrentUserId] = useState(finalId)
     const [progressReport, setProgressReport] = useState(null)
     const [reportLoading, setReportLoading] = useState(false)
 
@@ -72,10 +92,13 @@ function Dashboard() {
     // Función para generar reporte de progreso
     const generateProgressReport = async (userId, adviceList) => {
         try {
+            console.log("🔄 [API] Iniciando generateProgressReport...")
+            console.log("🔄 [API] userId:", userId, "adviceList:", adviceList)
+
             setReportLoading(true)
             const token = localStorage.getItem("token")
 
-            console.log(`🔄 Generando reporte de progreso para usuario ${userId}...`)
+            console.log(`🔄 [API] Generando reporte de progreso para usuario ${userId}...`)
 
             const response = await fetch(`https://economicallye-1.onrender.com/api/advice/progress/${userId}`, {
                 method: "GET",
@@ -85,29 +108,38 @@ function Dashboard() {
                 },
             })
 
+            console.log("📡 [API] Respuesta /progress status:", response.status)
+
             if (!response.ok) {
-                throw new Error(`Error ${response.status}: No se pudo generar el reporte de progreso`)
+                const errorText = await response.text()
+                console.error("❌ [API] Error response body:", errorText)
+                throw new Error(`Error ${response.status}: No se pudo generar el reporte de progreso - ${errorText}`)
             }
 
             const reportData = await response.json()
-            console.log("✅ Reporte de progreso generado exitosamente:", reportData)
+            console.log("✅ [API] Reporte de progreso generado exitosamente:", reportData)
 
             return reportData
         } catch (error) {
-            console.error("❌ Error al generar reporte de progreso:", error)
+            console.error("❌ [API] Error al generar reporte de progreso:", error)
+            console.error("❌ [API] Stack trace:", error.stack)
             throw error
         } finally {
+            console.log("🏁 [API] Finalizando generateProgressReport")
             setReportLoading(false)
         }
     }
 
     // Función para manejar la lógica de reportes de progreso
     const handleProgressReportLogic = async (userId, adviceList) => {
+        console.log("📈 [PROGRESS] Iniciando handleProgressReportLogic...")
+        console.log("📈 [PROGRESS] userId:", userId, "adviceList.length:", adviceList.length)
+
         const STORAGE_KEY = `progressReport_${userId}`
 
         // Solo proceder si hay exactamente 2 o más consejos
         if (adviceList.length < 2) {
-            console.log("📊 No hay suficientes consejos para generar reporte de progreso (mínimo 2)")
+            console.log("📊 [PROGRESS] No hay suficientes consejos para generar reporte de progreso (mínimo 2)")
             setProgressReport(null)
             localStorage.removeItem(STORAGE_KEY)
             return
@@ -117,7 +149,7 @@ function Dashboard() {
         const latestAdvice = adviceList.slice(-2)
         const currentAdviceIds = latestAdvice.map((advice) => advice.id).sort()
 
-        console.log("📋 Últimos dos consejos:", currentAdviceIds)
+        console.log("📋 [PROGRESS] Últimos dos consejos:", currentAdviceIds)
 
         // Verificar datos almacenados en localStorage
         const storedData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}
@@ -125,7 +157,7 @@ function Dashboard() {
         const storedReport = storedData.report || null
         const lastGenerated = storedData.lastGenerated || null
 
-        console.log("💾 Datos almacenados:", {
+        console.log("💾 [PROGRESS] Datos almacenados:", {
             storedAdviceIds,
             hasStoredReport: !!storedReport,
             lastGenerated,
@@ -136,10 +168,10 @@ function Dashboard() {
             storedAdviceIds.length !== currentAdviceIds.length ||
             !currentAdviceIds.every((id) => storedAdviceIds.includes(id))
 
-        console.log("🔍 ¿Consejos cambiaron?", adviceIdsChanged)
+        console.log("🔍 [PROGRESS] ¿Consejos cambiaron?", adviceIdsChanged)
 
         if (adviceIdsChanged || !storedReport) {
-            console.log("🚀 Generando nuevo reporte de progreso...")
+            console.log("🚀 [PROGRESS] Generando nuevo reporte de progreso...")
 
             try {
                 const newReport = await generateProgressReport(userId, latestAdvice)
@@ -155,65 +187,132 @@ function Dashboard() {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToStore))
                 setProgressReport(newReport)
 
-                console.log("✅ Reporte guardado en localStorage")
+                console.log("✅ [PROGRESS] Reporte guardado en localStorage")
             } catch (error) {
-                console.error("❌ Error al generar reporte:", error)
+                console.error("❌ [PROGRESS] Error al generar reporte:", error)
                 // En caso de error, usar reporte almacenado si existe
                 if (storedReport) {
-                    console.log("🔄 Usando reporte almacenado como fallback")
+                    console.log("🔄 [PROGRESS] Usando reporte almacenado como fallback")
                     setProgressReport(storedReport)
                 }
             }
         } else {
-            console.log("📋 Usando reporte existente (no hay cambios)")
+            console.log("📋 [PROGRESS] Usando reporte existente (no hay cambios)")
             setProgressReport(storedReport)
         }
+
+        console.log("🏁 [PROGRESS] handleProgressReportLogic completado")
     }
 
     useEffect(() => {
         const fetchData = async () => {
+            console.log("🚀 [DASHBOARD] Iniciando fetchData...")
+            console.log("🔍 [DASHBOARD] currentUserId:", currentUserId)
+            console.log("🔍 [DASHBOARD] finalId:", finalId)
+
             setLoading(true)
             try {
-                let userId = currentUserId || id // Usar id del parámetro si currentUserId no está disponible
+                let userId = currentUserId || finalId // Usar finalId como fallback
                 const token = localStorage.getItem("token")
+
+                console.log("🔑 [DASHBOARD] Token encontrado:", !!token)
+                console.log("👤 [DASHBOARD] userId inicial:", userId)
 
                 // Obtener ID de usuario si no está disponible
                 if (!userId) {
-                    const resUser = await fetch("https://economicallye-1.onrender.com/api/users/me", {
-                        headers: { Authorization: `Bearer ${token}` },
-                    })
-                    const userData = await resUser.json()
-                    userId = userData.id
-                    setCurrentUserId(userId)
+                    console.log("🔄 [DASHBOARD] No hay userId, obteniendo desde /api/users/me...")
+
+                    try {
+                        const resUser = await fetch("https://economicallye-1.onrender.com/api/users/me", {
+                            headers: { Authorization: `Bearer ${token}` },
+                        })
+
+                        console.log("📡 [DASHBOARD] Respuesta /users/me status:", resUser.status)
+
+                        if (!resUser.ok) {
+                            throw new Error(`Error ${resUser.status}: ${resUser.statusText}`)
+                        }
+
+                        const userData = await resUser.json()
+                        console.log("👤 [DASHBOARD] Datos de usuario obtenidos:", userData)
+
+                        userId = userData.id
+                        setCurrentUserId(userId)
+                        console.log("✅ [DASHBOARD] userId establecido:", userId)
+                    } catch (userError) {
+                        console.error("❌ [DASHBOARD] Error obteniendo usuario:", userError)
+                        throw userError
+                    }
                 }
 
-                console.log(`📊 Obteniendo datos para usuario: ${userId}`)
+                console.log(`📊 [DASHBOARD] Obteniendo consejos para usuario: ${userId}`)
 
                 // Obtener historial de consejos
-                const advicesRes = await fetch(`https://economicallye-1.onrender.com/api/advice/${userId}`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                })
+                try {
+                    const advicesRes = await fetch(`https://economicallye-1.onrender.com/api/advice/${userId}`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    })
 
-                const advice = advicesRes.ok ? await advicesRes.json() : []
-                console.log(`📊 Consejos obtenidos: ${advice.length}`)
+                    console.log("📡 [DASHBOARD] Respuesta /advice status:", advicesRes.status)
 
-                // Actualizar estado con los consejos
-                setData((prev) => ({ ...prev, advice }))
+                    if (!advicesRes.ok) {
+                        console.warn("⚠️ [DASHBOARD] Error obteniendo consejos:", advicesRes.status, advicesRes.statusText)
+                    }
 
-                // Manejar lógica de reporte de progreso
-                await handleProgressReportLogic(userId, advice)
+                    const advice = advicesRes.ok ? await advicesRes.json() : []
+                    console.log(`📊 [DASHBOARD] Consejos obtenidos: ${advice.length}`)
+                    console.log("📋 [DASHBOARD] Consejos:", advice)
+
+                    // Actualizar estado con los consejos
+                    setData((prev) => {
+                        console.log("🔄 [DASHBOARD] Actualizando estado con consejos")
+                        return { ...prev, advice }
+                    })
+
+                    // Manejar lógica de reporte de progreso
+                    console.log("📈 [DASHBOARD] Iniciando lógica de reporte de progreso...")
+                    await handleProgressReportLogic(userId, advice)
+                    console.log("✅ [DASHBOARD] Lógica de reporte completada")
+                } catch (adviceError) {
+                    console.error("❌ [DASHBOARD] Error obteniendo consejos:", adviceError)
+                    // No lanzar error, continuar con array vacío
+                    setData((prev) => ({ ...prev, advice: [] }))
+                }
             } catch (err) {
-                console.error("❌ Error en fetchData:", err)
+                console.error("❌ [DASHBOARD] Error general en fetchData:", err)
+                console.error("❌ [DASHBOARD] Stack trace:", err.stack)
             } finally {
+                console.log("🏁 [DASHBOARD] Finalizando fetchData, estableciendo loading = false")
                 setLoading(false)
             }
         }
 
         // Ejecutar siempre que tengamos un ID (del parámetro o del estado)
-        if (currentUserId || id) {
+        const shouldExecute = currentUserId || finalId
+        console.log("🤔 [DASHBOARD] ¿Debería ejecutar fetchData?", shouldExecute)
+        console.log("🤔 [DASHBOARD] currentUserId:", currentUserId, "finalId:", finalId)
+
+        if (shouldExecute) {
+            console.log("✅ [DASHBOARD] Ejecutando fetchData...")
             fetchData()
+        } else {
+            console.log("❌ [DASHBOARD] No se ejecuta fetchData - no hay ID disponible")
+            setLoading(false)
         }
-    }, [currentUserId, id])
+    }, [currentUserId, finalId])
+
+    // Añadir después de los otros useEffect
+    useEffect(() => {
+        // Timeout de seguridad para evitar carga infinita
+        const timeoutId = setTimeout(() => {
+            if (loading) {
+                console.warn("⏰ [DASHBOARD] Timeout de seguridad - forzando fin de carga")
+                setLoading(false)
+            }
+        }, 15000) // 15 segundos
+
+        return () => clearTimeout(timeoutId)
+    }, [loading])
 
     const calculateMetrics = () => {
         const totalFixedExpenses = data.fixedExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0)
@@ -308,7 +407,7 @@ function Dashboard() {
         return (
             <div className="progress-report-section">
                 <div className="report-header">
-                    <h5>📈 {t("profile.dashboard.progressReportTitle")}</h5>
+                    <h5>📈 {t("profile.progressReportTitle")}</h5>
                     {reportLoading && <span className="loading-indicator">⏳ Generando...</span>}
                 </div>
                 <div className="report-content">
@@ -393,42 +492,98 @@ function Dashboard() {
         )
     }
 
+    // Función mejorada para formatear el reporte financiero
     function formatFinancialReport(rawText) {
         if (!rawText) return ""
 
-        let formatted = rawText.trim()
+        console.log("🔧 [FORMAT] Texto original:", rawText)
 
-        formatted = formatted.replace(/### (.*?) ###/g, "<h2>$1</h2>")
-        formatted = formatted.replace(/#### (.*?)(:?) ####/g, (_match, title) => {
-            return `<h3>${title.trim()}</h3>`
-        })
-        formatted = formatted.replace(/^([A-ZÁÉÍÓÚÑ][^\n:]{3,40}):$/gm, "<h3>$1</h3>")
-        formatted = formatted.replace(/((?:\d+\..+\n)+)/g, (match) => {
-            const items = match
-                .trim()
-                .split("\n")
-                .map((line) => {
-                    const m = line.match(/^\d+\. (.+)/)
-                    return m ? `<li>${m[1]}</li>` : ""
-                })
-                .join("")
-            return `<ol>${items}</ol>`
-        })
-        formatted = formatted.replace(/((?:- .+\n)+)/g, (match) => {
-            const items = match
-                .trim()
-                .split("\n")
-                .map((line) => {
-                    const m = line.match(/^- (.+)/)
-                    return m ? `<li>${m[1]}</li>` : ""
-                })
-                .join("")
-            return `<ul>${items}</ul>`
-        })
-        formatted = formatted.replace(/\n{2,}/g, "</p><p>")
-        formatted = `<p>${formatted.replace(/\n/g, " ")}</p>`
+        try {
+            let formatted = rawText.trim()
 
-        return formatted
+            // Procesar títulos con ### ###
+            formatted = formatted.replace(/### (.*?) ###/g, "<h2>$1</h2>")
+
+            // Procesar títulos con #### ####
+            formatted = formatted.replace(/#### (.*?) ####/g, "<h3>$1</h3>")
+
+            // Procesar títulos que terminan con dos puntos (formato alternativo)
+            formatted = formatted.replace(/^([A-ZÁÉÍÓÚÑ][^\n:]{3,40}):$/gm, "<h3>$1</h3>")
+
+            // Procesar listas numeradas (mantener intactas)
+            formatted = formatted.replace(/((?:^\d+\..+$\n?)+)/gm, (match) => {
+                const items = match
+                    .trim()
+                    .split("\n")
+                    .map((line) => {
+                        const m = line.match(/^\d+\. (.+)/)
+                        return m ? `<li>${m[1]}</li>` : ""
+                    })
+                    .filter((item) => item !== "")
+                    .join("")
+                return `<ol>${items}</ol>`
+            })
+
+            // Procesar listas con guiones (mantener intactas)
+            formatted = formatted.replace(/((?:^- .+$\n?)+)/gm, (match) => {
+                const items = match
+                    .trim()
+                    .split("\n")
+                    .map((line) => {
+                        const m = line.match(/^- (.+)/)
+                        return m ? `<li>${m[1]}</li>` : ""
+                    })
+                    .filter((item) => item !== "")
+                    .join("")
+                return `<ul>${items}</ul>`
+            })
+
+            // Dividir en párrafos (pero preservar los elementos HTML ya creados)
+            const lines = formatted.split("\n")
+            const processedLines = []
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim()
+
+                // Si la línea ya es HTML (empieza con < y termina con >), mantenerla
+                if (line.match(/^<[^>]+>.*<\/[^>]+>$/) || line.match(/^<(h[1-6]|ol|ul|li)>/)) {
+                    processedLines.push(line)
+                }
+                // Si es una línea vacía, agregar separación
+                else if (line === "") {
+                    if (processedLines.length > 0 && !processedLines[processedLines.length - 1].match(/^<\/?(h[1-6]|ol|ul)>/)) {
+                        processedLines.push("</p><p>")
+                    }
+                }
+                // Si es texto normal, agregarlo
+                else if (line.length > 0) {
+                    processedLines.push(line)
+                }
+            }
+
+            // Unir todo y envolver en párrafos
+            let result = processedLines.join(" ")
+
+            // Limpiar espacios múltiples
+            result = result.replace(/\s+/g, " ")
+
+            // Asegurar que el contenido esté envuelto en párrafos
+            if (!result.startsWith("<")) {
+                result = `<p>${result}</p>`
+            }
+
+            // Limpiar párrafos vacíos
+            result = result.replace(/<p>\s*<\/p>/g, "")
+            result = result.replace(/<p>\s*<\/p><p>/g, "<p>")
+
+            console.log("🔧 [FORMAT] Texto formateado:", result)
+
+            return result
+        } catch (error) {
+            console.error("❌ [FORMAT] Error al formatear texto:", error)
+            // En caso de error, devolver el texto original con formato básico
+            return `<p>${rawText.replace(/\n/g, "<br>")}</p>`
+        }
     }
 
     const scrollNavLinks = [
@@ -499,7 +654,8 @@ function Dashboard() {
 
             {/* Gráficos principales */}
             <div className="charts-grid">
-                {/* Distribución de gastos */}
+                {/*
+                Distribución de gastos
                 <div className="chart-card">
                     <div className="chart-header expenses-header">
                         <h5>{t("profile.dashboard.expenseDistribution")}</h5>
@@ -526,6 +682,8 @@ function Dashboard() {
                         </ResponsiveContainer>
                     </div>
                 </div>
+                */}
+
             </div>
 
             {/* Tendencias y progreso de metas */}
