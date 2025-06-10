@@ -223,6 +223,7 @@ public class AdviceServiceImpl implements AdviceService {
 
         boolean isSpanish = locale.getLanguage().equals("es");
 
+
         if (isSpanish) {
             prompt.append("Por favor, responde completamente en español.\n\n");
         } else {
