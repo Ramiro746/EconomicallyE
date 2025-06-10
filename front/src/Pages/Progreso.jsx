@@ -88,6 +88,11 @@ function Dashboard() {
         setDarkMode(!darkMode)
     }
 
+    const signOut = () => {
+        localStorage.removeItem("token")
+        navigate("/")
+    }
+
     // Función para generar reporte de progreso
     const generateProgressReport = async (userId, adviceList) => {
         try {
@@ -284,11 +289,65 @@ function Dashboard() {
                     console.log(`📊 [DASHBOARD] Consejos obtenidos: ${advice.length}`)
                     console.log("📋 [DASHBOARD] Consejos:", advice)
 
-                    // Actualizar estado con los consejos
-                    setData((prev) => {
-                        console.log("🔄 [DASHBOARD] Actualizando estado con consejos")
-                        return { ...prev, advice }
-                    })
+                    // Después de obtener los historial de consejos y antes de handleProgressReportLogic, agregar:
+
+                    // Obtener datos financieros del usuario
+                    try {
+                        console.log(`💰 [DASHBOARD] Obteniendo datos financieros para usuario: ${userId}`)
+
+                        // Obtener overview del usuario
+                        const overviewRes = await fetch(`https://economicallye-1.onrender.com/api/overview/${userId}`, {
+                            headers: { Authorization: `Bearer ${token}` },
+                        })
+
+                        if (overviewRes.ok) {
+                            const overviewData = await overviewRes.json()
+                            console.log("📊 [DASHBOARD] Overview obtenido:", overviewData)
+
+                            // Obtener datos detallados en paralelo
+                            const [fixedExpensesRes, variableExpensesRes, goalsRes] = await Promise.all([
+                                fetch(`https://economicallye-1.onrender.com/api/fixed-expenses/${userId}`, {
+                                    headers: { Authorization: `Bearer ${token}` },
+                                }),
+                                fetch(`https://economicallye-1.onrender.com/api/variable-expenses/${userId}`, {
+                                    headers: { Authorization: `Bearer ${token}` },
+                                }),
+                                fetch(`https://economicallye-1.onrender.com/api/goals/${userId}`, {
+                                    headers: { Authorization: `Bearer ${token}` },
+                                }),
+                            ])
+
+                            const fixedExpenses = fixedExpensesRes.ok ? await fixedExpensesRes.json() : []
+                            const variableExpenses = variableExpensesRes.ok ? await variableExpensesRes.json() : []
+                            const goals = goalsRes.ok ? await goalsRes.json() : []
+
+                            console.log("💰 [DASHBOARD] Datos financieros obtenidos:", {
+                                income: overviewData.monthlyIncome,
+                                fixedExpenses: fixedExpenses.length,
+                                variableExpenses: variableExpenses.length,
+                                goals: goals.length,
+                            })
+
+                            // Actualizar estado con todos los datos financieros
+                            setData((prev) => ({
+                                ...prev,
+                                advice,
+                                income: overviewData.monthlyIncome || 0,
+                                fixedExpenses: fixedExpenses || [],
+                                variableExpenses: variableExpenses || [],
+                                goals: goals || [],
+                                overview: overviewData || {},
+                            }))
+                        } else {
+                            console.warn("⚠️ [DASHBOARD] Error obteniendo overview:", overviewRes.status)
+                            // Solo actualizar con los consejos si no se puede obtener el overview
+                            setData((prev) => ({ ...prev, advice }))
+                        }
+                    } catch (financialError) {
+                        console.error("❌ [DASHBOARD] Error obteniendo datos financieros:", financialError)
+                        // En caso de error, al menos actualizar con los consejos
+                        setData((prev) => ({ ...prev, advice }))
+                    }
 
                     // Manejar lógica de reporte de progreso
                     console.log("📈 [DASHBOARD] Iniciando lógica de reporte de progreso...")
@@ -428,7 +487,7 @@ function Dashboard() {
         return (
             <div className="progress-report-section">
                 <div className="report-header">
-                    <h5>📈 {t("profile.dashboard.progressReportTitle")}</h5>
+                    <h3>📈 {t("profile.progressReportTitle")}</h3>
                     <div className="report-actions">
                         {reportLoading && <span className="loading-indicator">⏳ Generando...</span>}
                         <button className="elegant-btn outline small" onClick={forceRefreshReport} disabled={reportLoading}>
@@ -665,7 +724,13 @@ function Dashboard() {
             </div>
 
             {/* ScrollNav */}
-            <ScrollNav links={scrollNavLinks} user={currentUserId} />
+            <ScrollNav
+                links={scrollNavLinks}
+                user={currentUserId}
+                onSignOut={signOut}
+                onOpenLogin={() => navigate("/")}
+                onOpenRegister={() => navigate("/")}
+            />
 
             {/* Header */}
             <div className="dashboard-header">

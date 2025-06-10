@@ -266,7 +266,9 @@ function HistorialConsejos() {
                     {consejos.map((consejo, index) => (
                         <div key={consejo.id || index} className="consejo-card">
                             <div className="consejo-card-header">
-                                <h5 className="consejo-card-title">{t("profile.advice.adviceNumber", { number: index + 1 })}</h5>
+                                <h5 className="consejo-card-title">
+                                    {t("profile.advice.adviceNumber", { number: consejos.length - index })}
+                                </h5>
                                 {consejo.recommendationDate && (
                                     <small className="consejo-date">
                                         {t("profile.advice.date", { date: formatDate(consejo.recommendationDate) })}
