@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
+import i18n from "../i18n/i18n.js" // 🔥 AGREGAR ESTA LÍNEA
 import "./Perfil.css"
 import ScrollNav from "../Components/Nav/ScrollNav.jsx"
 import Footer from "../Components/Footer/footer.jsx"
@@ -511,8 +512,18 @@ export default function PerfilEditable() {
                 return
             }
 
+            // Obtener el idioma actual de i18next
+            const currentLanguage = i18n.language || "en"
+
+            // 🔥 CONSTRUIR URL CON PARÁMETRO DE IDIOMA
+            const languageParam = currentLanguage === "es" ? "lang=es" : "lang=en"
+            const apiUrl = `https://economicallye-1.onrender.com/api/advice?${languageParam}`
+
+            console.log("🌍 URL con parámetro de idioma:", apiUrl)
+
             const requestData = {
                 userId: userId,
+                language: currentLanguage, // 🔥 AGREGAR ESTA LÍNEA
                 income: overview.monthlyIncome || 0,
                 goals: (overview.goals || []).map((goal) => ({
                     id: goal.id,
@@ -538,12 +549,14 @@ export default function PerfilEditable() {
             }
 
             console.log("🚀 Enviando datos para generar consejo:", requestData)
+            console.log("🌍 Idioma detectado:", currentLanguage)
 
-            const response = await fetchWithErrorHandling(`https://economicallye-1.onrender.com/api/advice`, {
+            const response = await fetchWithErrorHandling(apiUrl, {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json",
+                    "Accept-Language": currentLanguage, // 🔥 AGREGAR ESTA LÍNEA TAMBIÉN
                 },
                 credentials: "include",
                 body: JSON.stringify(requestData),
