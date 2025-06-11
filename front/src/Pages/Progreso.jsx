@@ -125,35 +125,37 @@ function Dashboard() {
 
             return reportData
         } catch (error) {
-            console.error("❌ [API] Error al generar reporte de progreso:", error)
-            console.error("❌ [API] Stack trace:", error.stack)
+            console.error("[API] Error al generar reporte de progreso:", error)
+            //console.error("[API] Stack trace:", error.stack)
             throw error
         } finally {
-            console.log("🏁 [API] Finalizando generateProgressReport")
+            console.log("[API] Finalizando generateProgressReport")
             setReportLoading(false)
         }
     }
 
-    // Función para manejar la lógica de reportes de progreso
+
     const handleProgressReportLogic = async (userId, adviceList) => {
-        console.log("📈 [PROGRESS] Iniciando handleProgressReportLogic...")
-        console.log("📈 [PROGRESS] userId:", userId, "adviceList.length:", adviceList.length)
+        console.log("[PROGRESS] Iniciando handleProgressReportLogic...")
+        console.log("[PROGRESS] userId:", userId, "adviceList.length:", adviceList.length)
 
         const STORAGE_KEY = `progressReport_${userId}`
 
-        // Solo proceder si hay exactamente 2 o más consejos
+
         if (adviceList.length < 2) {
-            console.log("📊 [PROGRESS] No hay suficientes consejos para generar reporte de progreso (mínimo 2)")
+            console.log("[PROGRESS] No hay suficientes consejos para generar reporte de progreso (mínimo 2)")
             setProgressReport(null)
             localStorage.removeItem(STORAGE_KEY)
             return
         }
 
-        // Obtener los últimos dos consejos (más recientes)
-        const latestAdvice = adviceList.slice(-2)
-        const currentAdviceIds = latestAdvice.map((advice) => advice.id).sort((a, b) => a - b)
+        // Obtener los últimos dos consejos (más recientes) y ordenarlos por ID
+        const sortedAdvice = [...adviceList].sort((a, b) => b.id - a.id)
+        const latestAdvice = sortedAdvice.slice(0, 2)
+        const currentAdviceIds = latestAdvice.map((advice) => advice.id).sort((a, b) => b - a) // Orden descendente para IDs más recientes
 
-        console.log("📋 [PROGRESS] Últimos dos consejos:", currentAdviceIds)
+        console.log("[PROGRESS] Consejos ordenados por ID (desc):", sortedAdvice.map(a => a.id))
+        console.log("[PROGRESS] Últimos dos consejos seleccionados:", currentAdviceIds)
 
         // Verificar datos almacenados en localStorage
         const storedData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}
@@ -161,29 +163,28 @@ function Dashboard() {
         const storedReport = storedData.report || null
         const lastGenerated = storedData.lastGenerated || null
 
-        console.log("💾 [PROGRESS] Datos almacenados:", {
+        console.log("[PROGRESS] Datos almacenados:", {
             storedAdviceIds,
             hasStoredReport: !!storedReport,
             lastGenerated,
         })
 
-        // 🔥 LÓGICA MEJORADA: Verificar si los consejos han cambiado
+
         const adviceIdsChanged =
             storedAdviceIds.length !== currentAdviceIds.length ||
-            JSON.stringify(storedAdviceIds.sort((a, b) => a - b)) !== JSON.stringify(currentAdviceIds)
+            !storedAdviceIds.every((id, index) => id === currentAdviceIds[index])
 
-        console.log("🔍 [PROGRESS] ¿Consejos cambiaron?", adviceIdsChanged)
-        console.log("🔍 [PROGRESS] IDs almacenados:", storedAdviceIds)
-        console.log("🔍 [PROGRESS] IDs actuales:", currentAdviceIds)
+        console.log("[PROGRESS] ¿Consejos cambiaron?", adviceIdsChanged)
+        console.log("[PROGRESS] IDs almacenados:", storedAdviceIds)
+        console.log("[PROGRESS] IDs actuales:", currentAdviceIds)
 
-        // 🔥 TAMBIÉN verificar si han pasado más de 5 minutos desde el último reporte
-        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+        const fiveMinutesAgo = new Date(Date.now() - 1 * 60 * 1000).toISOString()
         const shouldRefreshByTime = !lastGenerated || lastGenerated < fiveMinutesAgo
 
-        console.log("⏰ [PROGRESS] ¿Debería refrescar por tiempo?", shouldRefreshByTime)
+        console.log("[PROGRESS] ¿Debería refrescar por tiempo?", shouldRefreshByTime)
 
         if (adviceIdsChanged || !storedReport || shouldRefreshByTime) {
-            console.log("🚀 [PROGRESS] Generando nuevo reporte de progreso...")
+            console.log("[PROGRESS] Generando nuevo reporte de progreso...")
 
             try {
                 const newReport = await generateProgressReport(userId, latestAdvice)
@@ -194,35 +195,38 @@ function Dashboard() {
                     report: newReport,
                     lastGenerated: new Date().toISOString(),
                     adviceCount: adviceList.length,
+                    latestAdviceDetails: latestAdvice.map(a => ({ id: a.id, date: a.recommendationDate }))
                 }
 
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToStore))
                 setProgressReport(newReport)
 
-                console.log("✅ [PROGRESS] Reporte guardado en localStorage")
+                console.log("[PROGRESS] Reporte guardado en localStorage")
             } catch (error) {
-                console.error("❌ [PROGRESS] Error al generar reporte:", error)
-                // En caso de error, usar reporte almacenado si existe
-                if (storedReport) {
-                    console.log("🔄 [PROGRESS] Usando reporte almacenado como fallback")
+                console.error("[PROGRESS] Error al generar reporte:", error)
+                // En caso de error, limpiar caché y usar reporte almacenado si existe
+                if (storedReport && !adviceIdsChanged) {
+                    console.log("[PROGRESS] Usando reporte almacenado como fallback")
                     setProgressReport(storedReport)
+                } else {
+                    console.log("[PROGRESS] No hay reporte válido disponible")
+                    setProgressReport(null)
+                    localStorage.removeItem(STORAGE_KEY)
                 }
             }
         } else {
-            console.log("📋 [PROGRESS] Usando reporte existente (no hay cambios)")
+            console.log("Usando reporte existente (no hay cambios)")
             setProgressReport(storedReport)
         }
 
-        console.log("🏁 [PROGRESS] handleProgressReportLogic completado")
+        console.log("handleProgressReportLogic completado")
     }
 
-    // 🔥 NUEVA FUNCIÓN: Forzar actualización del reporte
     const forceRefreshReport = async () => {
         if (!currentUserId || data.advice.length < 2) return
 
-        console.log("🔄 [FORCE] Forzando actualización del reporte...")
+        console.log("Forzando actualización del reporte...")
 
-        // Limpiar localStorage para forzar regeneración
         const STORAGE_KEY = `progressReport_${currentUserId}`
         localStorage.removeItem(STORAGE_KEY)
 
@@ -232,46 +236,46 @@ function Dashboard() {
 
     useEffect(() => {
         const fetchData = async () => {
-            console.log("🚀 [DASHBOARD] Iniciando fetchData...")
-            console.log("🔍 [DASHBOARD] currentUserId:", currentUserId)
-            console.log("🔍 [DASHBOARD] finalId:", finalId)
+            console.log("Iniciando fetchData...")
+            console.log(" currentUserId:", currentUserId)
+            console.log(" finalId:", finalId)
 
             setLoading(true)
             try {
                 let userId = currentUserId || finalId // Usar finalId como fallback
                 const token = localStorage.getItem("token")
 
-                console.log("🔑 [DASHBOARD] Token encontrado:", !!token)
-                console.log("👤 [DASHBOARD] userId inicial:", userId)
+                console.log("Token encontrado:", !!token)
+                console.log("userId inicial:", userId)
 
                 // Obtener ID de usuario si no está disponible
                 if (!userId) {
-                    console.log("🔄 [DASHBOARD] No hay userId, obteniendo desde /api/users/me...")
+                    console.log("No hay userId, obteniendo desde /api/users/me...")
 
                     try {
                         const resUser = await fetch("https://economicallye-1.onrender.com/api/users/me", {
                             headers: { Authorization: `Bearer ${token}` },
                         })
 
-                        console.log("📡 [DASHBOARD] Respuesta /users/me status:", resUser.status)
+                        console.log(" Respuesta /users/me status:", resUser.status)
 
                         if (!resUser.ok) {
                             throw new Error(`Error ${resUser.status}: ${resUser.statusText}`)
                         }
 
                         const userData = await resUser.json()
-                        console.log("👤 [DASHBOARD] Datos de usuario obtenidos:", userData)
+                        console.log("Datos de usuario obtenidos:", userData)
 
                         userId = userData.id
                         setCurrentUserId(userId)
-                        console.log("✅ [DASHBOARD] userId establecido:", userId)
+                        console.log("userId establecido:", userId)
                     } catch (userError) {
-                        console.error("❌ [DASHBOARD] Error obteniendo usuario:", userError)
+                        console.error("Error obteniendo usuario:", userError)
                         throw userError
                     }
                 }
 
-                console.log(`📊 [DASHBOARD] Obteniendo consejos para usuario: ${userId}`)
+                console.log(`Obteniendo consejos para usuario: ${userId}`)
 
                 // Obtener historial de consejos
                 try {
@@ -279,21 +283,20 @@ function Dashboard() {
                         headers: { Authorization: `Bearer ${token}` },
                     })
 
-                    console.log("📡 [DASHBOARD] Respuesta /advice status:", advicesRes.status)
+                    console.log("Respuesta /advice status:", advicesRes.status)
 
                     if (!advicesRes.ok) {
-                        console.warn("⚠️ [DASHBOARD] Error obteniendo consejos:", advicesRes.status, advicesRes.statusText)
+                        console.warn(" Error obteniendo consejos:", advicesRes.status, advicesRes.statusText)
                     }
 
                     const advice = advicesRes.ok ? await advicesRes.json() : []
-                    console.log(`📊 [DASHBOARD] Consejos obtenidos: ${advice.length}`)
-                    console.log("📋 [DASHBOARD] Consejos:", advice)
+                    console.log(`Consejos obtenidos: ${advice.length}`)
+                    console.log("Consejos:", advice)
 
-                    // Después de obtener los historial de consejos y antes de handleProgressReportLogic, agregar:
 
                     // Obtener datos financieros del usuario
                     try {
-                        console.log(`💰 [DASHBOARD] Obteniendo datos financieros para usuario: ${userId}`)
+                        console.log(` Obteniendo datos financieros para usuario: ${userId}`)
 
                         // Obtener overview del usuario
                         const overviewRes = await fetch(`https://economicallye-1.onrender.com/api/overview/${userId}`, {
@@ -302,7 +305,7 @@ function Dashboard() {
 
                         if (overviewRes.ok) {
                             const overviewData = await overviewRes.json()
-                            console.log("📊 [DASHBOARD] Overview obtenido:", overviewData)
+                            console.log(" Overview obtenido:", overviewData)
 
                             // Obtener datos detallados en paralelo
                             const [fixedExpensesRes, variableExpensesRes, goalsRes] = await Promise.all([
@@ -321,7 +324,7 @@ function Dashboard() {
                             const variableExpenses = variableExpensesRes.ok ? await variableExpensesRes.json() : []
                             const goals = goalsRes.ok ? await goalsRes.json() : []
 
-                            console.log("💰 [DASHBOARD] Datos financieros obtenidos:", {
+                            console.log("Datos financieros obtenidos:", {
                                 income: overviewData.monthlyIncome,
                                 fixedExpenses: fixedExpenses.length,
                                 variableExpenses: variableExpenses.length,
@@ -339,44 +342,44 @@ function Dashboard() {
                                 overview: overviewData || {},
                             }))
                         } else {
-                            console.warn("⚠️ [DASHBOARD] Error obteniendo overview:", overviewRes.status)
+                            console.warn(" Error obteniendo overview:", overviewRes.status)
                             // Solo actualizar con los consejos si no se puede obtener el overview
                             setData((prev) => ({ ...prev, advice }))
                         }
                     } catch (financialError) {
-                        console.error("❌ [DASHBOARD] Error obteniendo datos financieros:", financialError)
+                        console.error(" Error obteniendo datos financieros:", financialError)
                         // En caso de error, al menos actualizar con los consejos
                         setData((prev) => ({ ...prev, advice }))
                     }
 
                     // Manejar lógica de reporte de progreso
-                    console.log("📈 [DASHBOARD] Iniciando lógica de reporte de progreso...")
+                    console.log("Iniciando lógica de reporte de progreso...")
                     await handleProgressReportLogic(userId, advice)
-                    console.log("✅ [DASHBOARD] Lógica de reporte completada")
+                    console.log(" Lógica de reporte completada")
                 } catch (adviceError) {
-                    console.error("❌ [DASHBOARD] Error obteniendo consejos:", adviceError)
+                    console.error(" Error obteniendo consejos:", adviceError)
                     // No lanzar error, continuar con array vacío
                     setData((prev) => ({ ...prev, advice: [] }))
                 }
             } catch (err) {
-                console.error("❌ [DASHBOARD] Error general en fetchData:", err)
-                console.error("❌ [DASHBOARD] Stack trace:", err.stack)
+                console.error(" Error general en fetchData:", err)
+                console.error(" Stack trace:", err.stack)
             } finally {
-                console.log("🏁 [DASHBOARD] Finalizando fetchData, estableciendo loading = false")
+                console.log(" Finalizando fetchData, estableciendo loading = false")
                 setLoading(false)
             }
         }
 
         // Ejecutar siempre que tengamos un ID (del parámetro o del estado)
         const shouldExecute = currentUserId || finalId
-        console.log("🤔 [DASHBOARD] ¿Debería ejecutar fetchData?", shouldExecute)
-        console.log("🤔 [DASHBOARD] currentUserId:", currentUserId, "finalId:", finalId)
+        //console.log(" ¿Debería ejecutar fetchData?", shouldExecute)
+        console.log(" currentUserId:", currentUserId, "finalId:", finalId)
 
         if (shouldExecute) {
-            console.log("✅ [DASHBOARD] Ejecutando fetchData...")
+            console.log(" Ejecutando fetchData...")
             fetchData()
         } else {
-            console.log("❌ [DASHBOARD] No se ejecuta fetchData - no hay ID disponible")
+            console.log(" No se ejecuta fetchData - no hay ID disponible")
             setLoading(false)
         }
     }, [currentUserId, finalId])
@@ -386,7 +389,7 @@ function Dashboard() {
         // Timeout de seguridad para evitar carga infinita
         const timeoutId = setTimeout(() => {
             if (loading) {
-                console.warn("⏰ [DASHBOARD] Timeout de seguridad - forzando fin de carga")
+                console.warn("Timeout de seguridad - forzando fin de carga")
                 setLoading(false)
             }
         }, 15000) // 15 segundos
@@ -581,7 +584,7 @@ function Dashboard() {
     function formatFinancialReport(rawText) {
         if (!rawText) return ""
 
-        console.log("🔧 [FORMAT] Texto original:", rawText)
+        console.log(" Texto original:", rawText)
 
         try {
             let formatted = rawText.trim()
@@ -665,7 +668,6 @@ function Dashboard() {
 
             return result
         } catch (error) {
-            console.error("❌ [FORMAT] Error al formatear texto:", error)
             // En caso de error, devolver el texto original con formato básico
             return `<p>${rawText.replace(/\n/g, "<br>")}</p>`
         }

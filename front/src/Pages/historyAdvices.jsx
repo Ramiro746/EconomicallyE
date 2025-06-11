@@ -9,7 +9,7 @@ import Footer from "../Components/Footer/footer.jsx"
 import { Moon, Sun } from "lucide-react"
 import LanguageSwitcher from "../Components/Idioma/LanguageSwitcher.jsx"
 
-// Componente del botón de modo oscuro
+// Botón de modo oscuro
 function DarkModeToggle({ darkMode, toggleDarkMode }) {
     const { t } = useTranslation()
 

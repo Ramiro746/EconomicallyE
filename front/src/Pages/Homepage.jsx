@@ -31,9 +31,9 @@ const fadeUpVariants = {
 }
 
 const Homepage = () => {
-    const { t } = useTranslation() // Hook para las traducciones
+    const { t } = useTranslation()
     const [modalOpen, setModalOpen] = useState(false)
-    const [modalType, setModalType] = useState("login") // Nuevo estado para el tipo de modal
+    const [modalType, setModalType] = useState("login")
     const [user, setUser] = useState(null)
     const [graficoActivo, setGraficoActivo] = useState("gastos")
     const [hasCompletedFirstForm, setHasCompletedFirstForm] = useState(false)
