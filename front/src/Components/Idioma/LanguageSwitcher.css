@@ -1,9 +1,7 @@
 .language-switcher {
     position: fixed;
-    bottom: 2rem;   /* O la distancia que quieras desde arriba */
-    left: 2rem; /* Esto lo anclaría a la derecha */
-    /* O si lo quieres a la izquierda: */
-    /* right: 2rem; */
+    bottom: 2rem;
+    left: 2rem;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -40,7 +38,6 @@
     outline: none;
 }
 
-/* Tema oscuro */
 .dark-theme .language-switcher {
     background: rgba(31, 41, 55, 0.9);
 }

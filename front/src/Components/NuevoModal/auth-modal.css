@@ -1,6 +1,5 @@
 /* Estilos específicos solo para el modal de autenticación */
 .auth-modal-wrapper {
-    /* Reset solo para el contenedor del modal */
     margin: 0;
     padding: 0;
     box-sizing: border-box;

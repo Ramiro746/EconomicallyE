@@ -95,9 +95,9 @@ public class AdviceServiceImpl implements AdviceService {
 
         // Generar el consejo
         Locale locale = localeResolver.resolveLocale(request);
-        System.out.println("🌍 Locale detectado: " + locale);
-        System.out.println("🌍 Idioma: " + locale.getLanguage());
-        System.out.println("🌍 Accept-Language header: " + request.getHeader("Accept-Language"));
+        System.out.println(" Locale detectado: " + locale);
+        System.out.println(" Idioma: " + locale.getLanguage());
+        System.out.println(" Accept-Language header: " + request.getHeader("Accept-Language"));
         String prompt = buildPrompt(user, currentFixedExpenses, currentVariableExpenses,
                 currentGoals, questionnaire.getPlannedSavings(), locale);
 

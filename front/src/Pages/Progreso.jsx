@@ -25,7 +25,7 @@ function DarkModeToggle({ darkMode, toggleDarkMode }) {
 }
 
 function Dashboard() {
-    console.log("🎯 [DASHBOARD] Componente Dashboard montado/re-renderizado")
+    console.log("[DASHBOARD] Componente Dashboard montado/re-renderizado")
 
     const { t, i18n } = useTranslation()
     const params = useParams()
@@ -34,19 +34,19 @@ function Dashboard() {
     // Extraer el ID de diferentes maneras posibles
     const urlId = params.id || params.userId
 
-    console.log("🎯 [DASHBOARD] useParams completo:", params)
-    console.log("🎯 [DASHBOARD] urlId extraído:", urlId)
-    console.log("🎯 [DASHBOARD] URL actual:", window.location.href)
-    console.log("🎯 [DASHBOARD] pathname:", window.location.pathname)
+    console.log("[DASHBOARD] useParams completo:", params)
+    console.log("[DASHBOARD] urlId extraído:", urlId)
+    console.log("[DASHBOARD] URL actual:", window.location.href)
+    console.log("[DASHBOARD] pathname:", window.location.pathname)
 
     // También intentar extraer el ID directamente de la URL como fallback
     const pathSegments = window.location.pathname.split("/")
     const fallbackId = pathSegments[pathSegments.length - 1]
-    console.log("🎯 [DASHBOARD] fallbackId desde URL:", fallbackId)
+    console.log("[DASHBOARD] fallbackId desde URL:", fallbackId)
 
     const finalId = urlId || fallbackId
 
-    console.log("🎯 [DASHBOARD] ID final a usar:", finalId)
+    console.log("[DASHBOARD] ID final a usar:", finalId)
 
     const [hasCompletedFirstForm, setHasCompletedFirstForm] = useState(false)
     const [darkMode, setDarkMode] = useState(false)
@@ -712,20 +712,16 @@ function Dashboard() {
 
     return (
         <div className={`dashboard-container ${darkMode ? "dark-theme" : ""}`}>
-            {/* Botón de modo oscuro flotante */}
             <DarkModeToggle darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
 
-            {/* Selector de idioma */}
             <LanguageSwitcher />
 
-            {/* Formas de fondo */}
             <div className="background-shapes">
                 <div className="shape shape-1"></div>
                 <div className="shape shape-2"></div>
                 <div className="shape shape-3"></div>
             </div>
 
-            {/* ScrollNav */}
             <ScrollNav
                 links={scrollNavLinks}
                 user={currentUserId}

@@ -52,7 +52,7 @@ public class SecurityConfig {
         configuration.setMaxAge(3600L);  // 1 hora
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/**", configuration); // Solo las rutas de API
+        source.registerCorsConfiguration("/api/**", configuration);
         return source;
     }
 

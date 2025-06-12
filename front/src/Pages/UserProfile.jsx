@@ -651,19 +651,14 @@ export default function PerfilEditable() {
 
     return (
         <div className={`dashboard-container ${darkMode ? "dark-theme" : ""}`}>
-            {/* Botón de modo oscuro flotante */}
             <DarkModeToggle darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
 
-            {/* Selector de idioma */}
             <LanguageSwitcher />
 
-            {/* Modal de carga para generar consejo */}
             <LoadingModal isVisible={generatingAdvice} />
 
-            {/* Contenedor de notificaciones toast */}
             <ToastContainer toasts={toastFunctions.toasts} onRemove={toastFunctions.removeToast} />
 
-            {/* Formas de fondo */}
             <div className="background-shapes">
                 <div className="shape shape-1"></div>
                 <div className="shape shape-2"></div>

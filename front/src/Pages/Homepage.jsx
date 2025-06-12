@@ -236,7 +236,6 @@ const Homepage = () => {
 
     return (
         <div className="container">
-            {/* Botón de modo oscuro flotante */}
             <button
                 className="dark-mode-toggle"
                 onClick={toggleDarkMode}
@@ -297,7 +296,6 @@ const Homepage = () => {
 
             <FloatingShapes darkMode={darkMode} />
 
-            {/* Header principal con traducciones */}
             <header className={`main-header ${headerVisible ? "header-visible" : "header-hidden"}`}>
                 <div className="container-logo">
                     <SpiralAnimation />
@@ -333,7 +331,6 @@ const Homepage = () => {
             </header>
 
 
-            {/* Hero Section con traducciones */}
             <section className="content" id="inicio">
                 <div>
                     <motion.h1 custom={0} initial="hidden" animate="visible" variants={fadeUpVariants}>
@@ -362,7 +359,6 @@ const Homepage = () => {
                 </div>
             </section>
 
-            {/* Sección "¿Qué es EconomicallyE?" con traducciones */}
             <section className="about-section">
                 <motion.div className="about-container" custom={2} initial="hidden" animate="visible" variants={fadeUpVariants}>
                     <div className="about-header">
